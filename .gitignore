@@ -1,0 +1,11 @@
+node_modules/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+next-debug.log
+npm-debug.log*
+.env*
+!.env.example
+.browser-screenshots/
+.DS_Store
