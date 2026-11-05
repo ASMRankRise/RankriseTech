@@ -1,44 +1,29 @@
 /* ==========================================================================
    Global Hero — White/RankRise-Blue Theme
-   Static alternative hero with photorealistic hands + globe
+   Static alternative hero with actual photographic hands + wireframe globe
    ========================================================================== */
 
-/* CSS Variables are inherited from app/globals.css:
-   --rankrise-blue: #1768D5
-   --midnight-navy: #102B50
-   --sky-blue: #5A9CF0
-   --ice-blue: #EAF2FF
-   --cloud-white: #F4F8FE
-   --pure-white: #FFFFFF
-   --slate-ink: #24364B
-   --steel-grey: #63758A
-   --soft-blue-grey: #DCE6F2
-   --radius-sm: 6px
-   --radius-md: 10px
-   --radius-lg: 14px
-   --radius-full: 9999px
-   --shadow-subtle, --shadow-card, --shadow-card-hover, etc.
-   --font-sans: var(--font-inter)
-   --font-heading: var(--font-manrope)
-*/
-
 /* ==========================================================================
-   Glassmorphic Header
+   Floating Rounded Glass Navigation
    ========================================================================== */
 .globalHeader {
   position: sticky;
   z-index: 30;
-  top: 0;
-  border-bottom: 1px solid var(--soft-blue-grey);
-  background: rgba(255, 255, 255, 0.88);
+  top: 16px;
+  width: min(1120px, calc(100% - 32px));
+  margin-inline: auto;
+  border: 1px solid rgba(220, 230, 242, 0.85);
+  border-radius: var(--radius-full);
+  background: rgba(255, 255, 255, 0.86);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 24px -2px rgba(16, 43, 80, 0.06);
   transition: background-color 200ms ease, box-shadow 200ms ease, border-color 200ms ease;
 }
 
 .globalHeader.scrolled {
   background: rgba(255, 255, 255, 0.96);
-  box-shadow: 0 4px 24px -4px rgba(16, 43, 80, 0.08);
+  box-shadow: 0 8px 32px -4px rgba(16, 43, 80, 0.1);
   border-color: var(--soft-blue-grey);
 }
 
@@ -46,11 +31,9 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 24px;
-  min-height: 80px;
-  width: min(1200px, calc(100% - 96px));
-  margin-inline: auto;
-  padding-inline: 48px;
+  gap: 20px;
+  min-height: 64px;
+  padding-inline: 28px;
 }
 
 .wordmark {
@@ -69,16 +52,16 @@
 
 .wordmarkName {
   font-family: var(--font-manrope), Arial, sans-serif;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 750;
   letter-spacing: -1px;
 }
 
 .wordmarkDescriptor {
-  margin-top: 6px;
-  font-size: 9px;
+  margin-top: 5px;
+  font-size: 8px;
   font-weight: 600;
-  letter-spacing: 2.8px;
+  letter-spacing: 2.6px;
   text-transform: uppercase;
   color: var(--rankrise-blue);
 }
@@ -91,18 +74,18 @@
 .navList {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 16px;
 }
 
 .navLink {
   display: inline-flex;
-  min-height: 44px;
+  min-height: 40px;
   align-items: center;
-  padding: 8px 4px;
-  border-radius: 6px;
+  padding: 6px 10px;
+  border-radius: var(--radius-full);
   background: transparent;
   color: var(--slate-ink);
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 500;
   line-height: 1.4;
   text-decoration: none;
@@ -118,7 +101,7 @@
 
 .navLink:focus-visible {
   outline: 2px solid var(--rankrise-blue);
-  outline-offset: 4px;
+  outline-offset: 2px;
 }
 
 /* Header CTA — Book a Demo */
@@ -126,11 +109,11 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  min-height: 46px;
-  padding: 10px 20px;
+  gap: 8px;
+  min-height: 42px;
+  padding: 8px 18px;
   border: 1px solid transparent;
-  border-radius: 9px;
+  border-radius: var(--radius-full);
   background: var(--rankrise-blue);
   color: var(--pure-white);
   font-size: 13px;
@@ -153,7 +136,7 @@
 
 .headerCta:focus-visible {
   outline: 2px solid var(--rankrise-blue);
-  outline-offset: 4px;
+  outline-offset: 3px;
 }
 
 /* Mobile Toggle */
@@ -161,8 +144,8 @@
   display: none;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
-  padding: 8px;
+  min-height: 40px;
+  padding: 6px;
   background: transparent;
   color: var(--midnight-navy);
   border: none;
@@ -176,40 +159,41 @@
 
 .mobileToggle:focus-visible {
   outline: 2px solid var(--rankrise-blue);
-  outline-offset: 4px;
+  outline-offset: 2px;
 }
 
 /* Mobile Navigation Panel */
 .mobileNav {
   display: none;
   position: absolute;
-  top: 100%;
+  top: calc(100% + 12px);
   left: 0;
   right: 0;
-  max-height: calc(100dvh - 80px);
+  max-height: calc(100dvh - 96px);
   overflow-y: auto;
-  padding: 20px 32px 27px;
-  border-bottom: 1px solid var(--soft-blue-grey);
+  padding: 20px 28px 24px;
+  border: 1px solid var(--soft-blue-grey);
+  border-radius: 20px;
   background: var(--pure-white);
-  box-shadow: 0 18px 24px rgba(16, 43, 80, 0.05);
+  box-shadow: 0 18px 36px rgba(16, 43, 80, 0.08);
 }
 
 .mobileNavList {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
 }
 
 .mobileNavLink {
   display: inline-flex;
-  min-height: 48px;
+  min-height: 44px;
   align-items: center;
-  padding: 12px 0;
+  padding: 8px 12px;
   color: var(--slate-ink);
   font-size: 14px;
   font-weight: 500;
   text-decoration: none;
-  border-radius: 6px;
+  border-radius: 8px;
   transition: color 180ms ease, background-color 180ms ease;
 }
 
@@ -221,33 +205,48 @@
 .mobileCta {
   width: 100%;
   justify-content: center;
+  margin-top: 8px;
 }
 
 /* ==========================================================================
-   Hero Section
+   Hero Section — Restrained White/Ice-Blue Atmosphere
    ========================================================================== */
 .heroSection {
   position: relative;
-  padding-top: 85px;
-  padding-bottom: 60px;
+  padding-top: 56px;
+  padding-bottom: 72px;
   background: var(--pure-white);
+  overflow: hidden;
+}
+
+.heroSection::before {
+  content: "";
+  position: absolute;
+  top: 140px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1200px, 92vw);
+  height: 680px;
+  background: radial-gradient(ellipse 65% 55% at 50% 50%, rgba(224, 242, 254, 0.55) 0%, rgba(234, 242, 255, 0.25) 50%, rgba(255, 255, 255, 0) 75%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .container {
-  width: min(1200px, calc(100% - 96px));
+  position: relative;
+  z-index: 1;
+  width: min(1200px, calc(100% - 64px));
   margin-inline: auto;
 }
 
-.heroGrid {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 18px;
-}
-
-/* Hero Copy */
+/* ==========================================================================
+   Centered Copy Section
+   ========================================================================== */
 .heroCopy {
+  position: relative;
+  z-index: 1;
   max-width: 820px;
+  margin-inline: auto;
   text-align: center;
 }
 
@@ -283,13 +282,14 @@
 }
 
 .headline {
-  margin-top: 25px;
-  font-size: clamp(44px, 4.3vw, 62px);
-  font-weight: 650;
-  letter-spacing: -2.7px;
-  line-height: 1.13;
+  margin-top: 24px;
+  font-size: clamp(40px, 4.4vw, 58px);
+  font-weight: 700;
+  letter-spacing: -2.2px;
+  line-height: 1.14;
   color: var(--midnight-navy);
   font-family: var(--font-manrope), Arial, sans-serif;
+  text-align: center;
 }
 
 .headlineLine {
@@ -301,20 +301,21 @@
 }
 
 .description {
-  margin-top: 29px;
-  max-width: 560px;
-  font-size: 15px;
-  line-height: 1.85;
-  color: var(--slate-ink);
+  margin-top: 22px;
+  max-width: 620px;
   margin-inline: auto;
+  font-size: 15px;
+  line-height: 1.8;
+  color: var(--slate-ink);
+  text-align: center;
 }
 
 /* Hero Actions */
 .heroActions {
   display: flex;
   flex-wrap: wrap;
-  gap: 12px;
-  margin-top: 32px;
+  gap: 14px;
+  margin-top: 30px;
   justify-content: center;
 }
 
@@ -324,9 +325,9 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 14px;
-  min-height: 50px;
-  padding: 12px 22px;
+  gap: 12px;
+  min-height: 48px;
+  padding: 12px 24px;
   border: 1px solid transparent;
   border-radius: 9px;
   font-size: 13px;
@@ -398,70 +399,64 @@
   outline-offset: 4px;
 }
 
-/* Telemetry Ribbon */
-.telemetryRibbon {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 14px 24px;
-  margin-top: 32px;
-  padding: 14px 20px;
-  border: 1px solid var(--soft-blue-grey);
-  border-radius: 12px;
-  background: rgba(244, 248, 254, 0.75);
-  backdrop-filter: blur(8px);
-}
-
-.telemetryItem {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--midnight-navy);
-  letter-spacing: 0.2px;
-}
-
-.telemetryDot {
-  display: inline-flex;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--rankrise-blue);
-  box-shadow: 0 0 6px var(--rankrise-blue);
-  animation: pulse-dot 2s infinite ease-in-out;
-}
-
 .previewNote {
   margin-top: 18px;
   color: var(--steel-grey);
-  font-size: 10px;
+  font-size: 11px;
   line-height: 1.6;
+  text-align: center;
 }
 
 /* ==========================================================================
-   Visual Wrapper — Hands + Globe
+   Broad Centered Visual — Photographic Hands + Wireframe Globe
    ========================================================================== */
 .heroVisualWrapper {
   position: relative;
+  z-index: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  perspective: 1000px;
   width: 100%;
-  max-width: 820px;
+  max-width: 1040px;
+  margin-top: 36px;
+  margin-inline: auto;
 }
 
 .handsGlobeContainer {
   position: relative;
-  display: block;
+  display: flex;
   align-items: center;
   justify-content: center;
-  width: min(100%, 760px);
-  max-width: 760px;
-  min-height: 520px;
+  width: 100%;
+  max-width: 780px;
+  min-height: 480px;
   margin: 0 auto;
+}
+
+.globeWrapper {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: clamp(260px, 35vw, 380px);
+  height: clamp(260px, 35vw, 380px);
+  flex-shrink: 0;
+}
+
+.globe {
+  width: 100%;
+  height: 100%;
+  max-width: 380px;
+  max-height: 380px;
+  filter: drop-shadow(0 14px 40px rgba(2, 132, 199, 0.18));
+  contain: layout paint;
+  transition: transform 300ms ease;
+}
+
+.globe:hover {
+  transform: rotateY(3deg) rotateX(-2deg);
 }
 
 .handWrapper {
@@ -474,15 +469,15 @@
 }
 
 .leftHandWrapper {
-  bottom: -20px;
-  left: -25px;
-  filter: drop-shadow(0 16px 36px rgba(10, 37, 64, 0.22));
+  bottom: 0px;
+  left: 20px;
+  filter: drop-shadow(0 16px 36px rgba(10, 37, 64, 0.18));
 }
 
 .rightHandWrapper {
-  top: -25px;
-  right: -30px;
-  filter: drop-shadow(0 16px 36px rgba(10, 37, 64, 0.22));
+  top: 10px;
+  right: 20px;
+  filter: drop-shadow(0 16px 36px rgba(10, 37, 64, 0.18));
 }
 
 .photographicHand {
@@ -498,32 +493,7 @@
   object-fit: contain;
 }
 
-.globeWrapper {
-  position: absolute;
-  z-index: 2;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: clamp(240px, 42vw, 420px);
-  height: clamp(240px, 42vw, 420px);
-  inset: 50% auto auto 50%;
-  transform: translate(-50%, -50%);
-}
-
-.globe {
-  width: 100%;
-  height: 100%;
-  max-width: 360px;
-  max-height: 360px;
-  filter: drop-shadow(0 12px 36px rgba(2, 132, 199, 0.18));
-  transition: transform 300ms ease;
-}
-
-.globe:hover {
-  transform: rotateY(3deg) rotateX(-2deg);
-}
-
-/* Glassmorphic floating telemetry cards */
+/* Desktop Floating Glass Cards */
 .glassCard {
   position: absolute;
   z-index: 4;
@@ -539,13 +509,13 @@
 }
 
 .glassCardLeft {
-  left: -28px;
-  top: 36%;
+  left: -20px;
+  top: 38%;
 }
 
 .glassCardRight {
-  right: -28px;
-  bottom: 18%;
+  right: -20px;
+  bottom: 20%;
 }
 
 .glassCardBadge {
@@ -557,7 +527,7 @@
   color: var(--rankrise-blue);
   background: rgba(0, 102, 204, 0.08);
   padding: 2px 8px;
-  border-radius: 9999px;
+  border-radius: var(--radius-full);
   margin-bottom: 6px;
 }
 
@@ -577,28 +547,13 @@
   line-height: 1.45;
 }
 
-/* Visual Caption */
-.visualCaption {
-  display: grid;
-  grid-template-columns: 1fr 1.05fr;
-  align-items: start;
-  gap: 24px;
-  margin-top: 24px;
-  padding-top: 18px;
-  border-top: 1px solid var(--soft-blue-grey);
-  color: var(--slate-ink);
-  font-size: 10px;
-  line-height: 1.75;
-  width: 100%;
-  max-width: 500px;
+/* Mobile cards container (hidden on desktop) */
+.mobileCardsRow {
+  display: none;
 }
 
-.captionTitle {
-  color: var(--midnight-navy);
-  font-family: var(--font-manrope), sans-serif;
-  font-size: 14px;
-  font-weight: 650;
-  letter-spacing: -0.3px;
+.mobileCard {
+  display: none;
 }
 
 /* Pillar Strip */
@@ -606,7 +561,7 @@
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 24px;
-  margin-top: 60px;
+  margin-top: 56px;
   padding-block: 24px 30px;
   border-top: 1px solid var(--soft-blue-grey);
 }
@@ -632,72 +587,46 @@
 
 @media (max-width: 1279px) {
   .container {
-    width: min(1120px, calc(100% - 64px));
+    width: min(1120px, calc(100% - 48px));
   }
 
   .headerInner {
-    min-height: 75px;
-    padding-inline: 32px;
+    min-height: 60px;
+    padding-inline: 24px;
   }
 
   .handsGlobeContainer {
-    max-width: 680px;
-    min-height: 480px;
-  }
-
-  .globeWrapper {
-    width: clamp(240px, 42vw, 380px);
-    height: clamp(240px, 42vw, 380px);
-  }
-
-  .leftHandWrapper {
-    bottom: -15px;
-    left: -20px;
-  }
-
-  .rightHandWrapper {
-    top: -20px;
-    right: -25px;
-  }
-}
-
-@media (max-width: 1023px) {
-  .previewNote {
-    text-align: center;
-  }
-
-  .handsGlobeContainer {
-    max-width: 620px;
+    max-width: 700px;
     min-height: 440px;
   }
 
   .globeWrapper {
-    width: clamp(230px, 42vw, 340px);
-    height: clamp(230px, 42vw, 340px);
+    width: clamp(240px, 35vw, 340px);
+    height: clamp(240px, 35vw, 340px);
   }
 
   .leftHandWrapper {
-    bottom: -10px;
-    left: -15px;
+    bottom: -5px;
+    left: 10px;
   }
 
   .rightHandWrapper {
-    top: -15px;
-    right: -15px;
+    top: -5px;
+    right: 10px;
   }
 
   .glassCardLeft {
-    left: -10px;
-    top: 30%;
+    left: 0px;
   }
 
   .glassCardRight {
-    right: -10px;
-    bottom: 15%;
+    right: 0px;
   }
+}
 
-  .pillarStrip {
-    gap: 18px;
+@media (max-width: 1023px) {
+  .globalHeader {
+    width: calc(100% - 32px);
   }
 
   .mobileToggle {
@@ -708,133 +637,167 @@
   .primaryNav {
     display: none;
   }
-}
 
-@media (max-width: 739px) {
-  .container {
-    width: calc(100% - 40px);
-  }
-
-  .headerInner {
-    min-height: 70px;
-    gap: 16px;
-    padding-inline: 20px;
-  }
-
-  .wordmarkName {
-    font-size: 24px;
-  }
-
-  .wordmarkDescriptor {
-    font-size: 8px;
-    letter-spacing: 2.5px;
-  }
-
-  .heroSection {
-    padding-top: 56px;
-    padding-bottom: 48px;
+  .headerCta {
+    display: none;
   }
 
   .handsGlobeContainer {
-    min-height: 330px;
+    max-width: 620px;
+    min-height: 400px;
   }
 
   .globeWrapper {
-    width: min(72vw, 285px);
-    height: min(72vw, 285px);
+    width: clamp(220px, 35vw, 300px);
+    height: clamp(220px, 35vw, 300px);
   }
 
   .leftHandWrapper {
-    left: -8%;
-    bottom: -8px;
+    left: 0px;
+    bottom: -5px;
   }
 
   .rightHandWrapper {
-    right: -8%;
-    top: -8px;
+    right: 0px;
+    top: -5px;
   }
 
-  .handImage {
-    max-width: 42vw;
+  .glassCardLeft {
+    left: -10px;
+    top: 32%;
+  }
+
+  .glassCardRight {
+    right: -10px;
+    bottom: 16%;
+  }
+
+  .pillarStrip {
+    gap: 18px;
+  }
+}
+
+/* Mobile defect fix: at <= 767px, glassCard is never an in-flow sibling squeezing globe */
+@media (max-width: 767px) {
+  .globalHeader {
+    top: 10px;
+    width: calc(100% - 24px);
+    border-radius: var(--radius-full);
+  }
+
+  .headerInner {
+    min-height: 54px;
+    padding-inline: 16px;
+  }
+
+  .wordmarkName {
+    font-size: 20px;
+  }
+
+  .wordmarkDescriptor {
+    font-size: 7px;
+    letter-spacing: 2px;
+  }
+
+  .heroSection {
+    padding-top: 40px;
+    padding-bottom: 48px;
   }
 
   .headline {
-    font-size: clamp(38px, 7.5vw, 52px);
-    letter-spacing: -1.8px;
+    font-size: clamp(34px, 7.8vw, 44px);
+    letter-spacing: -1.5px;
   }
 
   .description {
     font-size: 14px;
-    margin-top: 25px;
+    margin-top: 18px;
   }
 
   .heroActions {
-    margin-top: 28px;
+    margin-top: 24px;
   }
 
   .button {
-    min-height: 49px;
-    padding-inline: 17px;
+    min-height: 46px;
+    padding-inline: 18px;
     font-size: 12px;
   }
 
-  .telemetryRibbon {
-    gap: 10px 16px;
+  /* CRITICAL DEFECT FIX: Hide absolute glass cards from inside handsGlobeContainer on mobile */
+  .glassCard {
+    display: none !important;
+  }
+
+  /* Render stacked mobile cards cleanly BELOW the hands & globe */
+  .mobileCardsRow {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    max-width: 320px;
+    margin: 24px auto 0;
+  }
+
+  .mobileCard {
+    display: block;
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(2, 132, 199, 0.2);
+    border-radius: 12px;
     padding: 12px 16px;
+    box-shadow: 0 4px 16px rgba(10, 37, 64, 0.06);
+    text-align: left;
   }
 
   .handsGlobeContainer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
+    width: 100%;
     max-width: 320px;
-    min-height: 280px;
+    min-height: 270px;
     margin: 0 auto;
   }
 
+  /* Globe maintains guaranteed full size, never squeezed */
   .globeWrapper {
-    width: 220px;
-    height: 220px;
+    width: 220px !important;
+    height: 220px !important;
+    min-width: 220px;
+    flex-shrink: 0;
+  }
+
+  .globe {
+    width: 220px !important;
+    height: 220px !important;
+    max-width: 220px;
+    max-height: 220px;
   }
 
   .leftHandWrapper {
-    bottom: -10px;
+    bottom: -15px;
     left: -15px;
-    transform: scale(0.65);
+    transform: scale(0.68);
     transform-origin: bottom left;
   }
 
   .rightHandWrapper {
     top: -15px;
-    right: -20px;
-    transform: scale(0.65);
+    right: -15px;
+    transform: scale(0.68);
     transform-origin: top right;
-  }
-
-  .glassCard {
-    position: relative;
-    left: auto;
-    right: auto;
-    top: auto;
-    bottom: auto;
-    max-width: 100%;
-    margin-top: 12px;
-  }
-
-  .visualCaption {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    font-size: 9px;
-    text-align: center;
   }
 
   .pillarStrip {
     grid-template-columns: repeat(2, 1fr);
-    gap: 18px 12px;
-    margin-top: 40px;
-    padding-block: 20px 24px;
+    gap: 16px 12px;
+    margin-top: 36px;
+    padding-block: 18px 22px;
   }
 
   .pillarStrip li {
-    font-size: 10px;
+    font-size: 11px;
   }
 }
 
@@ -846,10 +809,6 @@
     animation: none;
   }
 
-  .telemetryDot {
-    animation: none;
-  }
-
   .button::after {
     display: none;
   }
@@ -858,19 +817,8 @@
     transform: none;
   }
 
+  .headerCta:hover,
   .button:hover {
     transform: none;
   }
-
-  .headerCta:hover {
-    transform: none;
-  }
-}
-
-/* ==========================================================================
-   Focus Visible (Global)
-   ========================================================================== */
-:focus-visible {
-  outline: 2px solid var(--rankrise-blue);
-  outline-offset: 4px;
 }

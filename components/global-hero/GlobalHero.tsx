@@ -208,69 +208,101 @@ export function GlobalHero({
         aria-labelledby="hero-heading"
       >
         <div className={styles.container}>
-          <div className={styles.heroGrid}>
-            {/* Left: Copy */}
-            <div className={styles.heroCopy}>
-              <p className={styles.eyebrow}>
-                <span className={styles.eyebrowDot} aria-hidden="true" />
-                Engineering a connected future
-              </p>
+          {/* Centered Copy Section ABOVE Visual */}
+          <div className={styles.heroCopy}>
+            <p className={styles.eyebrow}>
+              <span className={styles.eyebrowDot} aria-hidden="true" />
+              Engineering a connected future
+            </p>
 
-              <h1 id="hero-heading" className={styles.headline}>
-                {headlineLines.map((line, i) => (
-                  <span key={i} className={styles.headlineLine} style={{ display: "block" }}>
-                    {line}
-                  </span>
-                ))}
-              </h1>
+            <h1 id="hero-heading" className={styles.headline}>
+              {headlineLines.map((line, i) => (
+                <span key={i} className={styles.headlineLine}>
+                  {line}
+                </span>
+              ))}
+            </h1>
 
-              <p className={styles.description}>
-                {SITE_IDENTITY.heroDescription}
-              </p>
+            <p className={styles.description}>
+              {SITE_IDENTITY.heroDescription}
+            </p>
 
-              <div className={styles.heroActions}>
-                <a
-                  className={`${styles.button} ${styles.buttonPrimary}`}
-                  href="#capabilities"
-                >
-                  Explore Our Capabilities
-                  <Icon name="arrow-right" width="18" height="18" aria-hidden="true" />
-                </a>
-                <button
-                  type="button"
-                  className={`${styles.button} ${styles.buttonSecondary}`}
-                  onClick={() => onOpenInquiry()}
-                  aria-haspopup="dialog"
-                  aria-controls="preview-dialog"
-                >
-                  Discuss Your Project
-                  <Icon name="arrow-up-right" width="18" height="18" aria-hidden="true" />
-                </button>
-              </div>
-
-              <p className={styles.previewNote}>
-                Global Hero variant · White/Blue theme · Local preview (?hero=global)
-              </p>
+            <div className={styles.heroActions}>
+              <a
+                className={`${styles.button} ${styles.buttonPrimary}`}
+                href="#capabilities"
+              >
+                Explore Our Capabilities
+                <Icon name="arrow-right" width="18" height="18" aria-hidden="true" />
+              </a>
+              <button
+                type="button"
+                className={`${styles.button} ${styles.buttonSecondary}`}
+                onClick={() => onOpenInquiry()}
+                aria-haspopup="dialog"
+                aria-controls="preview-dialog"
+              >
+                Discuss Your Project
+                <Icon name="arrow-up-right" width="18" height="18" aria-hidden="true" />
+              </button>
             </div>
 
-            {/* Right: Visual — Photographic Hands + Wireframe Globe */}
-            <div className={styles.heroVisualWrapper} aria-hidden="true">
-              <div className={styles.handsGlobeContainer}>
-                {/* Lower-left photographic hand cupping the globe */}
-                <div className={`${styles.handWrapper} ${styles.leftHandWrapper}`}>
-                  <LeftHand size={280} />
-                </div>
+            <p className={styles.previewNote}>
+              Global Hero variant · Local preview (?hero=global)
+            </p>
+          </div>
 
-                {/* Wireframe network globe centered between hands */}
-                <div className={styles.globeWrapper}>
-                  <Globe size={360} />
-                </div>
+          {/* Broad Centered Visual — Photographic Hands + Wireframe Globe */}
+          <div className={styles.heroVisualWrapper} aria-hidden="true">
+            <div className={styles.handsGlobeContainer}>
+              {/* Lower-left photographic hand cupping the globe */}
+              <div className={`${styles.handWrapper} ${styles.leftHandWrapper}`}>
+                <LeftHand size={260} />
+              </div>
 
-                {/* Upper-right photographic hand reaching toward the globe */}
-                <div className={`${styles.handWrapper} ${styles.rightHandWrapper}`}>
-                  <RightHand size={330} />
-                </div>
+              {/* Wireframe network globe centered between hands */}
+              <div className={styles.globeWrapper}>
+                <Globe size={380} />
+              </div>
 
+              {/* Upper-right photographic hand reaching toward the globe */}
+              <div className={`${styles.handWrapper} ${styles.rightHandWrapper}`}>
+                <RightHand size={340} />
+              </div>
+
+              {/* Desktop Floating Glass Cards */}
+              <div className={`${styles.glassCard} ${styles.glassCardLeft}`}>
+                <span className={styles.glassCardBadge}>Enterprise Software</span>
+                <p className={styles.glassCardTitle}>Intelligent Solutions</p>
+                <p className={styles.glassCardDesc}>
+                  Scalable architecture engineered for end-to-end delivery.
+                </p>
+              </div>
+
+              <div className={`${styles.glassCard} ${styles.glassCardRight}`}>
+                <span className={styles.glassCardBadge}>In-House Products</span>
+                <p className={styles.glassCardTitle}>4 Software Platforms</p>
+                <p className={styles.glassCardDesc}>
+                  TriMarkity, 1SocialSnap, SalesApp, and HRMS.
+                </p>
+              </div>
+            </div>
+
+            {/* Mobile Stacked Feature Cards (rendered cleanly below visual on mobile) */}
+            <div className={styles.mobileCardsRow}>
+              <div className={styles.mobileCard}>
+                <span className={styles.glassCardBadge}>Enterprise Software</span>
+                <p className={styles.glassCardTitle}>Intelligent Solutions</p>
+                <p className={styles.glassCardDesc}>
+                  Scalable architecture engineered for end-to-end delivery.
+                </p>
+              </div>
+              <div className={styles.mobileCard}>
+                <span className={styles.glassCardBadge}>In-House Products</span>
+                <p className={styles.glassCardTitle}>4 Software Platforms</p>
+                <p className={styles.glassCardDesc}>
+                  TriMarkity, 1SocialSnap, SalesApp, and HRMS.
+                </p>
               </div>
             </div>
           </div>

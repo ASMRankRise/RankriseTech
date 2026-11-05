@@ -22,7 +22,7 @@ interface HandProps {
  */
 export function LeftHand({ className = "", size = 240, width, height }: HandProps) {
   const h = height ?? size;
-  const w = width ?? Math.round((h * 162) / 196);
+  const w = width ?? Math.round((h * 196) / 206);
 
   return (
     <div
@@ -53,7 +53,7 @@ export function LeftHand({ className = "", size = 240, width, height }: HandProp
  */
 export function RightHand({ className = "", size = 340, width, height }: HandProps) {
   const w = width ?? size;
-  const h = height ?? Math.round((w * 181) / 355);
+  const h = height ?? Math.round((w * 191) / 357);
 
   return (
     <div
