@@ -24,6 +24,7 @@ import { ScrollReveal } from "./motion/scroll-reveal";
 import { SpotlightCard } from "./motion/spotlight-card";
 import { InitialPageLoader } from "./motion/page-loader";
 import { HeroAnimation } from "./motion/hero-animation";
+import { GlobalHero } from "./global-hero";
 
 const CAPABILITY_TAGS: Record<string, string[]> = {
   "custom-software": ["Distributed Architecture", "Modern APIs", "Enterprise Scale"],
@@ -85,7 +86,11 @@ function ProductPanel({ product, index }: { product: Product; index: number }) {
   );
 }
 
-export function Homepage() {
+interface HomepageProps {
+  heroVariant?: "default" | "global";
+}
+
+export function Homepage({ heroVariant = "default" }: HomepageProps) {
   const [dialogState, setDialogState] = useState<DialogState | null>(null);
   const heroRef = useRef<HTMLElement>(null);
   const openInquiry = (context?: string) => setDialogState({ kind: "inquiry", context });
@@ -110,43 +115,48 @@ export function Homepage() {
   return (
     <>
       <InitialPageLoader />
-      <SiteNavigation />
+      {heroVariant !== "global" && <SiteNavigation />}
       <main id="main-content">
-        <section id="home" ref={heroRef} className="hero-section" data-section="hero" aria-labelledby="hero-heading">
-          <HeroAnimation heroRef={heroRef} />
-          <div className="container">
-            <div className="hero-grid">
-              <div className="hero-copy">
-                <p className="eyebrow hero-eyebrow"><span aria-hidden="true" />Engineering a connected future</p>
-                <h1 id="hero-heading">{splitH1Lines()}</h1>
-                <p className="hero-description">{SITE_IDENTITY.heroDescription}</p>
-                <div className="hero-actions">
-                  <a className="button button-primary" href="#capabilities">Explore Our Capabilities<Icon name="arrow-right" /></a>
-                  <button className="button button-secondary" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry()}>Discuss Your Project<Icon name="arrow-up-right" /></button>
+        {/* Hero Section — conditional rendering based on variant */}
+        {heroVariant === "global" ? (
+          <GlobalHero onOpenInquiry={openInquiry} />
+        ) : (
+          <section id="home" ref={heroRef} className="hero-section" data-section="hero" aria-labelledby="hero-heading">
+            <HeroAnimation heroRef={heroRef} />
+            <div className="container">
+              <div className="hero-grid">
+                <div className="hero-copy">
+                  <p className="eyebrow hero-eyebrow"><span aria-hidden="true" />Engineering a connected future</p>
+                  <h1 id="hero-heading">{splitH1Lines()}</h1>
+                  <p className="hero-description">{SITE_IDENTITY.heroDescription}</p>
+                  <div className="hero-actions">
+                    <a className="button button-primary" href="#capabilities">Explore Our Capabilities<Icon name="arrow-right" /></a>
+                    <button className="button button-secondary" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry()}>Discuss Your Project<Icon name="arrow-up-right" /></button>
+                  </div>
+                  <div className="hero-telemetry-ribbon" aria-label="System telemetry">
+                    <div className="telemetry-item"><span aria-hidden="true" /><span>4 In-House Products</span></div>
+                    <div className="telemetry-item"><span aria-hidden="true" /><span>10 Industry Domains</span></div>
+                    <div className="telemetry-item"><span aria-hidden="true" /><span>6-Stage Delivery Process</span></div>
+                    <div className="telemetry-item"><span aria-hidden="true" /><span>Strict Type-Safe Core</span></div>
+                  </div>
+                  <p className="hero-preview-note">Initial local preview <span aria-hidden="true">·</span> Built for a considered first look</p>
                 </div>
-                <div className="hero-telemetry-ribbon" aria-label="System telemetry">
-                  <div className="telemetry-item"><span aria-hidden="true" /><span>4 In-House Products</span></div>
-                  <div className="telemetry-item"><span aria-hidden="true" /><span>10 Industry Domains</span></div>
-                  <div className="telemetry-item"><span aria-hidden="true" /><span>6-Stage Delivery Process</span></div>
-                  <div className="telemetry-item"><span aria-hidden="true" /><span>Strict Type-Safe Core</span></div>
+                <div className="hero-visual-wrapper">
+                  <span className="hero-hud-card hero-hud-card-top" aria-hidden="true">
+                    <span className="status-dot" /> RR-CORE / VERIFIED
+                  </span>
+                  <EngineeringVisual />
+                  <span className="hero-hud-card hero-hud-card-bottom" aria-hidden="true">
+                    RUNTIME / NEXT.JS APP ROUTER
+                  </span>
                 </div>
-                <p className="hero-preview-note">Initial local preview <span aria-hidden="true">·</span> Built for a considered first look</p>
               </div>
-              <div className="hero-visual-wrapper">
-                <span className="hero-hud-card hero-hud-card-top" aria-hidden="true">
-                  <span className="status-dot" /> RR-CORE / VERIFIED
-                </span>
-                <EngineeringVisual />
-                <span className="hero-hud-card hero-hud-card-bottom" aria-hidden="true">
-                  RUNTIME / NEXT.JS APP ROUTER
-                </span>
-              </div>
+              <ul className="pillar-strip" aria-label="Our four pillars">
+                {FOUR_PILLARS.map((pillar, index) => <li key={pillar}><span aria-hidden="true">0{index + 1}</span>{pillar}</li>)}
+              </ul>
             </div>
-            <ul className="pillar-strip" aria-label="Our four pillars">
-              {FOUR_PILLARS.map((pillar, index) => <li key={pillar}><span aria-hidden="true">0{index + 1}</span>{pillar}</li>)}
-            </ul>
-          </div>
-        </section>
+          </section>
+        )}
 
         <section id="about" className="section company-section" data-section="company-introduction" aria-labelledby="company-heading">
           <div className="container company-grid">
