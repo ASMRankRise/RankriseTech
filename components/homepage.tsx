@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import {
   AI_EXPLORATIONS,
   CORE_CAPABILITIES,
@@ -23,6 +23,7 @@ import { SiteFooter } from "./site-footer";
 import { ScrollReveal } from "./motion/scroll-reveal";
 import { SpotlightCard } from "./motion/spotlight-card";
 import { InitialPageLoader } from "./motion/page-loader";
+import { HeroAnimation } from "./motion/hero-animation";
 
 const CAPABILITY_TAGS: Record<string, string[]> = {
   "custom-software": ["Distributed Architecture", "Modern APIs", "Enterprise Scale"],
@@ -86,19 +87,38 @@ function ProductPanel({ product, index }: { product: Product; index: number }) {
 
 export function Homepage() {
   const [dialogState, setDialogState] = useState<DialogState | null>(null);
+  const heroRef = useRef<HTMLElement>(null);
   const openInquiry = (context?: string) => setDialogState({ kind: "inquiry", context });
+
+  // Split H1 text into lines for GSAP animation
+  const splitH1Lines = () => {
+    // Two natural semantic lines:
+    // Line 1: "Building Intelligent Software for a "
+    // Line 2: <span>Smarter Digital World.</span>
+    // CSS rule .hero-copy h1 span handles the blue color
+    const parts = [
+      "Building Intelligent Software for a ",
+      <span key="blue">Smarter Digital World.</span>,
+    ];
+    return parts.map((part, i) => (
+      <span key={i} className="split-line" style={{ display: "block" }}>
+        {part}
+      </span>
+    ));
+  };
 
   return (
     <>
       <InitialPageLoader />
       <SiteNavigation />
       <main id="main-content">
-        <section id="home" className="hero-section" data-section="hero" aria-labelledby="hero-heading">
+        <section id="home" ref={heroRef} className="hero-section" data-section="hero" aria-labelledby="hero-heading">
+          <HeroAnimation heroRef={heroRef} />
           <div className="container">
             <div className="hero-grid">
-              <ScrollReveal variant="fade-up" duration={700} className="hero-copy">
+              <div className="hero-copy">
                 <p className="eyebrow hero-eyebrow"><span aria-hidden="true" />Engineering a connected future</p>
-                <h1 id="hero-heading">Building Intelligent Software for a <span>Smarter Digital World.</span></h1>
+                <h1 id="hero-heading">{splitH1Lines()}</h1>
                 <p className="hero-description">{SITE_IDENTITY.heroDescription}</p>
                 <div className="hero-actions">
                   <a className="button button-primary" href="#capabilities">Explore Our Capabilities<Icon name="arrow-right" /></a>
@@ -111,8 +131,8 @@ export function Homepage() {
                   <div className="telemetry-item"><span aria-hidden="true" /><span>Strict Type-Safe Core</span></div>
                 </div>
                 <p className="hero-preview-note">Initial local preview <span aria-hidden="true">·</span> Built for a considered first look</p>
-              </ScrollReveal>
-              <ScrollReveal variant="fade-in" delay={150} duration={800} className="hero-visual-wrapper">
+              </div>
+              <div className="hero-visual-wrapper">
                 <span className="hero-hud-card hero-hud-card-top" aria-hidden="true">
                   <span className="status-dot" /> RR-CORE / VERIFIED
                 </span>
@@ -120,7 +140,7 @@ export function Homepage() {
                 <span className="hero-hud-card hero-hud-card-bottom" aria-hidden="true">
                   RUNTIME / NEXT.JS APP ROUTER
                 </span>
-              </ScrollReveal>
+              </div>
             </div>
             <ul className="pillar-strip" aria-label="Our four pillars">
               {FOUR_PILLARS.map((pillar, index) => <li key={pillar}><span aria-hidden="true">0{index + 1}</span>{pillar}</li>)}

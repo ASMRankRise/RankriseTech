@@ -1,3 +1,5 @@
+"use client";
+
 export function EngineeringVisual() {
   return (
     <figure className="engineering-visual">
@@ -12,6 +14,52 @@ export function EngineeringVisual() {
           <path d="M280 42v405M38 310h484" strokeDasharray="3 7" className="animated-circuit-path" />
           <path d="M64 87h24M76 75v24M484 87h24M496 75v24M64 412h24M76 400v24M484 412h24M496 400v24" />
         </g>
+
+        {/* Conduit data pulse elements - traveling signal packets */}
+        <g className="conduit-pulses" stroke="none" fill="none">
+          {/* Pulse: Central core (280,132) → SYSTEMS node (79,371) - left conduit */}
+          <circle
+            className="conduit-pulse conduit-pulse-systems"
+            cx="280"
+            cy="132"
+            r="4"
+            fill="var(--rankrise-blue)"
+            opacity="0"
+            filter="url(#pulse-glow)"
+          />
+          {/* Pulse: Central core (280,132) → PRODUCTS node (365,371) - right conduit */}
+          <circle
+            className="conduit-pulse conduit-pulse-products"
+            cx="280"
+            cy="132"
+            r="4"
+            fill="var(--sky-blue)"
+            opacity="0"
+            filter="url(#pulse-glow)"
+          />
+          {/* Pulse: Central core (280,132) → INTELLIGENCE node (304,68) - top conduit */}
+          <circle
+            className="conduit-pulse conduit-pulse-intelligence"
+            cx="280"
+            cy="132"
+            r="4"
+            fill="var(--rankrise-blue)"
+            opacity="0"
+            filter="url(#pulse-glow)"
+          />
+        </g>
+
+        {/* Glow filter for pulse effects */}
+        <defs>
+          <filter id="pulse-glow" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="3" result="blur" />
+            <feMerge>
+              <feMergeNode in="blur" />
+              <feMergeNode in="SourceGraphic" />
+            </feMerge>
+          </filter>
+        </defs>
+
         <g stroke="var(--rankrise-blue)" strokeWidth="1.5" strokeLinejoin="round" className="animated-iso-float">
           <path d="m115 321 77-45 88 51 97-56 65 38" />
           <path d="m166 205 49 28 65-38 104 60" strokeDasharray="4 5" className="animated-circuit-path" />
@@ -30,7 +78,7 @@ export function EngineeringVisual() {
           <ellipse cx="280" cy="132" rx="74" ry="42" />
           <ellipse cx="280" cy="132" rx="48" ry="27" stroke="var(--sky-blue)" />
           <path d="M206 132v29M354 132v29M280 90V64" strokeDasharray="3 5" className="animated-circuit-path" />
-          <circle cx="280" cy="132" r="6" fill="var(--rankrise-blue)" className="animated-node-pulse" />
+          <circle cx="280" cy="132" r="6" fill="var(--rankrise-blue)" className="animated-node-pulse core-node" />
           <circle cx="280" cy="64" r="3" fill="var(--pure-white)" />
         </g>
         <g stroke="var(--rankrise-blue)" strokeWidth="1.3" strokeLinejoin="round">
@@ -43,12 +91,12 @@ export function EngineeringVisual() {
           <path d="m143 194 23-13 23 13-23 13-23-13Z" fill="var(--pure-white)" />
           <path d="M143 194v20l23 13 23-13v-20l-23 13-23-13Z" fill="var(--ice-blue)" />
           <path d="M166 207v20" />
-          <circle cx="384" cy="255" r="5" fill="var(--pure-white)" className="animated-node-pulse" />
+          <circle cx="384" cy="255" r="5" fill="var(--pure-white)" className="animated-node-pulse satellite-node" />
         </g>
         <g fill="var(--slate-ink)" fontSize="11" fontFamily="var(--font-inter), sans-serif" letterSpacing="1.5">
-          <text x="79" y="371">SYSTEMS</text>
-          <text x="365" y="371">PRODUCTS</text>
-          <text x="304" y="68">INTELLIGENCE</text>
+          <text x="79" y="371" className="satellite-label systems-label">SYSTEMS</text>
+          <text x="365" y="371" className="satellite-label products-label">PRODUCTS</text>
+          <text x="304" y="68" className="satellite-label intelligence-label">INTELLIGENCE</text>
         </g>
       </svg>
       <figcaption>

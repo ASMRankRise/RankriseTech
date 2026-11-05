@@ -314,6 +314,23 @@ section[id], article[id], main[id] { scroll-margin-top: 104px; }
 .hero-actions { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 32px; }
 .hero-preview-note { margin-top: 18px; color: var(--steel-grey); font-size: 10px; line-height: 1.6; }
 .hero-preview-note span { margin-inline: 6px; }
+
+/* Hero GSAP Animation — Initial States (prevents flash before JS runs) */
+.hero-copy h1 .split-line { opacity: 0; }
+.hero-description { opacity: 0; }
+.hero-actions .button { opacity: 0; }
+.hero-telemetry-ribbon .telemetry-item { opacity: 0; }
+.hero-hud-card-top { opacity: 0; transform: translateX(60px); }
+.hero-hud-card-bottom { opacity: 0; transform: translateX(-60px); }
+.hero-eyebrow { opacity: 0; transform: scale(0.85); }
+
+/* Disable default CSS animations in hero — GSAP controls these */
+.hero-section .animated-circuit-path,
+.hero-section .animated-node-pulse,
+.hero-section .animated-iso-float {
+  animation: none;
+}
+
 /* Engineering & Intelligence SVG Animations */
 @keyframes svg-circuit-dash {
   to { stroke-dashoffset: -40; }
@@ -403,6 +420,7 @@ section[id], article[id], main[id] { scroll-margin-top: 104px; }
   display: flex;
   flex-direction: column;
   justify-content: center;
+  perspective: 1000px;
 }
 
 /* Company Section Philosophy Pillars */
@@ -503,12 +521,31 @@ section[id], article[id], main[id] { scroll-margin-top: 104px; }
   letter-spacing: 0.4px;
 }
 
-.engineering-visual { min-width: 0; align-self: stretch; display: flex; flex-direction: column; justify-content: center; }
+.engineering-visual {
+  min-width: 0;
+  align-self: stretch;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  transform-style: preserve-3d;
+}
 .visual-heading { display: flex; justify-content: space-between; gap: 15px; margin: 0 20px; padding-block: 13px; border-top: 1px solid var(--soft-blue-grey); }
 .technical-label, .visual-coordinate { font-size: 9px; font-weight: 500; letter-spacing: 1.15px; line-height: 1.6; text-transform: uppercase; }
 .technical-label { color: var(--slate-ink); }
 .visual-coordinate { color: var(--steel-grey); }
-.engineering-svg { display: block; width: 100%; height: auto; }
+.engineering-svg {
+  display: block;
+  width: 100%;
+  height: auto;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+.animated-iso-float,
+.conduit-pulse,
+.hero-hud-card-top,
+.hero-hud-card-bottom {
+  will-change: transform;
+}
 .engineering-visual figcaption { display: grid; grid-template-columns: 1fr 1.05fr; align-items: start; gap: 24px; margin-inline: 20px; padding-top: 18px; border-top: 1px solid var(--soft-blue-grey); color: var(--slate-ink); font-size: 10px; line-height: 1.75; }
 .visual-caption-title { color: var(--midnight-navy); font-family: var(--font-manrope), sans-serif; font-size: 14px; font-weight: 650; letter-spacing: -0.3px; }
 .pillar-strip { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-top: 75px; padding-block: 27px 33px; border-top: 1px solid var(--soft-blue-grey); }
@@ -1211,4 +1248,22 @@ section[id], article[id], main[id] { scroll-margin-top: 104px; }
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
   *, *::before, *::after { animation: none !important; transition: none !important; }
+  .hero-copy h1,
+  .hero-copy h1 .split-line,
+  .hero-description,
+  .hero-actions .button,
+  .hero-telemetry-ribbon .telemetry-item,
+  .hero-hud-card-top,
+  .hero-hud-card-bottom,
+  .hero-eyebrow,
+  .engineering-svg .animated-iso-float,
+  .engineering-svg .animated-circuit-path,
+  .engineering-svg .animated-node-pulse,
+  .engineering-svg .conduit-pulse,
+  .engineering-svg .core-node,
+  .engineering-svg .satellite-node,
+  .engineering-svg .satellite-label {
+    opacity: 1 !important;
+    transform: none !important;
+  }
 }
