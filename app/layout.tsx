@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { SITE_IDENTITY } from "@/lib/site-content";
+import { OrganizationSchema, WebSiteSchema } from "@/lib/seo/structured-data";
 import "./globals.css";
 
 const inter = localFont({
@@ -37,6 +38,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${manrope.variable}`}>
+      <head>
+        <OrganizationSchema />
+        <WebSiteSchema />
+      </head>
       <body>
         <a className="skip-link" href="#main-content">Skip to content</a>
         {children}

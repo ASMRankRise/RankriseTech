@@ -9,12 +9,12 @@ export function EngineeringVisual() {
         <g stroke="var(--soft-blue-grey)" strokeWidth="1">
           <path d="m38 310 242-140 242 140-242 140L38 310Z" fill="var(--cloud-white)" />
           <path d="m86 282 242 140M134 254l242 140M183 226l242 140M231 198l242 140M86 338l242-140M134 366l242-140M183 394l242-140M231 422l242-140" />
-          <path d="M280 42v405M38 310h484" strokeDasharray="3 7" />
+          <path d="M280 42v405M38 310h484" strokeDasharray="3 7" className="animated-circuit-path" />
           <path d="M64 87h24M76 75v24M484 87h24M496 75v24M64 412h24M76 400v24M484 412h24M496 400v24" />
         </g>
-        <g stroke="var(--rankrise-blue)" strokeWidth="1.5" strokeLinejoin="round">
+        <g stroke="var(--rankrise-blue)" strokeWidth="1.5" strokeLinejoin="round" className="animated-iso-float">
           <path d="m115 321 77-45 88 51 97-56 65 38" />
-          <path d="m166 205 49 28 65-38 104 60" strokeDasharray="4 5" />
+          <path d="m166 205 49 28 65-38 104 60" strokeDasharray="4 5" className="animated-circuit-path" />
           <path d="M280 195v132" />
           <path d="m226 297 54-31 54 31-54 31-54-31Z" fill="var(--ice-blue)" />
           <path d="M226 297v34l54 31 54-31v-34l-54 31-54-31Z" fill="var(--pure-white)" />
@@ -29,8 +29,8 @@ export function EngineeringVisual() {
         <g stroke="var(--rankrise-blue)" strokeWidth="1.5">
           <ellipse cx="280" cy="132" rx="74" ry="42" />
           <ellipse cx="280" cy="132" rx="48" ry="27" stroke="var(--sky-blue)" />
-          <path d="M206 132v29M354 132v29M280 90V64" strokeDasharray="3 5" />
-          <circle cx="280" cy="132" r="6" fill="var(--rankrise-blue)" />
+          <path d="M206 132v29M354 132v29M280 90V64" strokeDasharray="3 5" className="animated-circuit-path" />
+          <circle cx="280" cy="132" r="6" fill="var(--rankrise-blue)" className="animated-node-pulse" />
           <circle cx="280" cy="64" r="3" fill="var(--pure-white)" />
         </g>
         <g stroke="var(--rankrise-blue)" strokeWidth="1.3" strokeLinejoin="round">
@@ -43,7 +43,7 @@ export function EngineeringVisual() {
           <path d="m143 194 23-13 23 13-23 13-23-13Z" fill="var(--pure-white)" />
           <path d="M143 194v20l23 13 23-13v-20l-23 13-23-13Z" fill="var(--ice-blue)" />
           <path d="M166 207v20" />
-          <circle cx="384" cy="255" r="5" fill="var(--pure-white)" />
+          <circle cx="384" cy="255" r="5" fill="var(--pure-white)" className="animated-node-pulse" />
         </g>
         <g fill="var(--slate-ink)" fontSize="11" fontFamily="var(--font-inter), sans-serif" letterSpacing="1.5">
           <text x="79" y="371">SYSTEMS</text>
@@ -70,18 +70,18 @@ export function IntelligenceVisual() {
         <g stroke="var(--sky-blue)" strokeWidth="1" opacity="0.45">
           <circle cx="240" cy="157" r="122" />
           <circle cx="240" cy="157" r="93" />
-          <path d="M37 157h406M240 12v290M83 35l314 244M83 279 397 35" strokeDasharray="3 6" />
+          <path d="M37 157h406M240 12v290M83 35l314 244M83 279 397 35" strokeDasharray="3 6" className="animated-circuit-path" />
         </g>
         <g stroke="var(--sky-blue)" strokeWidth="1.5">
           <path d="M111 111h61l34 46M369 111h-61l-34 46M111 216h61l34-59M369 216h-61l-34-59M240 54v52M240 208v52" />
-          <path d="m240 106 45 26v50l-45 26-45-26v-50l45-26Z" fill="var(--rankrise-blue)" />
+          <path d="m240 106 45 26v50l-45 26-45-26v-50l45-26Z" fill="var(--rankrise-blue)" className="animated-node-pulse" />
           <path d="m195 132 45 26 45-26M240 158v50" stroke="var(--ice-blue)" />
-          <circle cx="111" cy="111" r="7" fill="var(--midnight-navy)" />
-          <circle cx="369" cy="111" r="7" fill="var(--midnight-navy)" />
-          <circle cx="111" cy="216" r="7" fill="var(--midnight-navy)" />
-          <circle cx="369" cy="216" r="7" fill="var(--midnight-navy)" />
-          <circle cx="240" cy="54" r="7" fill="var(--midnight-navy)" />
-          <circle cx="240" cy="260" r="7" fill="var(--midnight-navy)" />
+          <circle cx="111" cy="111" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
+          <circle cx="369" cy="111" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
+          <circle cx="111" cy="216" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
+          <circle cx="369" cy="216" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
+          <circle cx="240" cy="54" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
+          <circle cx="240" cy="260" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
         </g>
       </svg>
       <div className="intelligence-flow" aria-label="Context to intelligence to action">
