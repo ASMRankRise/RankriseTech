@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import LiquidGlass from "liquid-glass-react";
 import { Globe } from "./Globe";
 import styles from "./global-hero.module.css";
 import { StageBackdrop } from "./Hands";
@@ -165,27 +164,6 @@ export function GlobalHero({
 
 				<div className={styles.cardsContainer}>
 					<div className={`${styles.glassCard} ${styles.glassCardLeft}`}>
-						{themeLoaded ? (
-							<LiquidGlass
-								className={styles.liquidLayer}
-								style={{
-									position: "absolute",
-									top: "50%",
-									left: "50%",
-									width: "100%",
-									height: "100%",
-								}}
-								cornerRadius={16}
-								blurAmount={0.75}
-								saturation={165}
-								displacementScale={45}
-								aberrationIntensity={1.4}
-								elasticity={0.12}
-								padding="0"
-							>
-								<span className={styles.liquidLayerContent} aria-hidden="true" />
-							</LiquidGlass>
-						) : null}
 						<div className={styles.glassCardBody}>
 							<p className={styles.glassCardTitle}>AI-Powered Solutions</p>
 							<p className={styles.glassCardDesc}>
@@ -196,27 +174,6 @@ export function GlobalHero({
 					</div>
 
 					<div className={`${styles.glassCard} ${styles.glassCardRight}`}>
-						{themeLoaded ? (
-							<LiquidGlass
-								className={styles.liquidLayer}
-								style={{
-									position: "absolute",
-									top: "50%",
-									left: "50%",
-									width: "100%",
-									height: "100%",
-								}}
-								cornerRadius={16}
-								blurAmount={0.75}
-								saturation={165}
-								displacementScale={45}
-								aberrationIntensity={1.4}
-								elasticity={0.12}
-								padding="0"
-							>
-								<span className={styles.liquidLayerContent} aria-hidden="true" />
-							</LiquidGlass>
-						) : null}
 						<div className={styles.glassCardBody}>
 							<p className={styles.glassCardTitle}>In-House Products</p>
 							<p className={styles.glassCardDesc}>
