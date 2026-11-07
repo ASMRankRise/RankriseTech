@@ -233,12 +233,12 @@
 	justify-content: center;
 	overflow: hidden;
 	padding: 12px 14px;
-	border: 1px solid rgba(255, 255, 255, 0.16);
-	border-radius: 14px;
-	background: linear-gradient(150deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+	border: 1px solid rgba(255, 255, 255, 0.22);
+	border-radius: 16px;
+	background: linear-gradient(150deg, rgba(255, 255, 255, 0.12), rgba(255, 255, 255, 0.03));
 	box-shadow:
-		0 16px 38px rgba(2, 8, 20, 0.26),
-		inset 0 1px rgba(255, 255, 255, 0.2);
+		0 18px 44px rgba(2, 8, 20, 0.28),
+		inset 0 1px rgba(255, 255, 255, 0.24);
 	pointer-events: auto;
 	text-align: left;
 }
@@ -247,7 +247,7 @@
  * gradient. It is a browser-only layer so the server-rendered copy stays put. */
 .liquidLayer {
 	overflow: hidden;
-	border-radius: 14px;
+	border-radius: 16px;
 }
 .liquidLayer :global(.glass) {
 	width: 100%;
@@ -270,6 +270,7 @@
 	flex-direction: column;
 	justify-content: center;
 	width: 100%;
+	pointer-events: none;
 }
 
 /* Left callout: x 131/928, y 406/768 of the reference frame */
@@ -428,11 +429,11 @@
 }
 
 .lightMode .glassCard {
-	border-color: rgba(255, 255, 255, 0.82);
-	background: linear-gradient(150deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.48));
+	border-color: rgba(255, 255, 255, 0.74);
+	background: linear-gradient(150deg, rgba(255, 255, 255, 0.42), rgba(255, 255, 255, 0.16));
 	box-shadow:
-		0 16px 38px rgba(50, 105, 150, 0.16),
-		inset 0 1px rgba(255, 255, 255, 0.85);
+		0 18px 40px rgba(50, 105, 150, 0.14),
+		inset 0 1px rgba(255, 255, 255, 0.9);
 }
 
 .lightMode .glassCardTitle {

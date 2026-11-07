@@ -1,14 +1,10 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import dynamic from "next/dynamic";
+import LiquidGlass from "liquid-glass-react";
 import { Globe } from "./Globe";
 import styles from "./global-hero.module.css";
 import { StageBackdrop } from "./Hands";
-
-// Browser-only glass layer: its displacement and backdrop filters need the DOM.
-// Keeping it out of SSR also avoids hydration warnings on the floating cards.
-const LiquidGlass = dynamic(() => import("liquid-glass-react"), { ssr: false });
 
 /**
  * Global Hero — brand-blue atmospheric reference composition.
@@ -169,26 +165,27 @@ export function GlobalHero({
 
 				<div className={styles.cardsContainer}>
 					<div className={`${styles.glassCard} ${styles.glassCardLeft}`}>
-						<LiquidGlass
-							className={styles.liquidLayer}
-							style={{
-								position: "absolute",
-								top: "50%",
-								left: "50%",
-								width: "100%",
-								height: "100%",
-							}}
-							cornerRadius={14}
-							blurAmount={0.65}
-							saturation={170}
-							displacementScale={70}
-							aberrationIntensity={2}
-							elasticity={0.15}
-							overLight={lightMode}
-							padding="0"
-						>
-							<span className={styles.liquidLayerContent} aria-hidden="true" />
-						</LiquidGlass>
+						{themeLoaded ? (
+							<LiquidGlass
+								className={styles.liquidLayer}
+								style={{
+									position: "absolute",
+									top: "50%",
+									left: "50%",
+									width: "100%",
+									height: "100%",
+								}}
+								cornerRadius={16}
+								blurAmount={0.75}
+								saturation={165}
+								displacementScale={45}
+								aberrationIntensity={1.4}
+								elasticity={0.12}
+								padding="0"
+							>
+								<span className={styles.liquidLayerContent} aria-hidden="true" />
+							</LiquidGlass>
+						) : null}
 						<div className={styles.glassCardBody}>
 							<p className={styles.glassCardTitle}>AI-Powered Solutions</p>
 							<p className={styles.glassCardDesc}>
@@ -199,26 +196,27 @@ export function GlobalHero({
 					</div>
 
 					<div className={`${styles.glassCard} ${styles.glassCardRight}`}>
-						<LiquidGlass
-							className={styles.liquidLayer}
-							style={{
-								position: "absolute",
-								top: "50%",
-								left: "50%",
-								width: "100%",
-								height: "100%",
-							}}
-							cornerRadius={14}
-							blurAmount={0.65}
-							saturation={170}
-							displacementScale={70}
-							aberrationIntensity={2}
-							elasticity={0.15}
-							overLight={lightMode}
-							padding="0"
-						>
-							<span className={styles.liquidLayerContent} aria-hidden="true" />
-						</LiquidGlass>
+						{themeLoaded ? (
+							<LiquidGlass
+								className={styles.liquidLayer}
+								style={{
+									position: "absolute",
+									top: "50%",
+									left: "50%",
+									width: "100%",
+									height: "100%",
+								}}
+								cornerRadius={16}
+								blurAmount={0.75}
+								saturation={165}
+								displacementScale={45}
+								aberrationIntensity={1.4}
+								elasticity={0.12}
+								padding="0"
+							>
+								<span className={styles.liquidLayerContent} aria-hidden="true" />
+							</LiquidGlass>
+						) : null}
 						<div className={styles.glassCardBody}>
 							<p className={styles.glassCardTitle}>In-House Products</p>
 							<p className={styles.glassCardDesc}>
