@@ -1,330 +1,440 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
-import { Globe } from "./Globe";
-import { LeftHand, RightHand } from "./Hands";
+import { useEffect, useRef, useState } from "react";
 import { Icon } from "@/components/icon";
-import styles from "./global-hero.module.css";
-import { SITE_IDENTITY } from "@/lib/site-content";
 import { routeHref } from "@/lib/routes";
+import { Globe } from "./Globe";
+import styles from "./global-hero.module.css";
+import { StageBackdrop } from "./Hands";
 
 /**
- * Global Hero — static alternative hero composition
+ * Global Hero — Reference Recreation Composition
  *
- * Visual departure from the default hero: white/RankRise-blue theme with
- * actual photographic hands extracted from reference asset heroreference.png
- * (OpenCV GrabCut + alpha matting, recolored to RankRise blue rim lighting),
- * cradling a 3D wireframe network globe, glassmorphic navigation, and honest
- * "Book a Demo" CTA that opens the existing inquiry dialog.
+ * Implements the user-approved atmospheric full-viewport hero reference
+ * (heroreference.png) using authentic Figma source layers:
+ * - User-added atmospheric background gradient (Figma node 38:14)
+ * - Separated photographic hands (Figma node 38:5)
+ * - Interactive Canvas 2D illuminated network constellation globe (Figma node 39:3)
+ * - Reference UI composition verified in Figma frame 47:2
  *
- * Source-doc headline/subheadline adapted from report §3.2 and §5.
- * RankRise branding throughout.
- *
- * Accessible, responsive, reduced-motion aware. Static phase (no animation).
+ * Truthful RankRise branding, accessible navigation with native keyboard-operable
+ * Products dropdown, honest inquiry dialog integration, and responsive layout.
  */
 export function GlobalHero({
-  onOpenInquiry,
+	onOpenInquiry,
 }: {
-  onOpenInquiry: (context?: string) => void;
+	onOpenInquiry: (context?: string) => void;
 }) {
-  const heroRef = useRef<HTMLElement>(null);
-  const [isScrolled, setIsScrolled] = useState(false);
+	const heroRef = useRef<HTMLElement>(null);
+	const [mobileOpen, setMobileOpen] = useState(false);
+	const [productsOpen, setProductsOpen] = useState(false);
+	const [lightMode, setLightMode] = useState(true);
+	const productsRef = useRef<HTMLDetailsElement>(null);
+	const themeReady = useRef(false);
 
-  // Glassmorphic header scroll state
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 20);
-    };
-    window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
+	useEffect(() => {
+		const stored = window.localStorage.getItem("rankrise-global-hero-theme");
+		if (stored === "dark") setLightMode(false);
+		themeReady.current = true;
+	}, []);
 
-  // Split H1 into two semantic lines for styling
-  const headlineLines = [
-    "Building Intelligent Software",
-    <span key="highlight" className={styles.headlineHighlight}>
-      for a Smarter Digital World.
-    </span>,
-  ];
+	useEffect(() => {
+		if (themeReady.current) {
+			window.localStorage.setItem("rankrise-global-hero-theme", lightMode ? "light" : "dark");
+		}
+	}, [lightMode]);
 
-  return (
-    <>
-      {/* Glassmorphic Navigation — sticky, accessible */}
-      <header
-        className={`${styles.globalHeader} ${isScrolled ? styles.scrolled : ""}`}
-        role="banner"
-      >
-        <div className={styles.headerInner}>
-          {/* RankRise Wordmark */}
-          <a
-            href={routeHref("/")}
-            className={styles.wordmark}
-            aria-label="RankRise Technologies — Home"
-          >
-            <span className={styles.wordmarkName}>RankRise</span>
-            <span className={styles.wordmarkDescriptor}>Technologies</span>
-          </a>
+	// Close dropdown when clicking outside
+	useEffect(() => {
+		const handleClickOutside = (event: MouseEvent) => {
+			if (
+				productsRef.current &&
+				!productsRef.current.contains(event.target as Node)
+			) {
+				setProductsOpen(false);
+			}
+		};
+		document.addEventListener("click", handleClickOutside);
+		return () => document.removeEventListener("click", handleClickOutside);
+	}, []);
 
-          {/* Desktop Navigation */}
-          <nav className={styles.primaryNav} aria-label="Primary navigation">
-            <ul className={styles.navList}>
-              <li>
-                <a href={routeHref("/")} className={styles.navLink}>
-                  Home
-                </a>
-              </li>
-              <li>
-                <a href={routeHref("/about-us/")} className={styles.navLink}>
-                  About
-                </a>
-              </li>
-              <li>
-                <a href={routeHref("/services/")} className={styles.navLink}>
-                  Services
-                </a>
-              </li>
-              <li>
-                <a href={routeHref("/solutions/")} className={styles.navLink}>
-                  Solutions
-                </a>
-              </li>
-              <li>
-                <a href={routeHref("/products/")} className={styles.navLink}>
-                  Products
-                </a>
-              </li>
-              <li>
-                <a href={routeHref("/technologies/")} className={styles.navLink}>
-                  Technologies
-                </a>
-              </li>
-              <li>
-                <a href={routeHref("/industries/")} className={styles.navLink}>
-                  Industries
-                </a>
-              </li>
-              <li>
-                <a href={routeHref("/insights/")} className={styles.navLink}>
-                  Insights
-                </a>
-              </li>
-            </ul>
-          </nav>
+	// Close mobile menu on Escape key
+	useEffect(() => {
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				setMobileOpen(false);
+				setProductsOpen(false);
+			}
+		};
+		window.addEventListener("keydown", handleKeyDown);
+		return () => window.removeEventListener("keydown", handleKeyDown);
+	}, []);
 
-          {/* Header CTA — "Book a Demo" opens honest inquiry dialog */}
-          <button
-            type="button"
-            className={styles.headerCta}
-            onClick={() => onOpenInquiry("Book a Demo — Global Hero")}
-            aria-haspopup="dialog"
-            aria-controls="preview-dialog"
-          >
-            Book a Demo
-            <Icon name="arrow-up-right" width="16" height="16" aria-hidden="true" />
-          </button>
+	return (
+		<section
+			ref={heroRef}
+			id="home"
+			className={`${styles.heroSection} ${lightMode ? styles.lightMode : styles.darkMode}`}
+			data-section="hero"
+			aria-labelledby="hero-heading"
+		>
+			{/* Atmospheric Background & Photographic Hands Layers */}
+			<StageBackdrop />
 
-          {/* Mobile menu toggle */}
-          <button
-            type="button"
-            className={styles.mobileToggle}
-            aria-expanded="false"
-            aria-controls="mobile-menu"
-            aria-label="Open navigation menu"
-          >
-            <Icon name="menu" width="22" height="22" aria-hidden="true" />
-          </button>
-        </div>
+			{/* Interactive Network Globe Canvas Layer */}
+			<div className={styles.globeLayer}>
+				<Globe lightMode={lightMode} />
+			</div>
 
-        {/* Mobile navigation panel */}
-        <div
-          id="mobile-menu"
-          className={styles.mobileNav}
-          role="navigation"
-          aria-label="Mobile navigation"
-        >
-          <ul className={styles.mobileNavList}>
-            <li>
-              <a href={routeHref("/")} className={styles.mobileNavLink}>
-                Home
-              </a>
-            </li>
-            <li>
-              <a href={routeHref("/about-us/")} className={styles.mobileNavLink}>
-                About
-              </a>
-            </li>
-            <li>
-              <a href={routeHref("/services/")} className={styles.mobileNavLink}>
-                Services
-              </a>
-            </li>
-            <li>
-              <a href={routeHref("/solutions/")} className={styles.mobileNavLink}>
-                Solutions
-              </a>
-            </li>
-            <li>
-              <a href={routeHref("/products/")} className={styles.mobileNavLink}>
-                Products
-              </a>
-            </li>
-            <li>
-              <a href={routeHref("/technologies/")} className={styles.mobileNavLink}>
-                Technologies
-              </a>
-            </li>
-            <li>
-              <a href={routeHref("/industries/")} className={styles.mobileNavLink}>
-                Industries
-              </a>
-            </li>
-            <li>
-              <a href={routeHref("/insights/")} className={styles.mobileNavLink}>
-                Insights
-              </a>
-            </li>
-            <li>
-              <button
-                type="button"
-                className={styles.mobileCta}
-                onClick={() => onOpenInquiry("Book a Demo — Mobile Nav")}
-                aria-haspopup="dialog"
-                aria-controls="preview-dialog"
-              >
-                Book a Demo
-                <Icon name="arrow-up-right" width="16" height="16" aria-hidden="true" />
-              </button>
-            </li>
-          </ul>
-        </div>
-      </header>
+			{/* Floating Top Navigation Header */}
+			<header className={styles.headerBar}>
+				{/* RankRise Brand Wordmark */}
+				<a
+					href={routeHref("/")}
+					className={styles.brandWordmark}
+					aria-label="RankRise Technologies — Home"
+				>
+					<span className={styles.brandName}>RankRise</span>
+					<span className={styles.brandDescriptor}>Technologies</span>
+				</a>
 
-      {/* Hero Section */}
-      <section
-        ref={heroRef}
-        id="home"
-        className={styles.heroSection}
-        data-section="hero"
-        aria-labelledby="hero-heading"
-      >
-        <div className={styles.container}>
-          {/* Centered Copy Section ABOVE Visual */}
-          <div className={styles.heroCopy}>
-            <p className={styles.eyebrow}>
-              <span className={styles.eyebrowDot} aria-hidden="true" />
-              Engineering a connected future
-            </p>
+				{/* Centered Glass Nav Pill (Desktop) */}
+				<nav className={styles.navPill} aria-label="Primary navigation">
+					<ul className={styles.navList}>
+						<li>
+							<a
+								href={routeHref("/")}
+								className={`${styles.navLink} ${styles.navLinkActive}`}
+							>
+								Home
+							</a>
+						</li>
+						<li>
+							<a href={routeHref("/about-us/")} className={styles.navLink}>
+								About
+							</a>
+						</li>
+						<li>
+							<a href={routeHref("/services/")} className={styles.navLink}>
+								Services
+							</a>
+						</li>
+						<li>
+							<a href={routeHref("/solutions/")} className={styles.navLink}>
+								Solutions
+							</a>
+						</li>
+						<li className={styles.navDropdownItem}>
+							<details
+								ref={productsRef}
+								className={styles.navDetails}
+								open={productsOpen}
+								onToggle={(e) =>
+									setProductsOpen((e.target as HTMLDetailsElement).open)
+								}
+							>
+								<summary className={styles.navSummary}>
+									Products
+									<Icon
+										name="chevron-down"
+										width="12"
+										height="12"
+										className={styles.chevronIcon}
+										aria-hidden="true"
+									/>
+								</summary>
+								<div className={styles.navDropdownMenu}>
+									<a
+										href={routeHref("/products/")}
+										className={styles.dropdownOverview}
+										onClick={() => setProductsOpen(false)}
+									>
+										Products Overview
+									</a>
+									<a
+										href={routeHref("/products/trimarkity/")}
+										className={styles.dropdownLink}
+										onClick={() => setProductsOpen(false)}
+									>
+										TriMarkity
+									</a>
+									<a
+										href={routeHref("/products/1socialsnap/")}
+										className={styles.dropdownLink}
+										onClick={() => setProductsOpen(false)}
+									>
+										1SocialSnap
+									</a>
+									<a
+										href={routeHref("/products/salesapp/")}
+										className={styles.dropdownLink}
+										onClick={() => setProductsOpen(false)}
+									>
+										SalesApp
+									</a>
+									<a
+										href={routeHref("/products/hrms/")}
+										className={styles.dropdownLink}
+										onClick={() => setProductsOpen(false)}
+									>
+										HRMS
+									</a>
+								</div>
+							</details>
+						</li>
+						<li>
+							<a href={routeHref("/technologies/")} className={styles.navLink}>
+								Technologies
+							</a>
+						</li>
+						<li>
+							<a href={routeHref("/industries/")} className={styles.navLink}>
+								Industries
+							</a>
+						</li>
+						<li>
+							<a href={routeHref("/insights/")} className={styles.navLink}>
+								Insights
+							</a>
+						</li>
+					</ul>
+				</nav>
 
-            <h1 id="hero-heading" className={styles.headline}>
-              {headlineLines.map((line, i) => (
-                <span key={i} className={styles.headlineLine}>
-                  {line}
-                </span>
-              ))}
-            </h1>
+				{/* Right CTA Button — Book a Demo */}
+				<div className={styles.headerActions}>
+					<button type="button" className={styles.themeToggle} aria-label={`Use ${lightMode ? "dark" : "light"} hero theme`} aria-pressed={lightMode} onClick={() => setLightMode((mode) => !mode)}>
+						{lightMode ? "Dark" : "Light"}
+					</button>
+					<button
+						type="button"
+						className={styles.bookDemoBtn}
+						onClick={() => onOpenInquiry("Book a Demo — Global Hero")}
+						aria-haspopup="dialog"
+						aria-controls="preview-dialog"
+					>
+						Book a Demo
+					</button>
 
-            <p className={styles.description}>
-              {SITE_IDENTITY.heroDescription}
-            </p>
+					{/* Mobile Menu Toggle */}
+					<button
+						type="button"
+						className={styles.mobileToggle}
+						aria-expanded={mobileOpen}
+						aria-controls="mobile-nav-panel"
+						aria-label={
+							mobileOpen ? "Close navigation menu" : "Open navigation menu"
+						}
+						onClick={() => setMobileOpen((open) => !open)}
+					>
+						<Icon
+							name={mobileOpen ? "close" : "menu"}
+							width="20"
+							height="20"
+							aria-hidden="true"
+						/>
+					</button>
+				</div>
+			</header>
 
-            <div className={styles.heroActions}>
-              <a
-                className={`${styles.button} ${styles.buttonPrimary}`}
-                href="#capabilities"
-              >
-                Explore Our Capabilities
-                <Icon name="arrow-right" width="18" height="18" aria-hidden="true" />
-              </a>
-              <button
-                type="button"
-                className={`${styles.button} ${styles.buttonSecondary}`}
-                onClick={() => onOpenInquiry()}
-                aria-haspopup="dialog"
-                aria-controls="preview-dialog"
-              >
-                Discuss Your Project
-                <Icon name="arrow-up-right" width="18" height="18" aria-hidden="true" />
-              </button>
-            </div>
+			{/* Mobile Navigation Panel */}
+			<nav
+				id="mobile-nav-panel"
+				className={`${styles.mobileNav} ${mobileOpen ? styles.mobileNavOpen : ""}`}
+				aria-label="Mobile navigation"
+			>
+				<ul className={styles.mobileNavList}>
+					<li>
+						<a
+							href={routeHref("/")}
+							className={styles.mobileNavLink}
+							onClick={() => setMobileOpen(false)}
+						>
+							Home
+						</a>
+					</li>
+					<li>
+						<a
+							href={routeHref("/about-us/")}
+							className={styles.mobileNavLink}
+							onClick={() => setMobileOpen(false)}
+						>
+							About
+						</a>
+					</li>
+					<li>
+						<a
+							href={routeHref("/services/")}
+							className={styles.mobileNavLink}
+							onClick={() => setMobileOpen(false)}
+						>
+							Services
+						</a>
+					</li>
+					<li>
+						<a
+							href={routeHref("/solutions/")}
+							className={styles.mobileNavLink}
+							onClick={() => setMobileOpen(false)}
+						>
+							Solutions
+						</a>
+					</li>
+					<li className={styles.mobileDropdownItem}>
+						<details className={styles.mobileDetails} open>
+							<summary className={styles.mobileSummary}>
+								Products
+								<Icon
+									name="chevron-down"
+									width="12"
+									height="12"
+									aria-hidden="true"
+								/>
+							</summary>
+							<ul className={styles.mobileSubList}>
+								<li>
+									<a
+										href={routeHref("/products/")}
+										className={styles.mobileSubLink}
+										onClick={() => setMobileOpen(false)}
+									>
+										Products Overview
+									</a>
+								</li>
+								<li>
+									<a
+										href={routeHref("/products/trimarkity/")}
+										className={styles.mobileSubLink}
+										onClick={() => setMobileOpen(false)}
+									>
+										TriMarkity
+									</a>
+								</li>
+								<li>
+									<a
+										href={routeHref("/products/1socialsnap/")}
+										className={styles.mobileSubLink}
+										onClick={() => setMobileOpen(false)}
+									>
+										1SocialSnap
+									</a>
+								</li>
+								<li>
+									<a
+										href={routeHref("/products/salesapp/")}
+										className={styles.mobileSubLink}
+										onClick={() => setMobileOpen(false)}
+									>
+										SalesApp
+									</a>
+								</li>
+								<li>
+									<a
+										href={routeHref("/products/hrms/")}
+										className={styles.mobileSubLink}
+										onClick={() => setMobileOpen(false)}
+									>
+										HRMS
+									</a>
+								</li>
+							</ul>
+						</details>
+					</li>
+					<li>
+						<a
+							href={routeHref("/technologies/")}
+							className={styles.mobileNavLink}
+							onClick={() => setMobileOpen(false)}
+						>
+							Technologies
+						</a>
+					</li>
+					<li>
+						<a
+							href={routeHref("/industries/")}
+							className={styles.mobileNavLink}
+							onClick={() => setMobileOpen(false)}
+						>
+							Industries
+						</a>
+					</li>
+					<li>
+						<a
+							href={routeHref("/insights/")}
+							className={styles.mobileNavLink}
+							onClick={() => setMobileOpen(false)}
+						>
+							Insights
+						</a>
+					</li>
+					<li className={styles.mobileCtaItem}>
+						<button
+							type="button"
+							className={styles.mobileCtaBtn}
+							onClick={() => {
+								setMobileOpen(false);
+								onOpenInquiry("Book a Demo — Mobile Nav");
+							}}
+							aria-haspopup="dialog"
+							aria-controls="preview-dialog"
+						>
+							Book a Demo
+						</button>
+					</li>
+				</ul>
+			</nav>
 
-            <p className={styles.previewNote}>
-              Global Hero variant · Local preview (?hero=global)
-            </p>
-          </div>
+			{/* Upper Center Content (~16% to 38% height) */}
+			<div className={styles.heroContent}>
+				<h1 id="hero-heading" className={styles.headline}>
+					<span className={styles.headlineLine}>
+						Building Intelligent Software
+					</span>
+					<span
+						className={`${styles.headlineLine} ${styles.headlineHighlight}`}
+					>
+						for a Smarter Digital World.
+					</span>
+				</h1>
 
-          {/* Broad Centered Visual — Photographic Hands + Wireframe Globe */}
-          <div className={styles.heroVisualWrapper} aria-hidden="true">
-            <div className={styles.handsGlobeContainer}>
-              {/* Lower-left photographic hand cupping the globe */}
-              <div className={`${styles.handWrapper} ${styles.leftHandWrapper}`}>
-                <LeftHand size={260} />
-              </div>
+				<p className={styles.description}>
+					We engineer custom software, AI-powered solutions and scalable digital
+					products that help businesses innovate, automate and grow.
+				</p>
 
-              {/* Wireframe network globe centered between hands */}
-              <div className={styles.globeWrapper}>
-                <Globe size={380} />
-              </div>
+				<div className={styles.ctaWrapper}>
+					<button
+						type="button"
+						className={styles.startProjectBtn}
+						onClick={() => onOpenInquiry("Start a Project — Global Hero")}
+						aria-haspopup="dialog"
+						aria-controls="preview-dialog"
+					>
+						Start a Project
+					</button>
+				</div>
+			</div>
 
-              {/* Upper-right photographic hand reaching toward the globe */}
-              <div className={`${styles.handWrapper} ${styles.rightHandWrapper}`}>
-                <RightHand size={340} />
-              </div>
+			{/* Lower Flanking Glass Callout Cards */}
+			<div className={styles.cardsContainer}>
+				{/* Left Callout Card */}
+				<div className={`${styles.glassCard} ${styles.glassCardLeft}`}>
+					<p className={styles.glassCardTitle}>AI-Powered Solutions</p>
+					<p className={styles.glassCardDesc}>
+						Custom software, intelligent automation, and scalable cloud
+						architectures.
+					</p>
+				</div>
 
-              {/* Desktop Floating Glass Cards */}
-              <div className={`${styles.glassCard} ${styles.glassCardLeft}`}>
-                <span className={styles.glassCardBadge}>Enterprise Software</span>
-                <p className={styles.glassCardTitle}>Intelligent Solutions</p>
-                <p className={styles.glassCardDesc}>
-                  Scalable architecture engineered for end-to-end delivery.
-                </p>
-              </div>
-
-              <div className={`${styles.glassCard} ${styles.glassCardRight}`}>
-                <span className={styles.glassCardBadge}>In-House Products</span>
-                <p className={styles.glassCardTitle}>4 Software Platforms</p>
-                <p className={styles.glassCardDesc}>
-                  TriMarkity, 1SocialSnap, SalesApp, and HRMS.
-                </p>
-              </div>
-            </div>
-
-            {/* Mobile Stacked Feature Cards (rendered cleanly below visual on mobile) */}
-            <div className={styles.mobileCardsRow}>
-              <div className={styles.mobileCard}>
-                <span className={styles.glassCardBadge}>Enterprise Software</span>
-                <p className={styles.glassCardTitle}>Intelligent Solutions</p>
-                <p className={styles.glassCardDesc}>
-                  Scalable architecture engineered for end-to-end delivery.
-                </p>
-              </div>
-              <div className={styles.mobileCard}>
-                <span className={styles.glassCardBadge}>In-House Products</span>
-                <p className={styles.glassCardTitle}>4 Software Platforms</p>
-                <p className={styles.glassCardDesc}>
-                  TriMarkity, 1SocialSnap, SalesApp, and HRMS.
-                </p>
-              </div>
-            </div>
-          </div>
-
-          {/* Pillar strip — four brand pillars */}
-          <ul className={styles.pillarStrip} aria-label="Our four pillars">
-            {[
-              "Software Engineering",
-              "AI & Innovation",
-              "In-house Products",
-              "Digital Transformation",
-            ].map((pillar, index) => (
-              <li key={pillar}>
-                <span aria-hidden="true">0{index + 1}</span>
-                {pillar}
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-    </>
-  );
+				{/* Right Callout Card */}
+				<div className={`${styles.glassCard} ${styles.glassCardRight}`}>
+					<p className={styles.glassCardTitle}>In-House Products</p>
+					<p className={styles.glassCardDesc}>
+						TriMarkity, 1SocialSnap, SalesApp, and HRMS enterprise suite.
+					</p>
+				</div>
+			</div>
+		</section>
+	);
 }
 
 export default GlobalHero;

@@ -1,3 +1,11 @@
-export { GlobalHero } from "./GlobalHero";
+import { GlobalHero } from "./GlobalHero";
+
 export { Globe } from "./Globe";
-export { LeftHand, RightHand } from "./Hands";
+export {
+	LeftHand,
+	PhotographicHands,
+	RightHand,
+	StageBackdrop,
+} from "./Hands";
+export { GlobalHero };
+export default GlobalHero;

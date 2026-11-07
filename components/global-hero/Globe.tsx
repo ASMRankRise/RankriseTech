@@ -1,336 +1,392 @@
 "use client";
 
+import { useEffect, useRef } from "react";
 import styles from "./global-hero.module.css";
 
-interface GlobeProps {
-  className?: string;
-  size?: number;
+/**
+ * Interactive Globe Canvas
+ *
+ * Source: Figma node 39:3 ("Interactive Globe" CODE LAYER)
+ * Provenance: file://figma/code-layer/source/1Tn73UkZNQHqCTkKXqYiGk/39%3A3/src/App.tsx
+ *
+ * Geometry:
+ * - At 1024x768: Center (512, 534), radius 168 (diameter 336)
+ * - Ratio-scaled responsively: centerX = width * 0.5, centerY = height * (534/768), radius = height * (168/768)
+ * - 280-point Fibonacci sphere with 3D projection, depth perspective, and spatial connections
+ * - 150 orbit particles with dynamic depth waves, orbital velocity, and celestial glow
+ * - Drag-to-rotate interaction with pointer capture and inertia damping
+ * - Scroll-wheel zoom with bounded range [0.78, 1.24]
+ * - Accessible reduced-motion handling
+ */
+
+type Point3D = {
+	x: number;
+	y: number;
+	z: number;
+	size: number;
+	pulse: number;
+};
+
+type OrbitParticle = {
+	angle: number;
+	distance: number;
+	speed: number;
+	size: number;
+	depth: number;
+	opacity: number;
+};
+
+const TAU = Math.PI * 2;
+
+function seededRandom(seed: number) {
+	let value = seed >>> 0;
+	return () => {
+		value = (value * 1664525 + 1013904223) >>> 0;
+		return value / 4294967296;
+	};
 }
 
-/**
- * Static Wireframe Network Globe component
- *
- * Faithfully mirrors the reference composition: an interconnected, glowing
- * 3D wireframe constellation globe with latitude/longitude rings, network
- * vertices, and global enterprise delivery hubs.
- *
- * Corrected from the previous flawed implementation which rendered a literal
- * door key from misinterpreting "globe is key" (essential/foundational).
- *
- * Built with pure accessible SVG using RankRise brand blue palette tokens.
- */
-export function Globe({ className = "", size = 360 }: GlobeProps) {
-  // Constellation network nodes projected onto sphere surface (r = 135)
-  // Projected (x, y) coordinates on a 360x360 viewBox centered at (180, 180)
-  const nodes = [
-    { id: "na-w", x: 105, y: 155, r: 3.5, label: "North America", hub: true },
-    { id: "na-e", x: 145, y: 140, r: 3 },
-    { id: "na-s", x: 130, y: 185, r: 2.5 },
-    { id: "uk", x: 188, y: 122, r: 3.5, label: "United Kingdom", hub: true },
-    { id: "eu-c", x: 215, y: 138, r: 3, label: "Europe", hub: true },
-    { id: "eu-s", x: 205, y: 165, r: 2.5 },
-    { id: "me", x: 235, y: 175, r: 3 },
-    { id: "in", x: 258, y: 195, r: 3.5, label: "Asia Hub", hub: true },
-    { id: "ea", x: 285, y: 165, r: 3 },
-    { id: "ap", x: 275, y: 220, r: 2.5 },
-    { id: "sa-n", x: 140, y: 225, r: 3 },
-    { id: "sa-s", x: 155, y: 260, r: 2.5 },
-    { id: "af-w", x: 185, y: 205, r: 2.5 },
-    { id: "af-e", x: 220, y: 225, r: 2.5 },
-    { id: "arc", x: 180, y: 65, r: 2 },
-    { id: "ant", x: 180, y: 300, r: 2 },
-    // Intermediate mesh points
-    { id: "m1", x: 120, y: 115, r: 2 },
-    { id: "m2", x: 160, y: 100, r: 2 },
-    { id: "m3", x: 240, y: 110, r: 2 },
-    { id: "m4", x: 260, y: 135, r: 2 },
-    { id: "m5", x: 165, y: 165, r: 2 },
-    { id: "m6", x: 175, y: 245, r: 2 },
-    { id: "m7", x: 245, y: 255, r: 2 },
-    { id: "m8", x: 95, y: 195, r: 2 },
-    { id: "m9", x: 110, y: 235, r: 2 },
-    { id: "m10", x: 295, y: 195, r: 2 },
-  ];
+function createSphere() {
+	const random = seededRandom(3846);
+	const points: Point3D[] = [];
+	const count = 280;
+	const goldenAngle = Math.PI * (3 - Math.sqrt(5));
 
-  // Interconnecting constellation edges
-  const edges: [string, string][] = [
-    ["na-w", "na-e"],
-    ["na-w", "na-s"],
-    ["na-w", "m1"],
-    ["na-w", "m8"],
-    ["na-e", "uk"],
-    ["na-e", "m2"],
-    ["na-e", "m5"],
-    ["na-s", "sa-n"],
-    ["na-s", "m5"],
-    ["m8", "m9"],
-    ["m9", "sa-n"],
-    ["sa-n", "sa-s"],
-    ["sa-n", "af-w"],
-    ["uk", "eu-c"],
-    ["uk", "m2"],
-    ["uk", "arc"],
-    ["m2", "arc"],
-    ["eu-c", "eu-s"],
-    ["eu-c", "m3"],
-    ["eu-c", "m4"],
-    ["m3", "m4"],
-    ["m3", "arc"],
-    ["m4", "ea"],
-    ["eu-s", "me"],
-    ["eu-s", "af-w"],
-    ["me", "in"],
-    ["me", "af-e"],
-    ["in", "ea"],
-    ["in", "ap"],
-    ["ea", "m10"],
-    ["m10", "ap"],
-    ["af-w", "af-e"],
-    ["af-w", "m6"],
-    ["af-e", "m7"],
-    ["m6", "ant"],
-    ["m7", "ant"],
-    ["sa-s", "ant"],
-    ["ap", "m7"],
-    ["m5", "af-w"],
-    ["m5", "eu-s"],
-  ];
+	for (let index = 0; index < count; index += 1) {
+		const y = 1 - (index / (count - 1)) * 2;
+		const radial = Math.sqrt(1 - y * y);
+		const angle = goldenAngle * index + (random() - 0.5) * 0.14;
+		const unevenRadius = 0.91 + random() * 0.12;
 
-  const nodeMap = new Map(nodes.map((n) => [n.id, n]));
+		points.push({
+			x: Math.cos(angle) * radial * unevenRadius,
+			y: (y + (random() - 0.5) * 0.035) * unevenRadius,
+			z: Math.sin(angle) * radial * unevenRadius,
+			size: 0.55 + random() * 1.65,
+			pulse: random() * TAU,
+		});
+	}
 
-  return (
-    <svg
-      className={`${styles.globe} ${className}`}
-      width={size}
-      height={size}
-      viewBox="0 0 360 360"
-      fill="none"
-      xmlns="http://www.w3.org/2000/svg"
-      role="img"
-      aria-label="Worldwide wireframe network globe representing global software engineering and delivery capability"
-    >
-      <defs>
-        {/* Core sphere radial gradient — elegant white/blue illumination */}
-        <radialGradient id="globeCoreGlow" cx="45%" cy="40%" r="60%">
-          <stop offset="0%" stopColor="#FFFFFF" stopOpacity="0.95" />
-          <stop offset="35%" stopColor="#E0F2FE" stopOpacity="0.75" />
-          <stop offset="70%" stopColor="#BAE6FD" stopOpacity="0.35" />
-          <stop offset="100%" stopColor="#0284C7" stopOpacity="0.08" />
-        </radialGradient>
+	const connections: Array<[number, number]> = [];
+	points.forEach((point, index) => {
+		const nearby = points
+			.map((candidate, candidateIndex) => ({
+				index: candidateIndex,
+				distance:
+					(point.x - candidate.x) ** 2 +
+					(point.y - candidate.y) ** 2 +
+					(point.z - candidate.z) ** 2,
+			}))
+			.filter((candidate) => candidate.index > index)
+			.sort((a, b) => a.distance - b.distance)
+			.slice(0, 3);
 
-        {/* Atmosphere outer rim glow */}
-        <radialGradient id="atmoGlow" cx="50%" cy="50%" r="50%">
-          <stop offset="75%" stopColor="#38BDF8" stopOpacity="0" />
-          <stop offset="92%" stopColor="#0284C7" stopOpacity="0.25" />
-          <stop offset="100%" stopColor="#0066CC" stopOpacity="0.45" />
-        </radialGradient>
+		nearby.forEach((candidate) => {
+			if (candidate.distance < 0.105) connections.push([index, candidate.index]);
+		});
+	});
 
-        {/* Node pulse glow filter */}
-        <filter id="nodeGlow" x="-50%" y="-50%" width="200%" height="200%">
-          <feGaussianBlur in="SourceGraphic" stdDeviation="2.5" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
+	return { points, connections };
+}
 
-        {/* Atmospheric outer glow */}
-        <filter id="haloGlow" x="-30%" y="-30%" width="160%" height="160%">
-          <feGaussianBlur stdDeviation="8" result="blur" />
-          <feMerge>
-            <feMergeNode in="blur" />
-            <feMergeNode in="SourceGraphic" />
-          </feMerge>
-        </filter>
-      </defs>
+function createOrbitParticles() {
+	const random = seededRandom(9301);
+	return Array.from(
+		{ length: 150 },
+		(): OrbitParticle => ({
+			angle: random() * TAU,
+			distance: 1.1 + random() * 1.48,
+			speed: (0.025 + random() * 0.085) * (random() > 0.18 ? 1 : -1),
+			size: 0.45 + random() ** 2 * 5,
+			depth: random() * TAU,
+			opacity: 0.12 + random() * 0.68,
+		}),
+	);
+}
 
-      {/* Atmospheric outer aura */}
-      <circle
-        cx="180"
-        cy="180"
-        r="142"
-        fill="none"
-        stroke="#38BDF8"
-        strokeWidth="1.5"
-        strokeOpacity="0.3"
-        filter="url(#haloGlow)"
-      />
+interface GlobeProps {
+	className?: string;
+	lightMode?: boolean;
+}
 
-      {/* Outer boundary sphere ring */}
-      <circle
-        cx="180"
-        cy="180"
-        r="135"
-        fill="url(#globeCoreGlow)"
-        stroke="#0284C7"
-        strokeWidth="1.2"
-        strokeOpacity="0.5"
-      />
-      <circle
-        cx="180"
-        cy="180"
-        r="135"
-        fill="url(#atmoGlow)"
-      />
+export function Globe({ className = "", lightMode = false }: GlobeProps) {
+	const canvasRef = useRef<HTMLCanvasElement>(null);
 
-      {/* Latitude Rings (perspective tilted 15 degrees) */}
-      <g stroke="#0284C7" strokeOpacity="0.22" strokeWidth="0.8" fill="none">
-        {/* Equator */}
-        <ellipse cx="180" cy="180" rx="135" ry="38" transform="rotate(-8 180 180)" />
-        {/* Tropic of Cancer / North latitudes */}
-        <ellipse cx="180" cy="135" rx="122" ry="32" transform="rotate(-8 180 135)" />
-        <ellipse cx="180" cy="98" rx="98" ry="24" transform="rotate(-8 180 98)" />
-        <ellipse cx="180" cy="68" rx="64" ry="16" transform="rotate(-8 180 68)" />
-        {/* Tropic of Capricorn / South latitudes */}
-        <ellipse cx="180" cy="225" rx="122" ry="32" transform="rotate(-8 180 225)" />
-        <ellipse cx="180" cy="262" rx="98" ry="24" transform="rotate(-8 180 262)" />
-        <ellipse cx="180" cy="292" rx="64" ry="16" transform="rotate(-8 180 292)" />
-      </g>
+	useEffect(() => {
+		const canvas = canvasRef.current;
+		if (!canvas) return;
 
-      {/* Longitude Arcs */}
-      <g stroke="#0284C7" strokeOpacity="0.18" strokeWidth="0.8" fill="none">
-        {/* Prime meridian and secondary meridians */}
-        <ellipse cx="180" cy="180" rx="36" ry="135" transform="rotate(8 180 180)" />
-        <ellipse cx="180" cy="180" rx="75" ry="135" transform="rotate(8 180 180)" />
-        <ellipse cx="180" cy="180" rx="112" ry="135" transform="rotate(8 180 180)" />
-        {/* Central vertical axis */}
-        <line x1="180" y1="45" x2="180" y2="315" stroke="#0066CC" strokeOpacity="0.12" strokeDasharray="3 3" />
-      </g>
+		const context = canvas.getContext("2d");
+		if (!context) return;
 
-      {/* Constellation Network Mesh Edges */}
-      <g stroke="#0284C7" strokeOpacity="0.45" strokeWidth="1.1">
-        {edges.map(([fromId, toId], idx) => {
-          const from = nodeMap.get(fromId);
-          const to = nodeMap.get(toId);
-          if (!from || !to) return null;
-          return (
-            <line
-              key={`edge-${idx}`}
-              x1={from.x}
-              y1={from.y}
-              x2={to.x}
-              y2={to.y}
-              strokeOpacity={idx % 3 === 0 ? "0.65" : "0.35"}
-              stroke="#0284C7"
-            />
-          );
-        })}
-      </g>
+		const { points, connections } = createSphere();
+		const particles = createOrbitParticles();
+		let frameId = 0;
+		let width = 0;
+		let height = 0;
+		let pixelRatio = 1;
+		let rotationX = -0.08;
+		let rotationY = 0.1;
+		let targetRotationX = rotationX;
+		let targetRotationY = rotationY;
+		let zoom = 1;
+		let targetZoom = 1;
+		let dragging = false;
+		let pointerX = 0;
+		let pointerY = 0;
+		let lastPointerX = 0;
+		let lastPointerY = 0;
+		let lastInteraction = 0;
 
-      {/* Constellation Network Mesh Nodes */}
-      <g filter="url(#nodeGlow)">
-        {nodes.map((node) => {
-          const isHub = !!node.hub;
-          return (
-            <g key={node.id}>
-              {/* Outer pulse ring for major hubs */}
-              {isHub && (
-                <circle
-                  cx={node.x}
-                  cy={node.y}
-                  r={node.r * 2.2}
-                  fill="#38BDF8"
-                  fillOpacity="0.2"
-                />
-              )}
-              {/* Node core */}
-              <circle
-                cx={node.x}
-                cy={node.y}
-                r={node.r}
-                fill={isHub ? "#FFFFFF" : "#38BDF8"}
-                stroke="#0066CC"
-                strokeWidth={isHub ? "1.5" : "0.8"}
-              />
-            </g>
-          );
-        })}
-      </g>
+		const prefersReducedMotion = window.matchMedia(
+			"(prefers-reduced-motion: reduce)",
+		).matches;
 
-      {/* Global Hub Badges — styled like reference cards */}
-      <g fontSize="10" fontFamily="system-ui, -apple-system, sans-serif" fontWeight="500">
-        {/* North America badge */}
-        <g transform="translate(48, 140)">
-          <rect
-            x="0"
-            y="0"
-            width="82"
-            height="20"
-            rx="10"
-            fill="#FFFFFF"
-            fillOpacity="0.9"
-            stroke="#0284C7"
-            strokeWidth="0.8"
-            filter="drop-shadow(0 2px 4px rgba(2, 132, 199, 0.15))"
-          />
-          <circle cx="10" cy="10" r="3" fill="#0066CC" />
-          <text x="18" y="13.5" fill="#0A2540">
-            N. America
-          </text>
-        </g>
+		const resize = () => {
+			const bounds = canvas.getBoundingClientRect();
+			width = bounds.width;
+			height = bounds.height;
+			pixelRatio = Math.min(window.devicePixelRatio || 1, 2);
+			canvas.width = Math.round(width * pixelRatio);
+			canvas.height = Math.round(height * pixelRatio);
+			context.setTransform(pixelRatio, 0, 0, pixelRatio, 0, 0);
+		};
 
-        {/* United Kingdom badge */}
-        <g transform="translate(192, 105)">
-          <rect
-            x="0"
-            y="0"
-            width="80"
-            height="20"
-            rx="10"
-            fill="#FFFFFF"
-            fillOpacity="0.9"
-            stroke="#0284C7"
-            strokeWidth="0.8"
-            filter="drop-shadow(0 2px 4px rgba(2, 132, 199, 0.15))"
-          />
-          <circle cx="10" cy="10" r="3" fill="#0066CC" />
-          <text x="18" y="13.5" fill="#0A2540">
-            United Kingdom
-          </text>
-        </g>
+		const rotatePoint = (point: Point3D) => {
+			const cosY = Math.cos(rotationY);
+			const sinY = Math.sin(rotationY);
+			const x1 = point.x * cosY - point.z * sinY;
+			const z1 = point.x * sinY + point.z * cosY;
+			const cosX = Math.cos(rotationX);
+			const sinX = Math.sin(rotationX);
 
-        {/* Europe Hub badge */}
-        <g transform="translate(225, 142)">
-          <rect
-            x="0"
-            y="0"
-            width="62"
-            height="20"
-            rx="10"
-            fill="#FFFFFF"
-            fillOpacity="0.9"
-            stroke="#0284C7"
-            strokeWidth="0.8"
-            filter="drop-shadow(0 2px 4px rgba(2, 132, 199, 0.15))"
-          />
-          <circle cx="10" cy="10" r="3" fill="#0066CC" />
-          <text x="18" y="13.5" fill="#0A2540">
-            Europe
-          </text>
-        </g>
+			return {
+				x: x1,
+				y: point.y * cosX - z1 * sinX,
+				z: point.y * sinX + z1 * cosX,
+			};
+		};
 
-        {/* Asia Pacific badge */}
-        <g transform="translate(230, 235)">
-          <rect
-            x="0"
-            y="0"
-            width="72"
-            height="20"
-            rx="10"
-            fill="#FFFFFF"
-            fillOpacity="0.9"
-            stroke="#0284C7"
-            strokeWidth="0.8"
-            filter="drop-shadow(0 2px 4px rgba(2, 132, 199, 0.15))"
-          />
-          <circle cx="10" cy="10" r="3" fill="#0066CC" />
-          <text x="18" y="13.5" fill="#0A2540">
-            Asia Hub
-          </text>
-        </g>
-      </g>
-    </svg>
-  );
+		const draw = (timestamp: number) => {
+			const time = timestamp / 1000;
+			const isMobile = width < 768;
+
+			// Exact target geometry: At 1024x768 -> Center (512, 534), radius 168 (diam 336)
+			const centerX = width * 0.5;
+			const centerY = isMobile ? height * 0.62 : height * (534 / 768);
+			const baseRadius = isMobile
+				? Math.min(width, height) * 0.25
+				: height * (168 / 768);
+			const radius = baseRadius * zoom;
+
+			if (!prefersReducedMotion && !dragging && timestamp - lastInteraction > 900) {
+				targetRotationY += 0.0019;
+			}
+			rotationX += (targetRotationX - rotationX) * 0.075;
+			rotationY += (targetRotationY - rotationY) * 0.075;
+			zoom += (targetZoom - zoom) * 0.08;
+
+			context.clearRect(0, 0, width, height);
+
+			// Atmospheric Glow scaled to target radius
+			const atmosphericGlow = context.createRadialGradient(
+				centerX,
+				centerY,
+				radius * 0.1,
+				centerX,
+				centerY,
+				radius * 1.6,
+			);
+			atmosphericGlow.addColorStop(0, "rgba(172, 205, 235, 0.22)");
+			atmosphericGlow.addColorStop(0.42, "rgba(104, 145, 181, 0.1)");
+			atmosphericGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
+			context.fillStyle = atmosphericGlow;
+			context.fillRect(
+				centerX - radius * 1.6,
+				centerY - radius * 1.6,
+				radius * 3.2,
+				radius * 3.2,
+			);
+
+			// Orbiting ambient particles
+			particles.forEach((particle) => {
+				const orbitAngle = particle.angle + time * particle.speed;
+				const depthWave = Math.sin(
+					particle.depth + time * particle.speed * 1.8,
+				);
+				const x =
+					centerX +
+					Math.cos(orbitAngle) * particle.distance * radius +
+					Math.sin(particle.depth) * radius * 0.14;
+				const y =
+					centerY +
+					Math.sin(orbitAngle) * particle.distance * radius * 0.55 +
+					depthWave * radius * 0.15;
+				const depth = 0.45 + depthWave * 0.55;
+				const particleSize = particle.size * (0.58 + depth * 0.72);
+
+				context.beginPath();
+				context.arc(x, y, particleSize, 0, TAU);
+				context.fillStyle = lightMode
+					? `rgba(31, 119, 198, ${particle.opacity * (0.18 + depth * 0.48)})`
+					: `rgba(220, 234, 247, ${particle.opacity * (0.18 + depth * 0.52)})`;
+				context.shadowColor = lightMode ? "rgba(71, 158, 230, 0.45)" : "rgba(200, 225, 247, 0.62)";
+				context.shadowBlur = particleSize > 2 ? particleSize * 2.5 : 0;
+				context.fill();
+			});
+			context.shadowBlur = 0;
+
+			// Projected 3D sphere points
+			const projected = points.map((point) => {
+				const rotated = rotatePoint(point);
+				const perspective = 3.25 / (3.25 - rotated.z);
+				return {
+					...point,
+					x2d: centerX + rotated.x * radius * perspective,
+					y2d: centerY + rotated.y * radius * perspective,
+					z2d: rotated.z,
+					perspective,
+				};
+			});
+
+			// Wireframe connection lines
+			connections.forEach(([startIndex, endIndex]) => {
+				const start = projected[startIndex];
+				const end = projected[endIndex];
+				const depth = (start.z2d + end.z2d) * 0.5;
+				const alpha = Math.max(0.08, 0.2 + depth * 0.28);
+
+				context.beginPath();
+				context.moveTo(start.x2d, start.y2d);
+				context.lineTo(end.x2d, end.y2d);
+				context.strokeStyle = lightMode
+					? `rgba(30, 114, 187, ${alpha * 1.08})`
+					: `rgba(225, 240, 252, ${alpha})`;
+				context.lineWidth = depth > 0.35 ? 0.72 : 0.42;
+				context.stroke();
+			});
+
+			// Glowing nodes
+			projected
+				.sort((a, b) => a.z2d - b.z2d)
+				.forEach((point) => {
+					const depth = (point.z2d + 1) / 2;
+					const pulse = 0.78 + Math.sin(time * 2.1 + point.pulse) * 0.22;
+					const size = point.size * point.perspective * (0.66 + depth * 0.64);
+
+					context.beginPath();
+					context.arc(point.x2d, point.y2d, Math.max(0.42, size), 0, TAU);
+					context.fillStyle = lightMode
+						? `rgba(22, 103, 176, ${0.32 + depth * 0.64})`
+						: `rgba(241, 248, 255, ${0.3 + depth * 0.66})`;
+					context.shadowColor = lightMode ? "rgba(77, 166, 239, 0.72)" : "rgba(210, 235, 255, 0.95)";
+					context.shadowBlur = depth > 0.55 ? size * 3.8 * pulse : 0;
+					context.fill();
+				});
+			context.shadowBlur = 0;
+
+			// Glowing Rim Gradient
+			const rim = context.createRadialGradient(
+				centerX - radius * 0.18,
+				centerY - radius * 0.22,
+				radius * 0.68,
+				centerX,
+				centerY,
+				radius * 1.08,
+			);
+			rim.addColorStop(0, "rgba(255, 255, 255, 0)");
+			rim.addColorStop(0.84, "rgba(205, 230, 249, 0.03)");
+			rim.addColorStop(0.93, "rgba(224, 240, 253, 0.15)");
+			rim.addColorStop(1, "rgba(255, 255, 255, 0)");
+			context.fillStyle = rim;
+			context.beginPath();
+			context.arc(centerX, centerY, radius * 1.08, 0, TAU);
+			context.fill();
+
+			if (!prefersReducedMotion) {
+				frameId = requestAnimationFrame(draw);
+			}
+		};
+
+		const handlePointerDown = (event: PointerEvent) => {
+			if (prefersReducedMotion) return;
+			dragging = true;
+			lastPointerX = event.clientX;
+			lastPointerY = event.clientY;
+			lastInteraction = performance.now();
+			canvas.setPointerCapture(event.pointerId);
+			canvas.classList.add(styles.isDragging);
+		};
+
+		const handlePointerMove = (event: PointerEvent) => {
+			if (prefersReducedMotion) return;
+			const bounds = canvas.getBoundingClientRect();
+			pointerX = (event.clientX - bounds.left) / bounds.width - 0.5;
+			pointerY = (event.clientY - bounds.top) / bounds.height - 0.5;
+
+			if (dragging) {
+				targetRotationY += (event.clientX - lastPointerX) * 0.009;
+				targetRotationX = Math.max(
+					-1.15,
+					Math.min(1.15, targetRotationX + (event.clientY - lastPointerY) * 0.009),
+				);
+				lastPointerX = event.clientX;
+				lastPointerY = event.clientY;
+				lastInteraction = performance.now();
+			} else {
+				targetRotationY += pointerX * 0.0008;
+				targetRotationX += (pointerY * 0.16 - targetRotationX) * 0.008;
+			}
+		};
+
+		const handlePointerUp = (event: PointerEvent) => {
+			dragging = false;
+			lastInteraction = performance.now();
+			if (canvas.hasPointerCapture(event.pointerId)) {
+				canvas.releasePointerCapture(event.pointerId);
+			}
+			canvas.classList.remove(styles.isDragging);
+		};
+
+		const handleWheel = (event: WheelEvent) => {
+			if (prefersReducedMotion) return;
+			event.preventDefault();
+			targetZoom = Math.max(
+				0.78,
+				Math.min(1.24, targetZoom - event.deltaY * 0.0007),
+			);
+			lastInteraction = performance.now();
+		};
+
+		const observer = new ResizeObserver(resize);
+		observer.observe(canvas);
+		resize();
+		frameId = requestAnimationFrame(draw);
+
+		canvas.addEventListener("pointerdown", handlePointerDown);
+		canvas.addEventListener("pointermove", handlePointerMove);
+		canvas.addEventListener("pointerup", handlePointerUp);
+		canvas.addEventListener("pointercancel", handlePointerUp);
+		canvas.addEventListener("wheel", handleWheel, { passive: false });
+
+		return () => {
+			cancelAnimationFrame(frameId);
+			observer.disconnect();
+			canvas.removeEventListener("pointerdown", handlePointerDown);
+			canvas.removeEventListener("pointermove", handlePointerMove);
+			canvas.removeEventListener("pointerup", handlePointerUp);
+			canvas.removeEventListener("pointercancel", handlePointerUp);
+			canvas.removeEventListener("wheel", handleWheel);
+		};
+	}, []);
+
+	return (
+		<canvas
+			ref={canvasRef}
+			className={`${styles.globeCanvas} ${className}`}
+			aria-label="Interactive illuminated network constellation globe. Drag to rotate and scroll to zoom."
+		/>
+	);
 }
 
 export default Globe;

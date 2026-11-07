@@ -3,87 +3,64 @@
 import Image from "next/image";
 import styles from "./global-hero.module.css";
 
-interface HandProps {
-  className?: string;
-  side?: "left" | "right";
-  size?: number;
-  width?: number;
-  height?: number;
+/**
+ * Photographic Hands & Atmospheric Stage Backdrop
+ *
+ * Sourced directly from Figma:
+ * - Gradient: node 38:14 (/images/global-hero/figma-gradient-38-14.png)
+ * - Separated Hands: node 38:5 (/images/global-hero/figma-hands-38-5.png)
+ *
+ * Geometric Alignment:
+ * - Hands aspect ratio: 2752x1536 (1.791666...)
+ * - At 1024px viewport width: width 1024px, height 572px anchored to BOTTOM
+ * - Upper right entry near y: 305, lower left entry near y: 730
+ * - Multiply blend mode integrates authentic photographic hands into the user gradient.
+ */
+
+export function StageBackdrop({ className = "" }: { className?: string }) {
+	return (
+		<div
+			className={`${styles.stageBackdropWrapper} ${className}`}
+			aria-hidden="true"
+		>
+			{/* 1. Base User-Added Gradient from Figma node 38:14 (Full Bleed) */}
+			<Image
+				src="/images/global-hero/figma-gradient-38-14.png"
+				alt=""
+				fill
+				priority
+				sizes="100vw"
+				className={styles.stageGradient}
+			/>
+
+			{/* 2. Photographic Hands from Figma node 38:5 (Anchored to lower stage) */}
+			<div className={styles.handsImageWrapper}>
+				<Image
+					 src="/images/global-hero/figma-export-hands-863bd.png"
+					alt=""
+					fill
+					priority
+					sizes="(max-width: 1024px) 100vw, 1024px"
+					className={styles.stageHands}
+				/>
+			</div>
+
+			{/* 3. Cinematic Edge Vignette */}
+			<div className={styles.edgeVignette} />
+		</div>
+	);
 }
 
-/**
- * Photographic Hand Component — Lower-Left Hand
- *
- * Extracted directly from reference asset heroreference.png using OpenCV GrabCut
- * polygon segmentation, edge matting, and recolored from orange rim to RankRise
- * brand blue without altering the photographic form.
- *
- * Positioned in lower-left cupping the globe.
- */
-export function LeftHand({ className = "", size = 240, width, height }: HandProps) {
-  const h = height ?? size;
-  const w = width ?? Math.round((h * 196) / 206);
-
-  return (
-    <div
-      className={`${styles.photographicHand} ${styles.handLowerLeft} ${className}`}
-      role="img"
-      aria-label="Lower-left human hand cradling the global network"
-    >
-      <Image
-        src="/images/global-hero/hand-lower-left.png"
-        alt="Lower-left human hand cradling the global network"
-        width={w}
-        height={h}
-        className={styles.handImage}
-        priority
-      />
-    </div>
-  );
+export function LeftHand(_props?: { className?: string }) {
+	return null;
 }
 
-/**
- * Photographic Hand Component — Upper-Right Hand
- *
- * Extracted directly from reference asset heroreference.png using OpenCV GrabCut
- * polygon segmentation, edge matting, and recolored from orange rim to RankRise
- * brand blue without altering the photographic form.
- *
- * Positioned in upper-right reaching toward the globe.
- */
-export function RightHand({ className = "", size = 340, width, height }: HandProps) {
-  const w = width ?? size;
-  const h = height ?? Math.round((w * 191) / 357);
-
-  return (
-    <div
-      className={`${styles.photographicHand} ${styles.handUpperRight} ${className}`}
-      role="img"
-      aria-label="Upper-right human hand reaching toward the global network"
-    >
-      <Image
-        src="/images/global-hero/hand-upper-right.png"
-        alt="Upper-right human hand reaching toward the global network"
-        width={w}
-        height={h}
-        className={styles.handImage}
-        priority
-      />
-    </div>
-  );
+export function RightHand(_props?: { className?: string }) {
+	return null;
 }
 
-/**
- * Combined Photographic Hands Component
- * Convenience export rendering both exact photographic hands around the globe.
- */
 export function PhotographicHands({ className = "" }: { className?: string }) {
-  return (
-    <>
-      <LeftHand className={className} />
-      <RightHand className={className} />
-    </>
-  );
+	return <StageBackdrop className={className} />;
 }
 
-export default PhotographicHands;
+export default StageBackdrop;
