@@ -2,12 +2,12 @@ import { CONSTRUCTION_COPY } from "@/lib/site-content";
 import { routeHref, type UnderConstructionRoute } from "@/lib/routes";
 import { Icon } from "./icon";
 import { SiteFooter } from "./site-footer";
-import { SiteNavigation } from "./site-navigation";
+import { SiteHeader } from "./site-header";
 
 export function UnderConstruction({ route }: { route: UnderConstructionRoute }) {
   return (
     <>
-      <SiteNavigation />
+      <SiteHeader activePath={routeHref(route.path)} />
       <main id="main-content" className="construction-page" aria-labelledby="construction-heading">
         <div className="container construction-layout">
           <div className="construction-copy">

@@ -1,90 +1,73 @@
-/* Global Hero Module — Reference UI Exact Geometry Recreation */
+/* Global Hero — brand-blue atmospheric stage */
 
 .heroSection {
 	position: relative;
 	width: 100%;
+	min-height: 720px;
 	height: 100vh;
 	height: 100dvh;
-	min-height: 768px;
 	overflow: hidden;
-	background: #061523;
+	background: #020713;
 	color: #ffffff;
 	display: flex;
-	flex-direction: column;
 	align-items: center;
-	justify-content: flex-start;
+	justify-content: center;
 	isolation: isolate;
+
+	/* Motion hooks */
+	--hero-parallax: 0px;
+	--hero-hands-parallax: 0px;
+	--hero-cards-parallax: 0px;
+	--globe-cursor-x: 0px;
+	--globe-cursor-y: 0px;
+
+	/* Translucent blue glass */
+	--glass-fill: rgba(8, 24, 48, 0.46);
+	--glass-rim: rgba(255, 255, 255, 0.22);
+	--glass-blur: 24px;
+	--glass-shadow: 0 16px 36px rgba(0, 0, 0, 0.36), 0 2px 8px rgba(0, 0, 0, 0.2);
+	--glass-highlight: rgba(255, 255, 255, 0.3);
 }
 
-.lightMode { background: #f8fcff; color: #0a2944; }
-.lightMode .stageGradient { opacity: 0; }
-.lightMode .stageHands { filter: none; mix-blend-mode: multiply; }
-.lightMode .handsImageWrapper {
-	 width: 100%;
-	 max-width: none;
-	 height: 74.5%;
-	 top: 25.5%;
-	 bottom: auto;
-	 left: 0;
-	 transform: none;
-}
-.lightMode .stageHands { object-fit: fill; }
-.lightMode .edgeVignette { background: linear-gradient(to bottom, rgba(255,255,255,.58), transparent 24%, transparent 78%, rgba(117,155,182,.12)), radial-gradient(ellipse at 50% 69.5%, transparent 24%, rgba(116,160,189,.06) 68%, rgba(69,105,132,.12) 100%); }
-.lightMode .brandWordmark, .lightMode .brandName, .lightMode .headlineLine { color: #0a2944; }
-.lightMode .brandDescriptor { color: #397ca7; }
-.lightMode .headlineHighlight { color: #247ab7; background: none; -webkit-text-fill-color: currentColor; }
-.lightMode .description { color: rgba(10,41,68,.82); text-shadow: none; }
-.lightMode .navPill, .lightMode .bookDemoBtn, .lightMode .glassCard, .lightMode .mobileNav { background: rgba(255,255,255,.52); border-color: rgba(70,147,204,.36); box-shadow: 0 14px 34px rgba(63,126,176,.1), inset 0 1px rgba(255,255,255,.9); }
-.lightMode .navPill { background: rgba(86,111,131,.18); border-color: rgba(255,255,255,.62); box-shadow: 0 5px 16px rgba(32,61,80,.16), inset 0 1px rgba(255,255,255,.86); }
-.lightMode .navLink, .lightMode .navSummary, .lightMode .bookDemoBtn, .lightMode .glassCardTitle, .lightMode .mobileNavLink, .lightMode .mobileDetails summary { color: #183d56; }
-.lightMode .glassCardDesc { color: rgba(24,61,86,.76); }
-.lightMode .startProjectBtn { color: #f5fbff; background: #173e59; }
-.lightMode .themeToggle { color: #183d56; background: rgba(255,255,255,.52); border-color: rgba(70,147,204,.36); }
-
-/* Stage Backdrop: Full Bleed Gradient + Atmosphere + Photographic Hands */
-.stageBackdropWrapper {
-	position: absolute;
-	inset: 0;
+.heroFrame {
+	position: relative;
 	width: 100%;
 	height: 100%;
 	overflow: hidden;
-	pointer-events: none;
-	z-index: 1;
+	isolation: isolate;
+	background:
+		radial-gradient(
+			circle 320px at 50% 69%,
+			rgba(150, 212, 255, 0.42) 0%,
+			rgba(58, 150, 255, 0.28) 40%,
+			rgba(10, 52, 120, 0.12) 66%,
+			transparent 82%
+		),
+		radial-gradient(
+			ellipse 1180px 780px at 50% 52%,
+			#15508f 0%,
+			#0d3a75 36%,
+			#082650 68%,
+			#020c1c 100%
+		),
+		linear-gradient(168deg, #04132a 0%, #082146 28%, #0b2b58 56%, #06172f 82%, #020812 100%);
 }
 
-.stageGradient {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	z-index: 1;
+/* StageBackdrop renders only the hands and the edge vignette, so the wrapper
+ * does not build an isolated group. Blending happens against the full frame. */
+.stageBackdropWrapper {
+	display: contents;
 }
 
-.stageAtmosphere {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	object-fit: cover;
-	z-index: 2;
-	opacity: 0.16;
-	mix-blend-mode: screen;
-	filter: contrast(1.2) saturate(0.8);
-}
-
-/* Hands anchored to lower stage: 1024x572 at bottom (native aspect 2752x1536) */
+/* Full-size hands layer. The Figma export has a light plate; multiply drops it
+ * and lets both forearms enter naturally from outside the frame. */
 .handsImageWrapper {
 	position: absolute;
-	bottom: 0;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 1024px;
-	max-width: 100vw;
-	height: 572px;
-	z-index: 3;
+	inset: 0;
+	z-index: 6;
 	mix-blend-mode: multiply;
 	pointer-events: none;
+	transform: translate3d(0, var(--hero-hands-parallax), 0);
 }
 
 .stageHands {
@@ -92,39 +75,45 @@
 	inset: 0;
 	width: 100%;
 	height: 100%;
-	object-fit: contain;
-	object-position: bottom center;
+	object-fit: cover;
+	object-position: 50% 62%;
 }
 
+/* Deep navy cinematic vignette with a clearer blue centre. */
 .edgeVignette {
 	position: absolute;
 	inset: 0;
-	z-index: 4;
+	z-index: 7;
 	pointer-events: none;
 	background:
 		linear-gradient(
 			to bottom,
-			rgba(0, 0, 0, 0.4) 0%,
+			rgba(2, 7, 18, 0.34) 0%,
 			transparent 20%,
-			transparent 80%,
-			rgba(0, 0, 0, 0.55) 100%
+			transparent 76%,
+			rgba(2, 7, 18, 0.46) 100%
 		),
 		radial-gradient(
-			ellipse at 50% 69.5%,
-			transparent 20%,
-			rgba(0, 0, 0, 0.08) 50%,
-			rgba(3, 10, 18, 0.85) 100%
+			ellipse at 50% 66%,
+			transparent 38%,
+			rgba(2, 10, 24, 0.18) 68%,
+			rgba(1, 5, 13, 0.68) 100%
 		);
 }
 
-/* Globe Canvas Layer: Center at (512, 534), radius 168 (diam 336) */
 .globeLayer {
 	position: absolute;
 	inset: 0;
 	width: 100%;
 	height: 100%;
 	z-index: 5;
-	pointer-events: auto;
+	pointer-events: none;
+	transform: translate3d(
+		var(--globe-cursor-x),
+		calc(var(--hero-parallax) + var(--globe-cursor-y)),
+		0
+	);
+	will-change: transform;
 }
 
 .globeCanvas {
@@ -132,319 +121,85 @@
 	inset: 0;
 	width: 100%;
 	height: 100%;
-	cursor: grab;
-	touch-action: none;
-}
-
-.isDragging {
-	cursor: grabbing;
-}
-
-/* Header Bar & Floating Nav */
-.headerBar {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100px;
-	z-index: 20;
+	cursor: default;
+	touch-action: auto;
 	pointer-events: none;
 }
 
-.brandWordmark {
-	position: absolute;
-	top: 60px;
-	left: 75px;
-	display: flex;
-	align-items: baseline;
-	gap: 6px;
-	text-decoration: none;
-	color: #ffffff;
-	pointer-events: auto;
-}
-
-.brandName {
-	font-size: 1.2rem;
-	font-weight: 700;
-	letter-spacing: -0.02em;
-	color: #ffffff;
-}
-
-.brandDescriptor {
-	font-size: 0.68rem;
-	font-weight: 500;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: #7cbbf2;
-}
-
-/* Centered Glass Nav Pill (Desktop: x 355..670, y: 58) */
-.navPill {
-	position: absolute;
-	top: 58px;
-	left: 50%;
-	transform: translateX(-50%);
-	display: flex;
-	align-items: center;
-	background: rgba(5, 18, 32, 0.65);
-	backdrop-filter: blur(16px);
-	-webkit-backdrop-filter: blur(16px);
-	border: 1px solid rgba(255, 255, 255, 0.16);
-	border-radius: 9999px;
-	height: 36px;
-	padding: 2px 10px;
-	box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-	pointer-events: auto;
-}
-
-.navList {
-	display: flex;
-	align-items: center;
-	gap: 1px;
-	list-style: none;
-	margin: 0;
-	padding: 0;
-}
-
-.navLink {
-	display: block;
-	padding: 4px 9px;
-	font-size: 0.74rem;
-	font-weight: 500;
-	color: rgba(255, 255, 255, 0.78);
-	text-decoration: none;
-	border-radius: 9999px;
-	white-space: nowrap;
-	transition:
-		color 0.15s ease,
-		background-color 0.15s ease;
-}
-
-.navLink:hover,
-.navLinkActive {
-	color: #ffffff;
-	background: rgba(255, 255, 255, 0.1);
-}
-
-.navDropdownItem {
-	position: relative;
-}
-
-.navDetails {
-	position: relative;
-}
-
-.navSummary {
-	display: flex;
-	align-items: center;
-	gap: 3px;
-	padding: 4px 9px;
-	font-size: 0.74rem;
-	font-weight: 500;
-	color: rgba(255, 255, 255, 0.78);
-	cursor: pointer;
-	list-style: none;
-	border-radius: 9999px;
-	white-space: nowrap;
-	transition:
-		color 0.15s ease,
-		background-color 0.15s ease;
-}
-
-.navSummary::-webkit-details-marker {
-	display: none;
-}
-
-.navSummary:hover {
-	color: #ffffff;
-	background: rgba(255, 255, 255, 0.1);
-}
-
-.chevronIcon {
-	transition: transform 0.2s ease;
-}
-
-.navDetails[open] .chevronIcon {
-	transform: rotate(180deg);
-}
-
-.navDropdownMenu {
-	position: absolute;
-	top: calc(100% + 8px);
-	left: 50%;
-	transform: translateX(-50%);
-	min-width: 190px;
-	background: rgba(6, 20, 36, 0.94);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	border-radius: 12px;
-	padding: 6px;
-	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.45);
-	z-index: 100;
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.dropdownOverview {
-	display: block;
-	padding: 6px 10px;
-	font-size: 0.76rem;
-	font-weight: 600;
-	color: #9bcbf5;
-	text-decoration: none;
-	border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-	margin-bottom: 3px;
-	border-radius: 6px;
-}
-
-.dropdownOverview:hover {
-	background: rgba(255, 255, 255, 0.08);
-	color: #ffffff;
-}
-
-.dropdownLink {
-	display: block;
-	padding: 5px 10px;
-	font-size: 0.76rem;
-	font-weight: 500;
-	color: rgba(255, 255, 255, 0.82);
-	text-decoration: none;
-	border-radius: 6px;
-	transition:
-		background-color 0.15s ease,
-		color 0.15s ease;
-}
-
-.dropdownLink:hover {
-	color: #ffffff;
-	background: rgba(255, 255, 255, 0.1);
-}
-
-/* Header Right: Book a Demo Button (near x: 876, y: 58) */
-.headerActions {
-	position: absolute;
-	top: 58px;
-	right: 75px;
-	display: flex;
-	align-items: center;
-	gap: 12px;
-	pointer-events: auto;
-}
-
-.bookDemoBtn {
-	height: 36px;
-	padding: 0 18px;
-	font-size: 0.8rem;
-	font-weight: 600;
-	color: #ffffff;
-	background: rgba(255, 255, 255, 0.12);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-	border: 1px solid rgba(255, 255, 255, 0.28);
-	border-radius: 9999px;
-	cursor: pointer;
-	white-space: nowrap;
-	transition: all 0.2s ease;
-	box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
-}
-
-.themeToggle { height: 32px; padding: 0 11px; font-size: .72rem; font-weight: 600; color: #fff; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.24); border-radius: 9999px; cursor: pointer; backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); }
-
-.bookDemoBtn:hover {
-	background: rgba(255, 255, 255, 0.22);
-	border-color: rgba(255, 255, 255, 0.5);
-	transform: translateY(-1px);
-}
-
-.mobileToggle {
-	display: none;
-	background: rgba(255, 255, 255, 0.1);
-	border: 1px solid rgba(255, 255, 255, 0.2);
-	border-radius: 8px;
-	color: #ffffff;
-	padding: 8px;
-	cursor: pointer;
-}
-
-/* Upper Center Hero Content: H1 at y: 124, Support at y: 220, CTA at y: 289 */
+/* Upper centre copy. A normal vertical flow keeps the headline, description
+ * and CTA evenly stacked at every viewport height. */
 .heroContent {
 	position: absolute;
-	top: 124px;
+	top: max(13.5%, 106px);
 	left: 50%;
 	transform: translateX(-50%);
 	width: 100%;
-	max-width: 800px;
+	max-width: 880px;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
 	text-align: center;
 	pointer-events: none;
 	z-index: 15;
 }
 
 .headline {
-	font-size: 2rem;
-	font-weight: 700;
-	line-height: 1.18;
-	letter-spacing: -0.025em;
+	font-size: clamp(2.1rem, 4.2vw, 3.9rem);
+	font-weight: 600;
+	line-height: 1.08;
+	letter-spacing: -0.035em;
 	margin: 0;
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 2px;
+	color: #ffffff;
 }
 
 .headlineLine {
 	display: block;
 	color: #ffffff;
-	text-shadow: 0 2px 16px rgba(0, 0, 0, 0.45);
+	text-shadow: 0 2px 26px rgba(2, 10, 25, 0.34);
 }
 
 .headlineHighlight {
 	color: #aee0fd;
 	background: linear-gradient(135deg, #aee0fd 0%, #ffffff 85%);
 	-webkit-background-clip: text;
+	background-clip: text;
 	-webkit-text-fill-color: transparent;
 }
 
 .description {
-	position: absolute;
-	top: 96px; /* 124 + 96 = 220px */
-	left: 50%;
-	transform: translateX(-50%);
-	width: 100%;
 	max-width: 620px;
-	font-size: 0.85rem;
-	line-height: 1.45;
-	color: rgba(215, 235, 255, 0.88);
-	margin: 0;
-	text-shadow: 0 1px 8px rgba(0, 0, 0, 0.5);
+	margin: 22px auto 0;
+	font-size: clamp(0.9rem, 1.1vw, 1.1rem);
+	line-height: 1.55;
+	color: rgba(219, 238, 255, 0.9);
+	text-shadow: 0 1px 12px rgba(2, 10, 25, 0.4);
 }
 
 .ctaWrapper {
-	position: absolute;
-	top: 165px; /* 124 + 165 = 289px */
-	left: 50%;
-	transform: translateX(-50%);
+	margin-top: 30px;
 	pointer-events: auto;
 }
 
 .startProjectBtn {
-	width: 145px;
-	height: 38px;
-	padding: 0;
-	display: flex;
+	min-width: 168px;
+	height: 48px;
+	padding: 0 24px;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: 0.82rem;
+	font-size: 0.9rem;
 	font-weight: 600;
 	color: #051627;
 	background: #ffffff;
 	border: none;
-	border-radius: 19px;
+	border-radius: 999px;
 	cursor: pointer;
 	box-shadow:
-		0 6px 18px rgba(0, 0, 0, 0.3),
-		0 0 14px rgba(174, 224, 253, 0.3);
+		0 12px 30px rgba(0, 0, 0, 0.34),
+		0 0 0 1px rgba(255, 255, 255, 0.4);
 	transition:
 		transform 0.2s ease,
 		box-shadow 0.2s ease,
@@ -453,131 +208,269 @@
 
 .startProjectBtn:hover {
 	transform: translateY(-2px);
-	box-shadow:
-		0 10px 24px rgba(0, 0, 0, 0.4),
-		0 0 20px rgba(174, 224, 253, 0.45);
 	background: #f0f7ff;
+	box-shadow:
+		0 16px 36px rgba(0, 0, 0, 0.4),
+		0 0 0 1px rgba(255, 255, 255, 0.55);
 }
 
-/* Two Lower Glass Callout Cards */
+.startProjectBtn:focus-visible {
+	outline-color: #ffffff;
+}
+
+/* Floating glass callouts */
 .cardsContainer {
 	position: absolute;
 	inset: 0;
 	pointer-events: none;
 	z-index: 15;
+	transform: translate3d(0, var(--hero-cards-parallax), 0);
 }
 
-/* Left Card: x: 179, y: 443, width: 191, height: 77 */
+.glassCard {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	overflow: hidden;
+	padding: 12px 14px;
+	border: 1px solid rgba(255, 255, 255, 0.16);
+	border-radius: 14px;
+	background: linear-gradient(150deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.04));
+	box-shadow:
+		0 16px 38px rgba(2, 8, 20, 0.26),
+		inset 0 1px rgba(255, 255, 255, 0.2);
+	pointer-events: auto;
+	text-align: left;
+}
+
+/* liquid-glass-react renders the frosted, refracting layer above the card
+ * gradient. It is a browser-only layer so the server-rendered copy stays put. */
+.liquidLayer {
+	overflow: hidden;
+	border-radius: 14px;
+}
+.liquidLayer :global(.glass) {
+	width: 100%;
+	height: 100%;
+	box-sizing: border-box;
+	justify-content: center;
+	padding: 0 !important;
+	gap: 0 !important;
+	overflow: hidden;
+}
+.liquidLayerContent {
+	display: block;
+	width: 100%;
+	height: 100%;
+}
+.glassCardBody {
+	position: relative;
+	z-index: 2;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	width: 100%;
+}
+
+/* Left callout: x 131/928, y 406/768 of the reference frame */
 .glassCardLeft {
 	position: absolute;
-	top: 57.68%;
-	left: 17.48%;
-	width: 191px;
-	height: 77px;
-	padding: 10px 12px;
-	border-radius: 12px;
-	background: rgba(5, 18, 32, 0.65);
-	backdrop-filter: blur(16px);
-	-webkit-backdrop-filter: blur(16px);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+	top: 58.5%;
+	left: 14.11%;
+	width: 20.58%;
+	height: 11.1%;
 	z-index: 15;
-	pointer-events: auto;
-	text-align: left;
 }
 
-/* Right Card: x: 659, y: 476, width: 179, height: 77 */
+/* Right callout: x 611/928, y 439/768 of the reference frame */
 .glassCardRight {
 	position: absolute;
-	top: 78%;
-	left: 64.36%;
-	width: 179px;
-	height: 77px;
-	padding: 10px 12px;
-	border-radius: 12px;
-	background: rgba(5, 18, 32, 0.65);
-	backdrop-filter: blur(16px);
-	-webkit-backdrop-filter: blur(16px);
-	border: 1px solid rgba(255, 255, 255, 0.18);
-	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+	top: 63.26%;
+	left: 65.84%;
+	width: 19.29%;
+	height: 11.1%;
 	z-index: 15;
-	pointer-events: auto;
-	text-align: left;
 }
 
 .glassCardTitle {
-	font-size: 12px;
+	font-size: clamp(12px, 0.9vw, 1.05rem);
 	font-weight: 600;
 	color: #ffffff;
-	margin: 0 0 3px 0;
+	margin: 0 0 4px 0;
 	white-space: nowrap;
 }
 
 .glassCardDesc {
-	font-size: 10px;
-	line-height: 1.35;
-	color: rgba(200, 225, 250, 0.85);
+	font-size: clamp(10px, 0.72vw, 0.85rem);
+	line-height: 1.4;
+	color: rgba(200, 225, 250, 0.84);
 	margin: 0;
 }
 
-/* Mobile Navigation Panel */
-.mobileNav {
-	display: none;
+/* Stage theme control */
+.themeToggle {
+	position: absolute;
+	right: 22px;
+	bottom: 22px;
+	z-index: 25;
+	display: grid;
+	place-items: center;
+	width: 40px;
+	height: 40px;
+	padding: 0;
+	border-radius: 50%;
+	color: #ffffff;
+	background: rgba(255, 255, 255, 0.14);
+	border: 1px solid rgba(255, 255, 255, 0.26);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	box-shadow: 0 10px 26px rgba(2, 8, 20, 0.26);
+	cursor: pointer;
+	transition:
+		background-color 0.2s ease,
+		transform 0.2s ease,
+		color 0.2s ease;
 }
 
-/* Responsive Breakpoints */
+.themeToggle:hover {
+	background: rgba(255, 255, 255, 0.24);
+	transform: translateY(-1px);
+}
+
+.themeToggle:focus-visible {
+	outline-color: #ffffff;
+}
+
+/* Desktop widens the copy column without changing the stack order. */
+@media (min-width: 1025px) {
+	.description {
+		max-width: 560px;
+		font-size: clamp(0.95rem, 1.1vw, 1.15rem);
+	}
+
+	.startProjectBtn {
+		min-width: clamp(168px, 14vw, 220px);
+		height: 50px;
+		font-size: 0.95rem;
+	}
+}
+
+/* Light mode — a clear ice-blue daylight stage with brand-blue accents. */
+.lightMode {
+	background: #eaf4ff;
+	color: #102b50;
+	--glass-fill: rgba(255, 255, 255, 0.64);
+	--glass-rim: rgba(255, 255, 255, 0.78);
+	--glass-highlight: rgba(255, 255, 255, 0.85);
+	--glass-shadow: 0 18px 42px rgba(50, 105, 150, 0.16), 0 2px 10px rgba(50, 105, 150, 0.1);
+}
+
+.lightMode .heroFrame {
+	background:
+		radial-gradient(
+			circle 340px at 50% 68%,
+			rgba(219, 236, 255, 0.96) 0%,
+			rgba(191, 222, 250, 0.92) 36%,
+			rgba(147, 197, 253, 0.5) 62%,
+			transparent 80%
+		),
+		linear-gradient(180deg, #f8fcff 0%, #e9f4ff 36%, #d7eafb 72%, #c3dcf4 100%);
+}
+
+.lightMode .edgeVignette {
+	background:
+		linear-gradient(
+			to bottom,
+			rgba(255, 255, 255, 0.4) 0%,
+			transparent 20%,
+			transparent 78%,
+			rgba(86, 137, 176, 0.2) 100%
+		),
+		radial-gradient(
+			ellipse at 50% 66%,
+			transparent 42%,
+			rgba(84, 132, 172, 0.1) 70%,
+			rgba(55, 100, 140, 0.22) 100%
+		);
+}
+
+.lightMode .headline,
+.lightMode .headlineLine {
+	color: #102b50;
+	text-shadow: 0 1px 20px rgba(255, 255, 255, 0.75);
+}
+
+.lightMode .headlineHighlight {
+	color: #1768d5;
+	background: none;
+	-webkit-text-fill-color: currentColor;
+}
+
+.lightMode .description {
+	color: rgba(16, 43, 80, 0.76);
+	text-shadow: 0 1px 12px rgba(255, 255, 255, 0.65);
+}
+
+.lightMode .startProjectBtn {
+	color: #ffffff;
+	background: #1768d5;
+	box-shadow:
+		0 14px 30px rgba(23, 104, 213, 0.26),
+		0 0 0 1px rgba(255, 255, 255, 0.34);
+}
+
+.lightMode .startProjectBtn:hover {
+	background: #102b50;
+}
+
+.lightMode .startProjectBtn:focus-visible {
+	outline-color: #102b50;
+}
+
+.lightMode .glassCard {
+	border-color: rgba(255, 255, 255, 0.82);
+	background: linear-gradient(150deg, rgba(255, 255, 255, 0.72), rgba(255, 255, 255, 0.48));
+	box-shadow:
+		0 16px 38px rgba(50, 105, 150, 0.16),
+		inset 0 1px rgba(255, 255, 255, 0.85);
+}
+
+.lightMode .glassCardTitle {
+	color: #102b50;
+}
+
+.lightMode .glassCardDesc {
+	color: rgba(16, 43, 80, 0.7);
+}
+
+.lightMode .themeToggle {
+	color: #102b50;
+	background: rgba(255, 255, 255, 0.58);
+	border-color: rgba(255, 255, 255, 0.84);
+	box-shadow: 0 10px 26px rgba(50, 105, 150, 0.16);
+}
+
+.lightMode .themeToggle:hover {
+	background: rgba(255, 255, 255, 0.8);
+}
+
+.lightMode .themeToggle:focus-visible {
+	outline-color: #102b50;
+}
+
+/* Tablet */
 @media (max-width: 1024px) {
-	.brandWordmark {
-		left: 48px;
-		top: 48px;
-	}
-
-	.navPill {
-		top: 46px;
-	}
-
-	.headerActions {
-		right: 48px;
-		top: 46px;
-	}
-}
-
-@media (max-width: 768px) {
 	.heroSection {
 		height: auto;
 		min-height: 100dvh;
 	}
 
-	.navPill {
-		display: none;
-	}
-
-	.bookDemoBtn {
-		display: none;
-	}
-	.themeToggle { display: inline-flex; align-items: center; }
-
-	.mobileToggle {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.headerBar {
-		position: relative;
+	.heroFrame {
 		height: auto;
-		padding: 20px 24px 0;
+		min-height: 100dvh;
 		display: flex;
-		align-items: center;
-		justify-content: space-between;
-	}
-
-	.brandWordmark {
-		position: static;
-	}
-
-	.headerActions {
-		position: static;
+		flex-direction: column;
+		padding: 104px 24px 88px;
 	}
 
 	.heroContent {
@@ -585,184 +478,138 @@
 		top: auto;
 		left: auto;
 		transform: none;
-		padding: 20px 16px 0;
-		margin-top: 10px;
+		max-width: 720px;
+		margin-inline: auto;
+	}
+
+	.headline {
+		font-size: clamp(2.2rem, 5.4vw, 3.6rem);
 	}
 
 	.description {
-		position: relative;
-		top: auto;
-		left: auto;
-		transform: none;
-		margin: 12px auto 20px;
+		max-width: 540px;
+		margin: 18px auto 0;
 	}
 
 	.ctaWrapper {
-		position: relative;
-		top: auto;
-		left: auto;
-		transform: none;
 		display: flex;
 		justify-content: center;
-		margin-bottom: 20px;
+		margin-top: 26px;
+	}
+
+	.cardsContainer {
+		position: relative;
+		inset: auto;
+		display: flex;
+		flex-direction: row;
+		justify-content: center;
+		gap: 14px;
+		margin-top: auto;
+		padding-top: 150px;
 	}
 
 	.glassCardLeft,
 	.glassCardRight {
-		position: absolute;
-		width: 44%;
-		margin: 0;
+		position: relative;
+		top: auto;
+		left: auto;
+		width: min(260px, 44%);
 		height: auto;
-		padding: 8px;
+		min-height: 92px;
 	}
 
-	.cardsContainer {
-		top: 390px;
-		bottom: auto;
-		height: 180px;
+	.glassCardTitle {
+		font-size: 13px;
+		white-space: normal;
 	}
 
-	.glassCardLeft { top: 0; left: 4%; }
-	.glassCardRight { top: 0; left: 52%; }
+	.glassCardDesc {
+		font-size: 11px;
+	}
 
 	.handsImageWrapper {
-		width: 100vw;
-		height: calc(100vw * (1536 / 2752));
+		width: 128%;
+		left: 50%;
+		bottom: -6%;
+		top: auto;
+		height: auto;
+		aspect-ratio: 2752 / 1536;
+		transform: translateX(-50%);
 	}
 
-	.lightMode .handsImageWrapper {
-		top: 34%;
-		height: 66%;
-		width: 100%;
-	}
-
-	.lightMode .stageHands {
-		object-fit: cover;
-		object-position: center;
-	}
-
-	/* Mobile Menu Drawer */
-	.mobileNav {
-		position: fixed;
-		top: 0;
-		right: 0;
-		bottom: 0;
-		width: min(320px, 85vw);
-		background: rgba(6, 18, 32, 0.96);
-		backdrop-filter: blur(24px);
-		-webkit-backdrop-filter: blur(24px);
-		border-left: 1px solid rgba(255, 255, 255, 0.15);
-		z-index: 100;
-		padding: 80px 24px 32px;
-		display: flex;
-		flex-direction: column;
-		transform: translateX(100%);
-		transition: transform 0.3s ease;
-		box-shadow: -10px 0 30px rgba(0, 0, 0, 0.5);
-	}
-
-	.mobileNavOpen {
-		transform: translateX(0);
-	}
-
-	.mobileNavList {
-		list-style: none;
-		margin: 0;
-		padding: 0;
-		display: flex;
-		flex-direction: column;
-		gap: 8px;
-	}
-
-	.mobileNavLink {
-		display: block;
-		padding: 10px 14px;
-		font-size: 1rem;
-		font-weight: 500;
-		color: rgba(255, 255, 255, 0.85);
-		text-decoration: none;
-		border-radius: 8px;
-		transition:
-			background-color 0.15s ease,
-			color 0.15s ease;
-	}
-
-	.mobileNavLink:hover {
-		background: rgba(255, 255, 255, 0.1);
-		color: #ffffff;
-	}
-
-	.mobileDropdownItem {
-		border-radius: 8px;
-	}
-
-	.mobileDetails summary {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		padding: 10px 14px;
-		font-size: 1rem;
-		font-weight: 500;
-		color: rgba(255, 255, 255, 0.85);
-		cursor: pointer;
-		list-style: none;
-		border-radius: 8px;
-	}
-
-	.mobileDetails summary::-webkit-details-marker {
-		display: none;
-	}
-
-	.mobileSubList {
-		list-style: none;
-		margin: 4px 0 0 16px;
-		padding: 0 0 0 12px;
-		border-left: 1px solid rgba(255, 255, 255, 0.12);
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-
-	.mobileSubLink {
-		display: block;
-		padding: 8px 12px;
-		font-size: 0.9rem;
-		font-weight: 500;
-		color: rgba(255, 255, 255, 0.75);
-		text-decoration: none;
-		border-radius: 6px;
-	}
-
-	.mobileSubLink:hover {
-		color: #ffffff;
-		background: rgba(255, 255, 255, 0.08);
-	}
-
-	.mobileCtaItem {
-		margin-top: 16px;
-	}
-
-	.mobileCtaBtn {
-		width: 100%;
-		padding: 12px;
-		font-size: 0.95rem;
-		font-weight: 600;
-		color: #ffffff;
-		background: rgba(255, 255, 255, 0.15);
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		border-radius: 9999px;
-		cursor: pointer;
+	.stageHands {
+		object-fit: contain;
+		object-position: center bottom;
 	}
 }
 
-/* Reduced Motion */
+/* Phone */
+@media (max-width: 768px) {
+	.heroFrame {
+		padding: 92px 18px 78px;
+	}
+
+	.headline {
+		font-size: clamp(1.9rem, 8.6vw, 2.6rem);
+		line-height: 1.12;
+	}
+
+	.description {
+		margin-top: 14px;
+		font-size: 0.88rem;
+		max-width: 420px;
+	}
+
+	.ctaWrapper {
+		margin-top: 22px;
+	}
+
+	.startProjectBtn {
+		height: 46px;
+		min-width: 160px;
+		font-size: 0.86rem;
+	}
+
+	.cardsContainer {
+		flex-direction: column;
+		align-items: stretch;
+		gap: 10px;
+		padding-top: 210px;
+		margin-bottom: 30px;
+	}
+
+	.glassCardLeft,
+	.glassCardRight {
+		width: 100%;
+		min-height: 78px;
+	}
+
+	.handsImageWrapper {
+		width: 196%;
+		bottom: -4%;
+	}
+
+	.themeToggle {
+		right: 16px;
+		bottom: 18px;
+		width: 38px;
+		height: 38px;
+	}
+}
+
+/* Reduced motion: keep the artwork stationary. */
 @media (prefers-reduced-motion: reduce) {
-	.globeCanvas {
-		cursor: default;
+	.globeLayer {
+		transform: none;
+	}
+
+	.handsImageWrapper,
+	.cardsContainer {
+		transform: none;
 	}
 
 	.startProjectBtn,
-	.bookDemoBtn {
+	.themeToggle {
 		transition: none;
 	}
 }

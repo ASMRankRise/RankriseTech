@@ -18,7 +18,7 @@ import { routeHref } from "@/lib/routes";
 import { EngineeringVisual, IntelligenceVisual } from "./engineering-visual";
 import { Icon } from "./icon";
 import { PreviewDialog, type DialogState } from "./preview-dialog";
-import { SiteNavigation } from "./site-navigation";
+import { SiteHeader } from "./site-header";
 import { SiteFooter } from "./site-footer";
 import { ScrollReveal } from "./motion/scroll-reveal";
 import { SpotlightCard } from "./motion/spotlight-card";
@@ -115,7 +115,7 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
   return (
     <>
       <InitialPageLoader />
-      {heroVariant !== "global" && <SiteNavigation />}
+      <SiteHeader overHero={heroVariant === "global"} activePath="/" />
       <main id="main-content">
         {/* Hero Section — conditional rendering based on variant */}
         {heroVariant === "global" ? (

@@ -14,8 +14,7 @@ import styles from "./global-hero.module.css";
  * - Ratio-scaled responsively: centerX = width * 0.5, centerY = height * (534/768), radius = height * (168/768)
  * - 280-point Fibonacci sphere with 3D projection, depth perspective, and spatial connections
  * - 150 orbit particles with dynamic depth waves, orbital velocity, and celestial glow
- * - Drag-to-rotate interaction with pointer capture and inertia damping
- * - Scroll-wheel zoom with bounded range [0.78, 1.24]
+ * - Autonomous rotation; the surrounding hero layer adds cursor parallax
  * - Accessible reduced-motion handling
  */
 
@@ -127,16 +126,7 @@ export function Globe({ className = "", lightMode = false }: GlobeProps) {
 		let pixelRatio = 1;
 		let rotationX = -0.08;
 		let rotationY = 0.1;
-		let targetRotationX = rotationX;
 		let targetRotationY = rotationY;
-		let zoom = 1;
-		let targetZoom = 1;
-		let dragging = false;
-		let pointerX = 0;
-		let pointerY = 0;
-		let lastPointerX = 0;
-		let lastPointerY = 0;
-		let lastInteraction = 0;
 
 		const prefersReducedMotion = window.matchMedia(
 			"(prefers-reduced-motion: reduce)",
@@ -177,14 +167,12 @@ export function Globe({ className = "", lightMode = false }: GlobeProps) {
 			const baseRadius = isMobile
 				? Math.min(width, height) * 0.25
 				: height * (168 / 768);
-			const radius = baseRadius * zoom;
+			const radius = baseRadius;
 
-			if (!prefersReducedMotion && !dragging && timestamp - lastInteraction > 900) {
+			if (!prefersReducedMotion) {
 				targetRotationY += 0.0019;
 			}
-			rotationX += (targetRotationX - rotationX) * 0.075;
 			rotationY += (targetRotationY - rotationY) * 0.075;
-			zoom += (targetZoom - zoom) * 0.08;
 
 			context.clearRect(0, 0, width, height);
 
@@ -197,8 +185,8 @@ export function Globe({ className = "", lightMode = false }: GlobeProps) {
 				centerY,
 				radius * 1.6,
 			);
-			atmosphericGlow.addColorStop(0, "rgba(172, 205, 235, 0.22)");
-			atmosphericGlow.addColorStop(0.42, "rgba(104, 145, 181, 0.1)");
+			atmosphericGlow.addColorStop(0, lightMode ? "rgba(37, 99, 235, 0.18)" : "rgba(172, 205, 235, 0.22)");
+			atmosphericGlow.addColorStop(0.42, lightMode ? "rgba(59, 130, 246, 0.09)" : "rgba(104, 145, 181, 0.1)");
 			atmosphericGlow.addColorStop(1, "rgba(0, 0, 0, 0)");
 			context.fillStyle = atmosphericGlow;
 			context.fillRect(
@@ -228,9 +216,9 @@ export function Globe({ className = "", lightMode = false }: GlobeProps) {
 				context.beginPath();
 				context.arc(x, y, particleSize, 0, TAU);
 				context.fillStyle = lightMode
-					? `rgba(31, 119, 198, ${particle.opacity * (0.18 + depth * 0.48)})`
+					? `rgba(255, 255, 255, ${particle.opacity * (0.3 + depth * 0.55)})`
 					: `rgba(220, 234, 247, ${particle.opacity * (0.18 + depth * 0.52)})`;
-				context.shadowColor = lightMode ? "rgba(71, 158, 230, 0.45)" : "rgba(200, 225, 247, 0.62)";
+				context.shadowColor = lightMode ? "rgba(37, 99, 235, 0.45)" : "rgba(200, 225, 247, 0.62)";
 				context.shadowBlur = particleSize > 2 ? particleSize * 2.5 : 0;
 				context.fill();
 			});
@@ -260,7 +248,7 @@ export function Globe({ className = "", lightMode = false }: GlobeProps) {
 				context.moveTo(start.x2d, start.y2d);
 				context.lineTo(end.x2d, end.y2d);
 				context.strokeStyle = lightMode
-					? `rgba(30, 114, 187, ${alpha * 1.08})`
+					? `rgba(255, 255, 255, ${alpha * 1.4})`
 					: `rgba(225, 240, 252, ${alpha})`;
 				context.lineWidth = depth > 0.35 ? 0.72 : 0.42;
 				context.stroke();
@@ -277,9 +265,9 @@ export function Globe({ className = "", lightMode = false }: GlobeProps) {
 					context.beginPath();
 					context.arc(point.x2d, point.y2d, Math.max(0.42, size), 0, TAU);
 					context.fillStyle = lightMode
-						? `rgba(22, 103, 176, ${0.32 + depth * 0.64})`
+						? `rgba(255, 255, 255, ${0.42 + depth * 0.55})`
 						: `rgba(241, 248, 255, ${0.3 + depth * 0.66})`;
-					context.shadowColor = lightMode ? "rgba(77, 166, 239, 0.72)" : "rgba(210, 235, 255, 0.95)";
+					context.shadowColor = lightMode ? "rgba(37, 99, 235, 0.5)" : "rgba(210, 235, 255, 0.95)";
 					context.shadowBlur = depth > 0.55 ? size * 3.8 * pulse : 0;
 					context.fill();
 				});
@@ -295,8 +283,8 @@ export function Globe({ className = "", lightMode = false }: GlobeProps) {
 				radius * 1.08,
 			);
 			rim.addColorStop(0, "rgba(255, 255, 255, 0)");
-			rim.addColorStop(0.84, "rgba(205, 230, 249, 0.03)");
-			rim.addColorStop(0.93, "rgba(224, 240, 253, 0.15)");
+			rim.addColorStop(0.84, lightMode ? "rgba(147, 197, 253, 0.22)" : "rgba(205, 230, 249, 0.03)");
+			rim.addColorStop(0.93, lightMode ? "rgba(96, 165, 250, 0.45)" : "rgba(224, 240, 253, 0.15)");
 			rim.addColorStop(1, "rgba(255, 255, 255, 0)");
 			context.fillStyle = rim;
 			context.beginPath();
@@ -308,83 +296,22 @@ export function Globe({ className = "", lightMode = false }: GlobeProps) {
 			}
 		};
 
-		const handlePointerDown = (event: PointerEvent) => {
-			if (prefersReducedMotion) return;
-			dragging = true;
-			lastPointerX = event.clientX;
-			lastPointerY = event.clientY;
-			lastInteraction = performance.now();
-			canvas.setPointerCapture(event.pointerId);
-			canvas.classList.add(styles.isDragging);
-		};
-
-		const handlePointerMove = (event: PointerEvent) => {
-			if (prefersReducedMotion) return;
-			const bounds = canvas.getBoundingClientRect();
-			pointerX = (event.clientX - bounds.left) / bounds.width - 0.5;
-			pointerY = (event.clientY - bounds.top) / bounds.height - 0.5;
-
-			if (dragging) {
-				targetRotationY += (event.clientX - lastPointerX) * 0.009;
-				targetRotationX = Math.max(
-					-1.15,
-					Math.min(1.15, targetRotationX + (event.clientY - lastPointerY) * 0.009),
-				);
-				lastPointerX = event.clientX;
-				lastPointerY = event.clientY;
-				lastInteraction = performance.now();
-			} else {
-				targetRotationY += pointerX * 0.0008;
-				targetRotationX += (pointerY * 0.16 - targetRotationX) * 0.008;
-			}
-		};
-
-		const handlePointerUp = (event: PointerEvent) => {
-			dragging = false;
-			lastInteraction = performance.now();
-			if (canvas.hasPointerCapture(event.pointerId)) {
-				canvas.releasePointerCapture(event.pointerId);
-			}
-			canvas.classList.remove(styles.isDragging);
-		};
-
-		const handleWheel = (event: WheelEvent) => {
-			if (prefersReducedMotion) return;
-			event.preventDefault();
-			targetZoom = Math.max(
-				0.78,
-				Math.min(1.24, targetZoom - event.deltaY * 0.0007),
-			);
-			lastInteraction = performance.now();
-		};
-
 		const observer = new ResizeObserver(resize);
 		observer.observe(canvas);
 		resize();
 		frameId = requestAnimationFrame(draw);
 
-		canvas.addEventListener("pointerdown", handlePointerDown);
-		canvas.addEventListener("pointermove", handlePointerMove);
-		canvas.addEventListener("pointerup", handlePointerUp);
-		canvas.addEventListener("pointercancel", handlePointerUp);
-		canvas.addEventListener("wheel", handleWheel, { passive: false });
-
 		return () => {
 			cancelAnimationFrame(frameId);
 			observer.disconnect();
-			canvas.removeEventListener("pointerdown", handlePointerDown);
-			canvas.removeEventListener("pointermove", handlePointerMove);
-			canvas.removeEventListener("pointerup", handlePointerUp);
-			canvas.removeEventListener("pointercancel", handlePointerUp);
-			canvas.removeEventListener("wheel", handleWheel);
 		};
-	}, []);
+	}, [lightMode]);
 
 	return (
 		<canvas
 			ref={canvasRef}
 			className={`${styles.globeCanvas} ${className}`}
-			aria-label="Interactive illuminated network constellation globe. Drag to rotate and scroll to zoom."
+			aria-label="Illuminated network constellation globe"
 		/>
 	);
 }
