@@ -16,6 +16,14 @@ import {
 } from "@/lib/site-content";
 import { routeHref } from "@/lib/routes";
 import { EngineeringVisual, IntelligenceVisual } from "./engineering-visual";
+import {
+  CapabilitySchematic,
+  EditorialSealVisual,
+  FinalCtaField,
+  ProcessConduitLine,
+  ProductMotif,
+  StackBlueprintVisual,
+} from "./section-illustrations";
 import { Icon } from "./icon";
 import { PreviewDialog, type DialogState } from "./preview-dialog";
 import { SiteHeader } from "./site-header";
@@ -27,30 +35,26 @@ import { HeroAnimation } from "./motion/hero-animation";
 import { GlobalHero } from "./global-hero";
 import { AccentThemeDock } from "./accent-theme-dock";
 
-const CAPABILITY_TAGS: Record<string, string[]> = {
-  "custom-software": ["Distributed Architecture", "Modern APIs", "Enterprise Scale"],
-  "ai-ml": ["RAG Pipelines", "LLM Integration", "Predictive Systems"],
-  "web-app": ["Next.js & React", "High Performance", "Micro-Frontends"],
-  "mobile-app": ["iOS & Android", "Offline Sync", "Native Experience"],
-  "cloud-devops": ["Infrastructure as Code", "CI/CD Pipelines", "Zero Downtime"],
-  "digital-transformation": ["Legacy Modernization", "Process Automation", "System Integration"],
-};
-
-const PRODUCT_TELEMETRY: Record<string, string> = {
-  trimarkity: "Marketing Intelligence · SaaS",
-  "1socialsnap": "Asset Automation · Creative Tech",
-  salesapp: "Pipeline Engine · Commercial Tech",
-  hrms: "People Operations · Enterprise Tech",
-};
-
-const PROCESS_PHASES: Record<string, string> = {
-  Discover: "Scope & Objectives",
-  Strategize: "Architecture & Stack",
-  Design: "UI/UX & Protocols",
-  Develop: "Type-Safe Engineering",
-  "Test & Deploy": "CI/CD & Observability",
-  "Support & Scale": "Performance & Evolution",
-};
+const COMPANY_PILLARS = [
+  {
+    icon: "code",
+    title: "Dual-Engine Strategy",
+    description:
+      "We build tailored solutions for client challenges while concurrently investing in proprietary software products.",
+  },
+  {
+    icon: "layers",
+    title: "Architectural Discipline",
+    description:
+      "Engineered for maintainability, high performance, strict type safety, and clean interface boundaries.",
+  },
+  {
+    icon: "brain",
+    title: "Pragmatic Intelligence",
+    description:
+      "Applying machine learning and generative AI where they drive measurable automation and clear business value.",
+  },
+] as const;
 
 function ProductPanel({ product, index }: { product: Product; index: number }) {
   return (
@@ -65,9 +69,6 @@ function ProductPanel({ product, index }: { product: Product; index: number }) {
           <span className="eyebrow">{product.category}</span>
           <span className="product-number" aria-hidden="true">0{index + 1}</span>
         </div>
-        <span className="product-telemetry-tag" aria-hidden="true">
-          {PRODUCT_TELEMETRY[product.id] || "PROPRIETARY SOFTWARE"}
-        </span>
         <h3 id={`product-${product.id}-title`}>{product.name}</h3>
         <p className="product-headline">{product.headline}</p>
         <p className="product-description">{product.positioning} {product.value}</p>
@@ -76,7 +77,7 @@ function ProductPanel({ product, index }: { product: Product; index: number }) {
       </div>
       <figure className="product-media">
         <span className="media-corner media-corner-top" aria-hidden="true" />
-        <Icon name="image" width="28" height="28" />
+        <ProductMotif id={product.id} />
         <figcaption>
           <span>Genuine screenshot slot</span>
           <small>Approved product imagery pending</small>
@@ -172,22 +173,18 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
             </ScrollReveal>
           </div>
           <div className="container">
-            <div className="company-pillars-grid">
-              <div className="company-pillar-card">
-                <div className="pillar-card-icon"><Icon name="code" width="20" height="20" /></div>
-                <h4>Dual-Engine Strategy</h4>
-                <p>We build tailored solutions for client challenges while concurrently investing in proprietary software products.</p>
-              </div>
-              <div className="company-pillar-card">
-                <div className="pillar-card-icon"><Icon name="layers" width="20" height="20" /></div>
-                <h4>Architectural Discipline</h4>
-                <p>Engineered for maintainability, high performance, strict type safety, and clean interface boundaries.</p>
-              </div>
-              <div className="company-pillar-card">
-                <div className="pillar-card-icon"><Icon name="brain" width="20" height="20" /></div>
-                <h4>Pragmatic Intelligence</h4>
-                <p>Applying machine learning and generative AI where they drive measurable automation and clear business value.</p>
-              </div>
+            <div className="company-pillars-ledger">
+              {COMPANY_PILLARS.map((pillar, index) => (
+                <div key={pillar.title} className="company-pillar-item">
+                  <ScrollReveal variant="fade-up" delay={index * 60}>
+                    <div className="pillar-item-icon" aria-hidden="true">
+                      <Icon name={pillar.icon} width="18" height="18" />
+                    </div>
+                    <h3>{pillar.title}</h3>
+                    <p>{pillar.description}</p>
+                  </ScrollReveal>
+                </div>
+              ))}
             </div>
           </div>
         </section>
@@ -202,14 +199,14 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
               {CORE_CAPABILITIES.map((capability, index) => (
                 <ScrollReveal key={capability.id} variant="fade-up" delay={index * 60}>
                   <SpotlightCard as="article" className="capability-card">
-                    <div className="capability-icon"><Icon name={capability.icon} width="26" height="26" /></div>
+                    <div className="capability-card-top">
+                      <div className="capability-icon"><Icon name={capability.icon} width="22" height="22" /></div>
+                      <div className="capability-schematic-slot" aria-hidden="true">
+                        <CapabilitySchematic id={capability.id} />
+                      </div>
+                    </div>
                     <h3>{capability.name}</h3>
                     <p>{capability.description}</p>
-                    <div className="capability-tags" aria-hidden="true">
-                      {CAPABILITY_TAGS[capability.id]?.map((tag) => (
-                        <span key={tag} className="capability-badge">{tag}</span>
-                      ))}
-                    </div>
                     <a className="text-link" href={capability.href} aria-label={`Explore ${capability.name}`}>Explore capability<Icon name="arrow-up-right" width="18" height="18" /></a>
                   </SpotlightCard>
                 </ScrollReveal>
@@ -280,6 +277,9 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={100} className="technology-taxonomy">
               <p className="technology-status"><span className="status-dot" aria-hidden="true" />Engineering categories · capability verification pending</p>
+              <div className="stack-blueprint-frame" aria-hidden="true">
+                <StackBlueprintVisual />
+              </div>
               <ul className="stack-category-list">{STACK_CATEGORIES.map((category) => <li key={category.name}><h3>{category.name}</h3><p>{category.context}</p></li>)}</ul>
               <p className="small-note">Specific team technologies, proficiency and delivery stacks need verification. Candidate tools are intentionally not presented as a logo wall.</p>
             </ScrollReveal>
@@ -292,12 +292,14 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
               <div><p className="eyebrow">Development Process</p><h2 id="process-heading">A clear path from<br className="desktop-break" /> possibility to progress.</h2></div>
               <p>A considered working approach, with shared understanding and useful decisions at every stage.</p>
             </ScrollReveal>
+            <div className="process-conduit-wrap" aria-hidden="true">
+              <ProcessConduitLine />
+            </div>
             <ol className="process-list">
               {PROCESS_STAGES.map((stage, index) => (
                 <li key={stage.name}>
                   <span className="process-number" aria-hidden="true">0{index + 1}</span>
                   <h3>{stage.name}</h3>
-                  <span className="process-phase-badge" aria-hidden="true">{PROCESS_PHASES[stage.name] || "Phase Milestone"}</span>
                   <p>{stage.description}</p>
                 </li>
               ))}
@@ -312,7 +314,7 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
               <p>Real projects deserve genuine context, approved imagery and substantiated outcomes.</p>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={100} className="evidence-state">
-              <div className="evidence-marker" aria-hidden="true"><Icon name="file" width="32" height="32" /></div>
+              <div className="evidence-marker" aria-hidden="true"><EditorialSealVisual variant="evidence" /></div>
               <div className="evidence-copy"><h3>Evidence first. Always.</h3><p>Approved case studies are not available in this preview.</p><p className="small-note">No clients, projects, results or screenshots have been invented to fill this space.</p></div>
               <button className="button button-secondary" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry("A business challenge to explore")}>Discuss your challenge<Icon name="arrow-up-right" /></button>
             </ScrollReveal>
@@ -329,11 +331,14 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
         <section id="insights" className="section insights-section" data-section="insights" aria-labelledby="insights-heading">
           <div className="container insights-grid">
             <ScrollReveal variant="fade-up"><div><p className="eyebrow">Insights</p><h2 id="insights-heading">Ideas worth sharing.<br />When they&apos;re ready.</h2><p className="section-intro">A place for thoughtful perspectives on software, intelligence and digital change.</p></div></ScrollReveal>
-            <ScrollReveal variant="fade-up" delay={100} className="insights-state"><span className="insights-symbol" aria-hidden="true"><Icon name="file" width="40" height="40" /></span><h3>Useful perspectives.<br />Not placeholder content.</h3><p>Approved insights are not available in this preview. Resources will appear after editorial review; no authors, dates or articles have been invented.</p><button className="text-link" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry("A technology conversation")}>Prepare a conversation<Icon name="arrow-right" /></button></ScrollReveal>
+            <ScrollReveal variant="fade-up" delay={100} className="insights-state"><span className="insights-symbol" aria-hidden="true"><EditorialSealVisual variant="insights" /></span><h3>Useful perspectives.<br />Not placeholder content.</h3><p>Approved insights are not available in this preview. Resources will appear after editorial review; no authors, dates or articles have been invented.</p><button className="text-link" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry("A technology conversation")}>Prepare a conversation<Icon name="arrow-right" /></button></ScrollReveal>
           </div>
         </section>
 
         <section id="contact" className="section final-cta-section" data-section="final-cta" aria-labelledby="contact-heading">
+          <div className="final-cta-backdrop" aria-hidden="true">
+            <FinalCtaField />
+          </div>
           <div className="container final-cta-grid">
             <ScrollReveal variant="fade-up"><div><p className="eyebrow">Your next possibility</p><h2 id="contact-heading">Have an Idea? Let&apos;s Engineer It.</h2></div></ScrollReveal>
             <ScrollReveal variant="fade-up" delay={100} className="final-cta-copy"><p>Bring your challenge, your ambition or your next product idea. Start with a clear brief.</p><button className="button button-inverse" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry()}>Start a Project<Icon name="arrow-up-right" /></button><p className="final-preview-note">Local preview only. No inquiry is sent. Approved contact details and delivery are pending.</p></ScrollReveal>

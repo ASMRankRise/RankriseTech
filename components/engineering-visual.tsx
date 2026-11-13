@@ -1,5 +1,7 @@
 "use client";
 
+import { useId } from "react";
+
 export function EngineeringVisual() {
   return (
     <figure className="engineering-visual">
@@ -108,6 +110,9 @@ export function EngineeringVisual() {
 }
 
 export function IntelligenceVisual() {
+  const uid = useId().replace(/:/g, "");
+  const coreHaloId = `rr-intel-halo-${uid}`;
+
   return (
     <figure className="intelligence-visual">
       <div className="intelligence-figure-top">
@@ -115,22 +120,60 @@ export function IntelligenceVisual() {
         <span className="visual-coordinate" aria-hidden="true">AI / EXPLORATION</span>
       </div>
       <svg viewBox="0 0 480 310" fill="none" aria-hidden="true" focusable="false">
-        <g stroke="var(--sky-blue)" strokeWidth="1" opacity="0.45">
+        <defs>
+          <radialGradient id={coreHaloId} cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="var(--sky-blue)" stopOpacity="0.28" />
+            <stop offset="60%" stopColor="var(--rankrise-blue)" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="var(--midnight-navy)" stopOpacity="0" />
+          </radialGradient>
+        </defs>
+
+        <circle cx="240" cy="157" r="115" fill={`url(#${coreHaloId})`} />
+
+        {/* Calibrated orbital rings & radial coordinate lines */}
+        <g stroke="var(--sky-blue)" strokeWidth="1" opacity="0.42">
+          <circle cx="240" cy="157" r="134" strokeOpacity="0.45" strokeDasharray="2 6" />
           <circle cx="240" cy="157" r="122" />
           <circle cx="240" cy="157" r="93" />
           <path d="M37 157h406M240 12v290M83 35l314 244M83 279 397 35" strokeDasharray="3 6" className="animated-circuit-path" />
         </g>
-        <g stroke="var(--sky-blue)" strokeWidth="1.5">
-          <path d="M111 111h61l34 46M369 111h-61l-34 46M111 216h61l34-59M369 216h-61l-34-59M240 54v52M240 208v52" />
-          <path d="m240 106 45 26v50l-45 26-45-26v-50l45-26Z" fill="var(--rankrise-blue)" className="animated-node-pulse" />
-          <path d="m195 132 45 26 45-26M240 158v50" stroke="var(--ice-blue)" />
-          <circle cx="111" cy="111" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
-          <circle cx="369" cy="111" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
-          <circle cx="111" cy="216" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
-          <circle cx="369" cy="216" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
-          <circle cx="240" cy="54" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
-          <circle cx="240" cy="260" r="7" fill="var(--midnight-navy)" className="animated-node-pulse" />
+
+        {/* Registration ticks along cardinal axes */}
+        <g stroke="var(--ice-blue)" strokeOpacity="0.45" strokeWidth="1" strokeLinecap="round">
+          <path d="M240 16v10M240 288v10M48 157h10M422 157h10" />
         </g>
+
+        {/* Context-to-intelligence routing paths */}
+        <g stroke="var(--sky-blue)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M111 111h61l34 46M369 111h-61l-34 46M111 216h61l34-59M369 216h-61l-34-59M240 54v52M240 208v52" />
+          {/* Primary horizontal Context -> Intelligence -> Action axis accent */}
+          <path d="M111 111h61l34 46h68l34 59h61" stroke="var(--accent-highlight, var(--sky-blue))" strokeOpacity="0.72" strokeWidth="1.4" strokeDasharray="4 4" />
+        </g>
+
+        {/* Central isometric intelligence prism */}
+        <g strokeLinejoin="round">
+          <path d="m240 106 45 26v50l-45 26-45-26v-50l45-26Z" fill="var(--rankrise-blue)" fillOpacity="0.88" stroke="var(--sky-blue)" strokeWidth="1.5" className="animated-node-pulse" />
+          <path d="m240 106 45 26-45 26-45-26 45-26Z" fill="var(--sky-blue)" fillOpacity="0.32" />
+          <path d="m195 132 45 26 45-26M240 158v50" stroke="var(--ice-blue)" strokeWidth="1.25" />
+          <path d="m240 124 20 12v22l-20 12-20-12v-22l20-12Z" fill="var(--midnight-navy)" fillOpacity="0.55" stroke="var(--ice-blue)" strokeOpacity="0.55" strokeWidth="1" />
+          <circle cx="240" cy="147" r="4" fill="var(--accent-highlight, var(--sky-blue))" />
+        </g>
+
+        {/* Dual-ring peripheral context & action ports */}
+        {[
+          { cx: 111, cy: 111, accent: true },
+          { cx: 369, cy: 111, accent: false },
+          { cx: 111, cy: 216, accent: false },
+          { cx: 369, cy: 216, accent: true },
+          { cx: 240, cy: 54, accent: false },
+          { cx: 240, cy: 260, accent: false },
+        ].map((node, index) => (
+          <g key={index} className="animated-node-pulse">
+            <circle cx={node.cx} cy={node.cy} r="11" stroke={node.accent ? "var(--accent-highlight, var(--sky-blue))" : "var(--sky-blue)"} strokeOpacity="0.35" strokeWidth="1" />
+            <circle cx={node.cx} cy={node.cy} r="7" fill="var(--midnight-navy)" stroke={node.accent ? "var(--accent-highlight, var(--sky-blue))" : "var(--sky-blue)"} strokeWidth="1.5" />
+            <circle cx={node.cx} cy={node.cy} r="2.2" fill={node.accent ? "var(--accent-highlight, var(--ice-blue))" : "var(--ice-blue)"} />
+          </g>
+        ))}
       </svg>
       <div className="intelligence-flow" aria-label="Context to intelligence to action">
         <span>Context</span><span aria-hidden="true">→</span><span>Intelligence</span><span aria-hidden="true">→</span><span>Action</span>
