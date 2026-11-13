@@ -6,14 +6,14 @@ import { Homepage } from "@/components/homepage";
 
 function HomeVariant() {
   const searchParams = useSearchParams();
-  const heroVariant = searchParams.get("hero") === "global" ? "global" : "default";
+  const heroVariant = searchParams.get("hero") === "default" ? "default" : "global";
 
   return <Homepage heroVariant={heroVariant} />;
 }
 
 export default function Home() {
   return (
-    <Suspense fallback={<Homepage />}>
+    <Suspense fallback={<Homepage heroVariant="global" />}>
       <HomeVariant />
     </Suspense>
   );

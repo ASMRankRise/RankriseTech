@@ -8,7 +8,7 @@ export default function Loading() {
             height: "12px",
             width: "120px",
             borderRadius: "6px",
-            backgroundColor: "var(--soft-blue-grey)",
+            backgroundColor: "var(--soft-blue-grey, #E2E8F0)",
             marginBottom: "20px",
             animation: "pulse-subtle 1.8s infinite ease-in-out",
           }}
@@ -19,7 +19,7 @@ export default function Loading() {
             height: "44px",
             width: "80%",
             borderRadius: "8px",
-            backgroundColor: "var(--ice-blue)",
+            backgroundColor: "var(--ice-blue, #EDF4FF)",
             marginBottom: "24px",
             animation: "pulse-subtle 1.8s infinite ease-in-out",
           }}
@@ -30,7 +30,7 @@ export default function Loading() {
             height: "16px",
             width: "100%",
             borderRadius: "4px",
-            backgroundColor: "var(--cloud-white)",
+            backgroundColor: "var(--cloud-white, #F8FAFC)",
             marginBottom: "12px",
             animation: "pulse-subtle 1.8s infinite ease-in-out",
           }}
@@ -40,7 +40,7 @@ export default function Loading() {
             height: "16px",
             width: "90%",
             borderRadius: "4px",
-            backgroundColor: "var(--cloud-white)",
+            backgroundColor: "var(--cloud-white, #F8FAFC)",
             marginBottom: "32px",
             animation: "pulse-subtle 1.8s infinite ease-in-out",
           }}
@@ -52,7 +52,7 @@ export default function Loading() {
               height: "48px",
               width: "180px",
               borderRadius: "9px",
-              backgroundColor: "var(--soft-blue-grey)",
+              backgroundColor: "var(--soft-blue-grey, #E2E8F0)",
               animation: "pulse-subtle 1.8s infinite ease-in-out",
             }}
           />
@@ -61,7 +61,7 @@ export default function Loading() {
               height: "48px",
               width: "160px",
               borderRadius: "9px",
-              backgroundColor: "var(--cloud-white)",
+              backgroundColor: "var(--cloud-white, #F8FAFC)",
               animation: "pulse-subtle 1.8s infinite ease-in-out",
             }}
           />

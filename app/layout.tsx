@@ -37,7 +37,13 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${inter.variable} ${manrope.variable}`}>
+    <html
+      lang="en"
+      data-theme="light"
+      data-hero-theme="light"
+      data-accent="vermilion"
+      className={`${inter.variable} ${manrope.variable}`}
+    >
       <head>
         <OrganizationSchema />
         <WebSiteSchema />

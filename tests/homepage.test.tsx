@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import ConstructionPage, { dynamicParams, generateMetadata, generateStaticParams } from "@/app/[...slug]/page";
 import TeamPage, { generateMetadata as generateTeamMetadata } from "@/app/meet%20the%20team/page";
+import { ACCENT_PRESETS } from "@/components/accent-theme-dock";
 import { Homepage } from "@/components/homepage";
 import { UnderConstruction } from "@/components/under-construction";
 import {
@@ -111,6 +112,9 @@ afterEach(async () => {
   cleanup();
   await Promise.resolve();
   document.body.style.overflow = "";
+  delete document.documentElement.dataset.accent;
+  delete document.documentElement.dataset.theme;
+  delete document.documentElement.dataset.heroTheme;
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
 });
@@ -512,6 +516,72 @@ describe("initial RankRise homepage regression", () => {
     expect(screen.queryByRole("textbox")).not.toBeInTheDocument();
     expect(opener).toHaveFocus();
     expect(document.body.style.overflow).toBe("auto");
+  });
+
+  it("renders the Colour & Theme Studio dock with all 6 accent presets, toggles accent and theme attributes, and renders the header CTA via LabelSlideButton", async () => {
+    const user = userEvent.setup();
+    render(<Homepage />);
+
+    const studio =
+      screen.queryByRole("region", { name: "Colour and theme studio" }) ??
+      screen.getByRole("complementary", { name: "Colour and theme studio" });
+    expect(studio).toHaveAttribute("aria-label", "Colour and theme studio");
+
+    expect(ACCENT_PRESETS.map((preset) => preset.label)).toEqual([
+      "Signal Vermilion",
+      "Acid Volt",
+      "Electric Amber",
+      "Crimson Rose",
+      "Hyper Emerald",
+      "RankRise Blue",
+    ]);
+
+    const toolbar = within(studio).getByRole("toolbar", { name: "Accent colours" });
+    for (const preset of ACCENT_PRESETS) {
+      expect(
+        within(toolbar).getByRole("button", { name: `Select ${preset.label} accent` }),
+      ).toHaveAttribute("data-accent", preset.id);
+    }
+
+    expect(document.documentElement.dataset.accent).toBe("vermilion");
+    expect(
+      within(toolbar).getByRole("button", { name: "Select Signal Vermilion accent" }),
+    ).toHaveAttribute("aria-pressed", "true");
+    expect(studio.querySelector(".accent-dock-active-name")).toHaveTextContent("Signal Vermilion");
+
+    for (const preset of ACCENT_PRESETS) {
+      const button = within(toolbar).getByRole("button", { name: `Select ${preset.label} accent` });
+      await user.click(button);
+      expect(document.documentElement.dataset.accent).toBe(preset.id);
+      expect(button).toHaveAttribute("aria-pressed", "true");
+      expect(studio.querySelector(".accent-dock-active-name")).toHaveTextContent(preset.label);
+    }
+
+    expect(document.documentElement.dataset.theme).toBe("light");
+    expect(document.documentElement.dataset.heroTheme).toBe("light");
+    const themeToggle = within(studio).getByRole("button", { name: "Switch to dark mode" });
+    expect(themeToggle).toHaveAttribute("aria-pressed", "false");
+
+    await user.click(themeToggle);
+    expect(document.documentElement.dataset.theme).toBe("dark");
+    expect(document.documentElement.dataset.heroTheme).toBe("dark");
+    expect(themeToggle).toHaveAttribute("aria-pressed", "true");
+    expect(themeToggle).toHaveAttribute("aria-label", "Switch to light mode");
+
+    await user.click(themeToggle);
+    expect(document.documentElement.dataset.theme).toBe("light");
+    expect(document.documentElement.dataset.heroTheme).toBe("light");
+    expect(themeToggle).toHaveAttribute("aria-pressed", "false");
+    expect(themeToggle).toHaveAttribute("aria-label", "Switch to dark mode");
+
+    const header = screen.getByRole("banner", { name: "Site header" });
+    const nav = within(header).getByRole("navigation", { name: "Main navigation" });
+    const cta = within(nav).getByRole("link", { name: "Let's Talk Business" });
+    expect(cta).toHaveAttribute("href", "/contact/");
+    expect(cta).toHaveClass("header-cta");
+    expect(cta).toHaveAttribute("aria-label", "Let's Talk Business");
+    expect(cta).toHaveTextContent("Let's Talk Business");
+    expect(cta).not.toHaveAttribute("aria-haspopup");
   });
 });
 

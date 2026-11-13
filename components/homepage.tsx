@@ -25,6 +25,7 @@ import { SpotlightCard } from "./motion/spotlight-card";
 import { InitialPageLoader } from "./motion/page-loader";
 import { HeroAnimation } from "./motion/hero-animation";
 import { GlobalHero } from "./global-hero";
+import { AccentThemeDock } from "./accent-theme-dock";
 
 const CAPABILITY_TAGS: Record<string, string[]> = {
   "custom-software": ["Distributed Architecture", "Modern APIs", "Enterprise Scale"],
@@ -341,6 +342,7 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
       </main>
       <SiteFooter />
       <PreviewDialog state={dialogState} onDismiss={() => setDialogState(null)} onPrepareBrief={openInquiry} />
+      <AccentThemeDock />
     </>
   );
 }
