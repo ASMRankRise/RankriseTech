@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { NAVIGATION_ITEMS, PRODUCTS } from "@/lib/site-content";
 import { routeHref } from "@/lib/routes";
@@ -318,31 +319,31 @@ export function SiteHeader({
                         id="products-dropdown"
                         hidden={!productsOpen}
                       >
-                        <a className="dropdown-overview" href={item.href} onClick={closeMenus}>
+                        <Link className="dropdown-overview" href={item.href} onClick={closeMenus}>
                           Our in-house products
                           <Icon name="arrow-right" width="15" height="15" />
-                        </a>
+                        </Link>
                         <ul>
                           {PRODUCTS.map((product) => (
                             <li key={product.id}>
-                              <a href={product.href} onClick={closeMenus}>
+                              <Link href={product.href} onClick={closeMenus}>
                                 <span>{product.name}</span>
                                 <small>{product.category}</small>
-                              </a>
+                              </Link>
                             </li>
                           ))}
                         </ul>
                       </div>
                     </>
                   ) : (
-                    <a
+                    <Link
                       className={`navigation-link${isActive(item.href) ? " is-active" : ""}`}
                       href={item.href}
                       aria-current={isActive(item.href) ? "page" : undefined}
                       onClick={closeMenus}
                     >
                       {item.label}
-                    </a>
+                    </Link>
                   )}
                 </li>
               ))}
@@ -354,7 +355,7 @@ export function SiteHeader({
               spacerLabel="Available 24/7"
               ariaLabel="Let's Talk Business"
               screenReaderLabel="Let's Talk Business"
-              link={routeHref("/contact/")}
+              link={routeHref("/contact")}
               newTab={false}
               className="header-cta"
               onClick={closeMenus}

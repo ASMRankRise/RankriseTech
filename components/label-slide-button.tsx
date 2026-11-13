@@ -1,6 +1,7 @@
 // Label Slide Button — Originkit
 "use client";
 
+import Link from "next/link";
 import { type Transition, useAnimate, useReducedMotion } from "motion/react";
 import type * as React from "react";
 import { useEffect, useLayoutEffect, useRef } from "react";
@@ -403,6 +404,25 @@ export function LabelSlideButton(props: AnimatedButtonProps) {
 		ariaLabel ?? (typeof label === "string" ? label : undefined);
 
 	if (link) {
+		if (!newTab && link.startsWith("/")) {
+			return (
+				<Link
+					ref={rootRef as React.RefObject<HTMLAnchorElement>}
+					href={link}
+					className={className}
+					onClick={onClick as React.MouseEventHandler<HTMLAnchorElement>}
+					aria-label={computedAriaLabel}
+					onMouseEnter={onEnter}
+					onMouseLeave={onLeave}
+					onFocus={onEnter}
+					onBlur={onLeave}
+					style={commonStyle}
+				>
+					{content}
+				</Link>
+			);
+		}
+
 		return (
 			<a
 				ref={rootRef as React.RefObject<HTMLAnchorElement>}

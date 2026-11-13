@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import Globe from "./originkit-globe";
 import styles from "./global-hero.module.css";
 import { StageBackdrop } from "./Hands";
@@ -9,6 +9,28 @@ import ArrowRevealButton from "./arrow-reveal-button";
 /* Stable prop identities: the globe re-runs its scene effect when these change. */
 const GLOBE_DOTS_DARK = { color: "#ffffff", size: 5, density: 8, allDots: false };
 const GLOBE_DOTS_LIGHT = { color: "#1768d5", size: 5, density: 8, allDots: false };
+
+// Once the hero entrance has run in this browser session, return SPA navigations
+// back to "/" settle immediately instead of replaying the 1.8s staggered reveal.
+let hasPlayedHeroEntrance = false;
+
+function readClientHeroTheme(): { lightMode: boolean; accent: string } {
+	try {
+		const stored =
+			window.localStorage.getItem("rankrise-theme") ||
+			window.localStorage.getItem("rankrise-global-hero-theme") ||
+			document.documentElement.dataset.theme;
+		const storedAccent =
+			window.localStorage.getItem("rankrise-accent") ||
+			document.documentElement.dataset.accent;
+		return {
+			lightMode: stored !== "dark",
+			accent: storedAccent || "vermilion",
+		};
+	} catch {
+		return { lightMode: true, accent: "vermilion" };
+	}
+}
 
 const ACCENT_HERO_CONFIG: Record<
 	string,
@@ -172,11 +194,15 @@ export function GlobalHero({
 	onOpenInquiry: (context?: string) => void;
 }) {
 	const heroRef = useRef<HTMLElement>(null);
-	const [lightMode, setLightMode] = useState(true);
-	const [accent, setAccent] = useState<string>("vermilion");
+	const [lightMode, setLightMode] = useState(() =>
+		hasPlayedHeroEntrance ? readClientHeroTheme().lightMode : true
+	);
+	const [accent, setAccent] = useState<string>(() =>
+		hasPlayedHeroEntrance ? readClientHeroTheme().accent : "vermilion"
+	);
 	const [reducedMotion, setReducedMotion] = useState(false);
-	const [hasLoaded, setHasLoaded] = useState(false);
-	const [animationComplete, setAnimationComplete] = useState(false);
+	const [hasLoaded, setHasLoaded] = useState(() => hasPlayedHeroEntrance);
+	const [animationComplete, setAnimationComplete] = useState(() => hasPlayedHeroEntrance);
 
 	useEffect(() => {
 		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -188,7 +214,8 @@ export function GlobalHero({
 
 	useEffect(() => {
 		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-		if (mediaQuery.matches) {
+		if (mediaQuery.matches || hasPlayedHeroEntrance) {
+			hasPlayedHeroEntrance = true;
 			setHasLoaded(true);
 			setAnimationComplete(true);
 			return;
@@ -200,11 +227,13 @@ export function GlobalHero({
 		let frameId2 = 0;
 		frameId1 = window.requestAnimationFrame(() => {
 			frameId2 = window.requestAnimationFrame(() => {
+				hasPlayedHeroEntrance = true;
 				setHasLoaded(true);
 			});
 		});
 
 		const timer = setTimeout(() => {
+			hasPlayedHeroEntrance = true;
 			setAnimationComplete(true);
 		}, 1800);
 
@@ -218,11 +247,10 @@ export function GlobalHero({
 	useEffect(() => {
 		try {
 			const stored =
+				window.localStorage.getItem("rankrise-theme") ||
 				window.localStorage.getItem("rankrise-global-hero-theme") ||
-				window.localStorage.getItem("rankrise-theme");
+				document.documentElement.dataset.theme;
 			if (stored === "dark") setLightMode(false);
-			else if (stored === "light") setLightMode(true);
-			else if (document.documentElement.dataset.theme === "dark") setLightMode(false);
 			else setLightMode(true);
 
 			const storedAccent =
@@ -334,6 +362,10 @@ export function GlobalHero({
 
 	const heroAccent = ACCENT_HERO_CONFIG[accent] || ACCENT_HERO_CONFIG.vermilion;
 	const modeConfig = lightMode ? heroAccent.light : heroAccent.dark;
+	const globeMarkerConfig = useMemo(
+		() => ({ markers: [], color: modeConfig.markerColor, size: 40 }),
+		[modeConfig.markerColor]
+	);
 
 	return (
 		<section
@@ -377,7 +409,7 @@ export function GlobalHero({
 										: modeConfig.markerColor
 									: "#aee0fd"
 							}
-							markerConfig={{ markers: [], color: modeConfig.markerColor, size: 40 }}
+							markerConfig={globeMarkerConfig}
 							showGrid={false}
 							style={{ transform: "translateY(21%)" }}
 						/>

@@ -156,6 +156,161 @@ function latLngToPosition(
     return { x, y, z };
 }
 
+type UnitPoint = { x: number; y: number; z: number };
+const cachedOutlineGeometries = new Map<string, TubeGeometry[]>();
+const cachedLandMask = new Map<
+    string,
+    { pixels: Uint8ClampedArray; width: number; height: number }
+>();
+const cachedDotUnitPositions = new Map<string, UnitPoint[]>();
+
+function isLandFeature(feature: any): boolean {
+    const featureType =
+        feature.properties?.featurecla || feature.properties?.type || "";
+    const featureName = feature.properties?.name || "";
+    const lowerType = featureType.toLowerCase();
+    const lowerName = featureName.toLowerCase();
+    return !(
+        lowerType.includes("graticule") ||
+        lowerType.includes("grid") ||
+        lowerType.includes("line") ||
+        lowerName.includes("graticule") ||
+        lowerName.includes("grid") ||
+        lowerName.includes("line")
+    );
+}
+
+function getCachedOutlineGeometries(
+    landFeatures: any,
+    detail: number,
+    globeRadius: number,
+    outlineWidth: number
+): TubeGeometry[] {
+    const cacheKey = `${detail}:${globeRadius.toFixed(4)}:${outlineWidth}`;
+    const existing = cachedOutlineGeometries.get(cacheKey);
+    if (existing) return existing;
+
+    const projection = geoEquirectangular();
+    const pathGenerator = geoPath().projection(projection);
+    const geometries: TubeGeometry[] = [];
+    const radius = (outlineWidth / 10) * 0.01;
+
+    const processRing = (ring: number[][]) => {
+        if (ring.length < 2) return;
+        const simplifiedRing = simplifyRing(ring, detail);
+        const points: Vector3[] = [];
+        simplifiedRing.forEach((coord) => {
+            const [lng, lat] = coord;
+            const pos = latLngToPosition(lat, lng);
+            points.push(
+                new Vector3(
+                    pos.x * globeRadius,
+                    pos.y * globeRadius,
+                    pos.z * globeRadius
+                )
+            );
+        });
+        if (
+            points.length > 0 &&
+            points[0].distanceTo(points[points.length - 1]) > 0.001
+        ) {
+            points.push(points[0].clone());
+        }
+        if (points.length >= 2) {
+            const curve = new CatmullRomCurve3(points);
+            geometries.push(
+                new TubeGeometry(curve, points.length * 2, radius, 8, false)
+            );
+        }
+    };
+
+    landFeatures.features.forEach((feature: any) => {
+        if (!isLandFeature(feature)) return;
+        const pathString = pathGenerator(feature);
+        if (!pathString) return;
+        const commands = pathString.match(/[ML][^MLZ]*/g) || [];
+        if (commands.length === 0) return;
+        const geometry = feature.geometry;
+        if (!geometry || !geometry.coordinates) return;
+
+        if (geometry.type === "Polygon" && geometry.coordinates.length > 0) {
+            processRing(geometry.coordinates[0]);
+        } else if (geometry.type === "MultiPolygon") {
+            geometry.coordinates.forEach((polygon: any) => {
+                if (polygon.length > 0) {
+                    processRing(polygon[0]);
+                }
+            });
+        }
+    });
+
+    cachedOutlineGeometries.set(cacheKey, geometries);
+    return geometries;
+}
+
+function getCachedLandMask(landFeatures: any): {
+    pixels: Uint8ClampedArray;
+    width: number;
+    height: number;
+} {
+    const existing = cachedLandMask.get("default");
+    if (existing) return existing;
+
+    const bitmapWidth = 2048;
+    const bitmapHeight = 1024;
+    const offscreenCanvas = document.createElement("canvas");
+    offscreenCanvas.width = bitmapWidth;
+    offscreenCanvas.height = bitmapHeight;
+    const ctx = offscreenCanvas.getContext("2d", {
+        willReadFrequently: true,
+    });
+    if (!ctx) throw new Error("Canvas not supported");
+    const projection = geoEquirectangular().fitSize(
+        [bitmapWidth, bitmapHeight],
+        { type: "Sphere" } as any
+    );
+    const pathGenerator = geoPath().projection(projection).context(ctx);
+    ctx.fillStyle = "#000";
+    ctx.fillRect(0, 0, bitmapWidth, bitmapHeight);
+    ctx.fillStyle = "#fff";
+    ctx.beginPath();
+    landFeatures.features.forEach((feature: any) => {
+        pathGenerator(feature);
+    });
+    ctx.fill();
+    const imageData = ctx.getImageData(0, 0, bitmapWidth, bitmapHeight);
+    const mask = { pixels: imageData.data, width: bitmapWidth, height: bitmapHeight };
+    cachedLandMask.set("default", mask);
+    return mask;
+}
+
+function getCachedDotUnitPositions(
+    dotSpacing: number,
+    allDots: boolean,
+    isOnLand: (lng: number, lat: number) => boolean
+): UnitPoint[] {
+    const cacheKey = `${dotSpacing}:${allDots}`;
+    const existing = cachedDotUnitPositions.get(cacheKey);
+    if (existing) return existing;
+
+    const unitPositions: UnitPoint[] = [];
+    const baseStep = dotSpacing * 0.08;
+    for (let lat = -90; lat <= 90; lat += baseStep) {
+        const latRad = (Math.abs(lat) * Math.PI) / 180;
+        const cosLat = Math.cos(latRad);
+        const lngStep =
+            cosLat > 0.01 ? baseStep / Math.max(0.3, cosLat) : 360;
+        for (let lng = -180; lng < 180; lng += lngStep) {
+            if (allDots || isOnLand(lng, lat)) {
+                unitPositions.push(latLngToPosition(lat, lng));
+            }
+        }
+    }
+
+    cachedDotUnitPositions.set(cacheKey, unitPositions);
+    return unitPositions;
+}
+
 interface Marker {
     lat: number;
     lng: number;
@@ -469,144 +624,38 @@ export default function Globe({
                         depthTest: true,
                         depthWrite: true,
                     });
-                    const projection = geoEquirectangular();
-                    const pathGenerator = geoPath().projection(projection);
-                    let processedCount = 0;
-                    let skippedCount = 0;
-                    landFeatures.features.forEach((feature: any) => {
-                        const featureType =
-                            feature.properties?.featurecla ||
-                            feature.properties?.type ||
-                            "";
-                        const featureName = feature.properties?.name || "";
-                        if (
-                            featureType.toLowerCase().includes("graticule") ||
-                            featureType.toLowerCase().includes("grid") ||
-                            featureType.toLowerCase().includes("line") ||
-                            featureName.toLowerCase().includes("graticule") ||
-                            featureName.toLowerCase().includes("grid") ||
-                            featureName.toLowerCase().includes("line")
-                        ) {
-                            skippedCount++;
-                            return;
-                        }
-                        processedCount++;
-                        const pathString = pathGenerator(feature);
-                        if (!pathString) return;
-                        const commands = pathString.match(/[ML][^MLZ]*/g) || [];
-                        if (commands.length === 0) return;
-
-                        const geometry = feature.geometry;
-                        if (!geometry || !geometry.coordinates) return;
-
-                        const processRing = (ring: number[][]) => {
-                            if (ring.length < 2) return;
-                            const simplifiedRing = simplifyRing(ring, detail);
-                            const positions: number[] = [];
-                            simplifiedRing.forEach((coord) => {
-                                const [lng, lat] = coord;
-                                const pos = latLngToPosition(lat, lng);
-                                positions.push(
-                                    pos.x * globeRadius,
-                                    pos.y * globeRadius,
-                                    pos.z * globeRadius
-                                );
-                            });
-                            if (positions && positions.length >= 6) {
-                                const points: Vector3[] = [];
-                                for (let i = 0; i < positions.length; i += 3) {
-                                    points.push(
-                                        new Vector3(
-                                            positions[i],
-                                            positions[i + 1],
-                                            positions[i + 2]
-                                        )
-                                    );
-                                }
-                                if (
-                                    points.length > 0 &&
-                                    points[0].distanceTo(
-                                        points[points.length - 1]
-                                    ) > 0.001
-                                ) {
-                                    points.push(points[0].clone());
-                                }
-                                if (points.length >= 2) {
-                                    const curve = new CatmullRomCurve3(points);
-                                    const radius = (outlineWidth / 10) * 0.01;
-                                    const tubeGeometry = new TubeGeometry(
-                                        curve,
-                                        points.length * 2,
-                                        radius,
-                                        8,
-                                        false
-                                    );
-                                    const tubeMesh = new Mesh(
-                                        tubeGeometry,
-                                        outlineMaterial
-                                    );
-                                    tubeMesh.renderOrder = 0;
-                                    continentOutlineGroup.add(tubeMesh);
-                                }
-                            }
-                        };
-                        if (
-                            geometry.type === "Polygon" &&
-                            geometry.coordinates.length > 0
-                        ) {
-                            processRing(geometry.coordinates[0]);
-                        } else if (geometry.type === "MultiPolygon") {
-                            geometry.coordinates.forEach((polygon: any) => {
-                                if (polygon.length > 0) {
-                                    processRing(polygon[0]);
-                                }
-                            });
-                        }
-                    });
-                    console.log(
-                        `[Globe] Processed ${processedCount} land features, skipped ${skippedCount} grid features`
+                    const outlineGeometries = getCachedOutlineGeometries(
+                        landFeatures,
+                        detail,
+                        globeRadius,
+                        outlineWidth
                     );
+                    outlineGeometries.forEach((tubeGeometry) => {
+                        const tubeMesh = new Mesh(tubeGeometry, outlineMaterial);
+                        tubeMesh.renderOrder = 0;
+                        continentOutlineGroup.add(tubeMesh);
+                    });
                 }
 
-                const bitmapWidth = 2048;
-                const bitmapHeight = 1024;
-                const offscreenCanvas = document.createElement("canvas");
-                offscreenCanvas.width = bitmapWidth;
-                offscreenCanvas.height = bitmapHeight;
-                const ctx = offscreenCanvas.getContext("2d", {
-                    willReadFrequently: true,
-                });
-                if (!ctx) throw new Error("Canvas not supported");
-                const projection = geoEquirectangular().fitSize(
-                    [bitmapWidth, bitmapHeight],
-                    { type: "Sphere" } as any
-                );
-                const pathGenerator = geoPath()
-                    .projection(projection)
-                    .context(ctx);
-                ctx.fillStyle = "#000";
-                ctx.fillRect(0, 0, bitmapWidth, bitmapHeight);
-                ctx.fillStyle = "#fff";
-                ctx.beginPath();
-                landFeatures.features.forEach((feature: any) => {
-                    pathGenerator(feature);
-                });
-                ctx.fill();
-                const imageData = ctx.getImageData(
-                    0,
-                    0,
-                    bitmapWidth,
-                    bitmapHeight
-                );
-                const pixels = imageData.data;
+                const needsMask = fill === "solid" || !allDots;
+                let maskPixels: Uint8ClampedArray | null = null;
+                let bitmapWidth = 2048;
+                let bitmapHeight = 1024;
+                if (needsMask) {
+                    const mask = getCachedLandMask(landFeatures);
+                    maskPixels = mask.pixels;
+                    bitmapWidth = mask.width;
+                    bitmapHeight = mask.height;
+                }
                 const isOnLand = (lng: number, lat: number) => {
+                    if (!maskPixels) return true;
                     const x =
                         Math.round(((lng + 180) / 360) * bitmapWidth) %
                         bitmapWidth;
                     const y = Math.round(((90 - lat) / 180) * bitmapHeight);
                     const clampedY = Math.max(0, Math.min(bitmapHeight - 1, y));
                     const idx = (clampedY * bitmapWidth + x) * 4;
-                    return pixels[idx] > 128;
+                    return maskPixels[idx] > 128;
                 };
 
                 if (fill === "solid") {
@@ -657,23 +706,13 @@ export default function Globe({
                     dotInstances = new Mesh(fillGeometry, fillMaterial);
                     globeGroup.add(dotInstances);
                 } else {
-                    const dotCoordinates: number[][] = [];
-                    const baseStep = dotSpacing * 0.08;
-                    for (let lat = -90; lat <= 90; lat += baseStep) {
-                        const latRad = (Math.abs(lat) * Math.PI) / 180;
-                        const cosLat = Math.cos(latRad);
-                        const lngStep =
-                            cosLat > 0.01
-                                ? baseStep / Math.max(0.3, cosLat)
-                                : 360;
-                        for (let lng = -180; lng < 180; lng += lngStep) {
-                            if (allDots || isOnLand(lng, lat)) {
-                                dotCoordinates.push([lng, lat]);
-                            }
-                        }
-                    }
+                    const dotUnitPositions = getCachedDotUnitPositions(
+                        dotSpacing,
+                        allDots,
+                        isOnLand
+                    );
 
-                    if (dotCoordinates.length > 0) {
+                    if (dotUnitPositions.length > 0) {
                         const dotGeometry = new SphereGeometry(
                             0.01 * dotSizeMultiplier,
                             4,
@@ -690,12 +729,11 @@ export default function Globe({
                         const instanced = new InstancedMesh(
                             dotGeometry,
                             dotMaterial,
-                            dotCoordinates.length
+                            dotUnitPositions.length
                         );
                         const matrix = new Matrix4();
-                        for (let i = 0; i < dotCoordinates.length; i++) {
-                            const [lng, lat] = dotCoordinates[i];
-                            const pos = latLngToPosition(lat, lng);
+                        for (let i = 0; i < dotUnitPositions.length; i++) {
+                            const pos = dotUnitPositions[i];
                             matrix.makeScale(1, 1, 1);
                             matrix.setPosition(
                                 pos.x * globeRadius,

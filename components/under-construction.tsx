@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { CONSTRUCTION_COPY } from "@/lib/site-content";
 import { routeHref, type UnderConstructionRoute } from "@/lib/routes";
 import { Icon } from "./icon";
@@ -16,8 +17,8 @@ export function UnderConstruction({ route }: { route: UnderConstructionRoute }) 
             <p className="construction-lead">{CONSTRUCTION_COPY.description}</p>
             <p className="construction-description">{CONSTRUCTION_COPY.explanation}</p>
             <div className="construction-actions">
-              <a className="button button-primary" href={routeHref("/")}>Back to homepage<Icon name="arrow-right" /></a>
-              <a className="button button-secondary" href="/#capabilities">Explore our capabilities<Icon name="arrow-up-right" /></a>
+              <Link className="button button-primary" href={routeHref("/")}>Back to homepage<Icon name="arrow-right" /></Link>
+              <Link className="button button-secondary" href="/#capabilities">Explore our capabilities<Icon name="arrow-up-right" /></Link>
             </div>
             <p className="construction-note">{CONSTRUCTION_COPY.notice}</p>
           </div>

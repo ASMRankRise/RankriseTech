@@ -19,11 +19,15 @@ function joinClasses(...parts: Array<string | undefined>): string {
 export function CapabilitySchematic({ id, className }: { id: string; className?: string }) {
   const uid = useId().replace(/:/g, "");
   const normalized =
-    id === "ai-machine-learning"
+    id === "ai-machine-learning" || id === "ai-solutions"
       ? "ai-ml"
       : id === "web-application"
         ? "web-app"
-        : id;
+        : id === "cloud-solutions"
+          ? "cloud-devops"
+          : id === "business-process-automation"
+            ? "digital-transformation"
+            : id;
 
   return (
     <svg
@@ -151,277 +155,67 @@ export function CapabilitySchematic({ id, className }: { id: string; className?:
   );
 }
 
+const PRODUCT_SHOWCASE_META: Record<string, { src: string; alt: string }> = {
+  trimarkity: {
+    src: "/images/showcases/product-trimarkity.jpg",
+    alt: "TriMarkity marketing analytics and unified campaign intelligence dashboard",
+  },
+  "1socialsnap": {
+    src: "/images/showcases/product-1socialsnap.jpg",
+    alt: "1SocialSnap multi-channel social publishing and engagement analytics UI",
+  },
+  salesapp: {
+    src: "/images/showcases/product-salesapp.jpg",
+    alt: "SalesApp field sales pipeline, customer order tracking, and revenue dashboard",
+  },
+  hrms: {
+    src: "/images/showcases/product-hrms.jpg",
+    alt: "HRMS workforce attendance, payroll, and people operations platform UI",
+  },
+};
+
 /**
  * ProductMotif
- * Distinct abstract geometric/architectural centerpiece per in-house product.
- * Pure <svg>, zero fake UI screens or metrics.
+ * Clean UI showcase preview per in-house RankRise product.
  */
 export function ProductMotif({ id, className }: { id: string; className?: string }) {
-  const uid = useId().replace(/:/g, "");
-  const gradId = `rr-pm-grad-${uid}`;
+  const media = PRODUCT_SHOWCASE_META[id] ?? PRODUCT_SHOWCASE_META.trimarkity;
 
   return (
-    <svg
-      className={joinClasses("rr-svg-illustration", "rr-product-motif", className)}
+    <div
+      className={joinClasses("rr-showcase-media", "rr-product-showcase", className)}
       data-product-motif={id}
-      viewBox="0 0 320 180"
-      width="100%"
-      fill="none"
-      aria-hidden="true"
-      focusable="false"
     >
-      <defs>
-        <radialGradient id={gradId} cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="var(--sky-blue)" stopOpacity="0.26" />
-          <stop offset="65%" stopColor="var(--rankrise-blue)" stopOpacity="0.08" />
-          <stop offset="100%" stopColor="var(--rankrise-blue)" stopOpacity="0" />
-        </radialGradient>
-      </defs>
-
-      {/* Subtle architectural coordinate hairlines */}
-      <g stroke="currentColor" strokeOpacity="0.11" strokeWidth="0.85">
-        <path d="M16 90h288M160 12v156" strokeDasharray="3 5" />
-        <path d="M24 22h10M24 22v10M296 22h-10M296 22v10M24 158h10M24 158v-10M296 158h-10M296 158v-10" />
-      </g>
-
-      <circle cx="160" cy="90" r="82" fill={`url(#${gradId})`} />
-
-      {id === "trimarkity" && (
-        <g strokeLinecap="round" strokeLinejoin="round">
-          {/* Orbital telemetry rings */}
-          <ellipse
-            cx="160"
-            cy="90"
-            rx="116"
-            ry="42"
-            transform="rotate(-14 160 90)"
-            stroke="var(--sky-blue)"
-            strokeOpacity="0.45"
-            strokeWidth="1.2"
-          />
-          <ellipse
-            cx="160"
-            cy="90"
-            rx="88"
-            ry="30"
-            transform="rotate(14 160 90)"
-            stroke="currentColor"
-            strokeOpacity="0.28"
-            strokeWidth="1.1"
-            strokeDasharray="4 5"
-          />
-          <circle cx="160" cy="90" r="56" stroke="currentColor" strokeOpacity="0.16" strokeWidth="1" />
-
-          {/* Dispersion vectors */}
-          <path d="M60 112 126 95M260 68l-66 17M160 28v30" stroke="var(--sky-blue)" strokeOpacity="0.5" strokeWidth="1.1" />
-
-          {/* Tripartite signal prism */}
-          <path d="m160 44 40 68h-80l40-68Z" fill="var(--rankrise-blue)" fillOpacity="0.16" stroke="var(--sky-blue)" strokeWidth="1.6" />
-          <path d="M160 44v44l40 24M160 88l-40 24" stroke="var(--sky-blue)" strokeOpacity="0.8" strokeWidth="1.2" />
-          <path d="m160 66 17 29h-34l17-29Z" fill="var(--sky-blue)" fillOpacity="0.24" stroke="currentColor" strokeOpacity="0.65" strokeWidth="1.1" />
-
-          {/* Orbital telemetry nodes */}
-          <circle cx="58" cy="113" r="4" fill="var(--sky-blue)" fillOpacity="0.25" stroke="var(--sky-blue)" strokeWidth="1.3" />
-          <circle cx="262" cy="67" r="4.5" fill="var(--accent-highlight)" fillOpacity="0.22" stroke="var(--accent-highlight)" strokeWidth="1.4" />
-          <circle cx="262" cy="67" r="2" fill="var(--accent-highlight)" />
-          <circle cx="160" cy="88" r="3.5" fill="var(--accent-highlight)" />
-        </g>
-      )}
-
-      {id === "1socialsnap" && (
-        <g strokeLinecap="round" strokeLinejoin="round">
-          {/* Rhythmic cadence grid & aperture framing */}
-          <g stroke="currentColor" strokeOpacity="0.2" strokeWidth="1">
-            <rect x="52" y="34" width="46" height="32" rx="4" fill="var(--sky-blue)" fillOpacity="0.06" />
-            <rect x="108" y="34" width="46" height="32" rx="4" fill="var(--sky-blue)" fillOpacity="0.1" />
-            <rect x="166" y="34" width="46" height="32" rx="4" fill="var(--rankrise-blue)" fillOpacity="0.14" stroke="var(--sky-blue)" strokeOpacity="0.6" />
-            <rect x="222" y="34" width="46" height="32" rx="4" fill="var(--sky-blue)" fillOpacity="0.06" />
-
-            <rect x="52" y="74" width="46" height="32" rx="4" fill="var(--sky-blue)" fillOpacity="0.09" />
-            <rect x="108" y="74" width="46" height="32" rx="4" fill="var(--rankrise-blue)" fillOpacity="0.18" stroke="var(--sky-blue)" strokeWidth="1.4" />
-            <rect x="166" y="74" width="46" height="32" rx="4" fill="var(--sky-blue)" fillOpacity="0.08" />
-            <rect x="222" y="74" width="46" height="32" rx="4" fill="var(--sky-blue)" fillOpacity="0.1" />
-
-            <rect x="52" y="114" width="46" height="32" rx="4" fill="var(--sky-blue)" fillOpacity="0.05" />
-            <rect x="108" y="114" width="46" height="32" rx="4" fill="var(--sky-blue)" fillOpacity="0.08" />
-            <rect x="166" y="114" width="46" height="32" rx="4" fill="var(--sky-blue)" fillOpacity="0.09" />
-            <rect x="222" y="114" width="46" height="32" rx="4" fill="var(--rankrise-blue)" fillOpacity="0.14" stroke="var(--sky-blue)" strokeOpacity="0.5" />
-          </g>
-
-          {/* Synchronized cadence timing wave */}
-          <path
-            d="M32 104c28-30 56-30 84 0s56 30 84 0 56-30 88 0"
-            stroke="var(--sky-blue)"
-            strokeWidth="1.6"
-          />
-
-          {/* Precision aperture frame locking active cadence node */}
-          <path d="M102 82v-14h14M160 82v-14h-14M102 98v14h14M160 98v14h-14" stroke="var(--accent-highlight)" strokeWidth="1.7" />
-          <circle cx="131" cy="90" r="4" fill="var(--accent-highlight)" />
-          <circle cx="189" cy="50" r="3" fill="var(--sky-blue)" />
-          <circle cx="245" cy="130" r="3" fill="var(--sky-blue)" />
-        </g>
-      )}
-
-      {id === "salesapp" && (
-        <g strokeLinecap="round" strokeLinejoin="round">
-          {/* Converging trajectory vectors through calibrated stage gates */}
-          <g stroke="var(--sky-blue)" strokeWidth="1.35">
-            <path d="M36 42C96 42 150 64 252 90" strokeOpacity="0.55" />
-            <path d="M36 66C100 66 155 78 252 90" strokeOpacity="0.72" />
-            <path d="M36 90h216" stroke="var(--accent-highlight)" strokeWidth="1.65" />
-            <path d="M36 114C100 114 155 102 252 90" strokeOpacity="0.72" />
-            <path d="M36 138C96 138 150 116 252 90" strokeOpacity="0.55" />
-          </g>
-
-          {/* Stage gates */}
-          <path d="M104 34v112M164 46v88M218 62v56" stroke="currentColor" strokeOpacity="0.22" strokeWidth="1" strokeDasharray="3 4" />
-          <rect x="100" y="61" width="8" height="58" rx="4" fill="var(--sky-blue)" fillOpacity="0.14" stroke="var(--sky-blue)" strokeWidth="1.15" />
-          <rect x="160" y="70" width="8" height="40" rx="4" fill="var(--rankrise-blue)" fillOpacity="0.18" stroke="var(--sky-blue)" strokeWidth="1.25" />
-
-          {/* Focal apex diamond & resonance rings */}
-          <circle cx="262" cy="90" r="24" stroke="currentColor" strokeOpacity="0.2" strokeWidth="1" strokeDasharray="3 4" />
-          <circle cx="262" cy="90" r="15" stroke="var(--sky-blue)" strokeOpacity="0.55" strokeWidth="1.2" />
-          <path d="m262 77 13 13-13 13-13-13 13-13Z" fill="var(--rankrise-blue)" fillOpacity="0.25" stroke="var(--accent-highlight)" strokeWidth="1.6" />
-          <circle cx="262" cy="90" r="3" fill="var(--accent-highlight)" />
-
-          {/* Source vector origin dots */}
-          <circle cx="36" cy="42" r="2.5" fill="var(--sky-blue)" />
-          <circle cx="36" cy="66" r="2.5" fill="var(--sky-blue)" />
-          <circle cx="36" cy="90" r="3" fill="var(--accent-highlight)" />
-          <circle cx="36" cy="114" r="2.5" fill="var(--sky-blue)" />
-          <circle cx="36" cy="138" r="2.5" fill="var(--sky-blue)" />
-        </g>
-      )}
-
-      {id === "hrms" && (
-        <g strokeLinecap="round" strokeLinejoin="round">
-          {/* Concentric organizational constellation rings */}
-          <circle cx="160" cy="90" r="62" stroke="currentColor" strokeOpacity="0.18" strokeWidth="1" strokeDasharray="3 5" />
-          <circle cx="160" cy="90" r="38" stroke="var(--sky-blue)" strokeOpacity="0.45" strokeWidth="1.2" />
-
-          {/* Cohesion bonds */}
-          <g stroke="var(--sky-blue)" strokeOpacity="0.65" strokeWidth="1.25">
-            <path d="M160 90 108 58M160 90 212 58M160 90 96 108M160 90 224 108M160 90v54M160 90V32" />
-            <path d="M108 58 160 32 212 58 224 108 160 144 96 108 108 58Z" strokeOpacity="0.35" strokeWidth="1" />
-          </g>
-
-          {/* Outer team cluster nodes */}
-          <circle cx="160" cy="32" r="6" fill="var(--sky-blue)" fillOpacity="0.2" stroke="var(--sky-blue)" strokeWidth="1.3" />
-          <circle cx="108" cy="58" r="7" fill="var(--rankrise-blue)" fillOpacity="0.2" stroke="currentColor" strokeOpacity="0.7" strokeWidth="1.3" />
-          <circle cx="212" cy="58" r="7" fill="var(--rankrise-blue)" fillOpacity="0.2" stroke="var(--sky-blue)" strokeWidth="1.35" />
-          <circle cx="96" cy="108" r="6.5" fill="var(--sky-blue)" fillOpacity="0.18" stroke="var(--sky-blue)" strokeWidth="1.3" />
-          <circle cx="224" cy="108" r="6.5" fill="var(--sky-blue)" fillOpacity="0.18" stroke="currentColor" strokeOpacity="0.7" strokeWidth="1.3" />
-          <circle cx="160" cy="144" r="6" fill="var(--sky-blue)" fillOpacity="0.2" stroke="var(--sky-blue)" strokeWidth="1.3" />
-
-          {/* Inner focal hexagon & core beacon */}
-          <path d="m160 72 16 9v18l-16 9-16-9V81l16-9Z" fill="var(--rankrise-blue)" fillOpacity="0.24" stroke="var(--accent-highlight)" strokeWidth="1.5" />
-          <circle cx="160" cy="90" r="4" fill="var(--accent-highlight)" />
-        </g>
-      )}
-    </svg>
+      <img
+        src={media.src}
+        alt={media.alt}
+        className="showcase-image"
+        width={1200}
+        height={896}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
   );
 }
 
 /**
  * StackBlueprintVisual
- * Four-stratum isometric architectural stack diagram:
- * Frontend / Runtime / API & Data / Cloud (no vendor logos).
+ * Cloud topology & runtime delivery architecture showcase.
  */
 export function StackBlueprintVisual({ className }: SvgBaseProps) {
-  const strata = [
-    { label: "01 / FRONTEND", y: 48, accent: false },
-    { label: "02 / RUNTIME", y: 102, accent: false },
-    { label: "03 / API & DATA", y: 156, accent: true },
-    { label: "04 / CLOUD", y: 210, accent: false },
-  ] as const;
-
   return (
-    <svg
-      className={joinClasses("rr-svg-illustration", "rr-stack-blueprint", className)}
-      viewBox="0 0 460 280"
-      width="100%"
-      fill="none"
-      aria-hidden="true"
-      focusable="false"
-    >
-      {/* Blueprint reference frame */}
-      <g stroke="currentColor" strokeOpacity="0.14" strokeWidth="0.85">
-        <path d="M24 24h412M24 256h412" strokeDasharray="3 6" />
-        <path d="M170 18v244" strokeDasharray="2 5" />
-      </g>
-
-      {/* Vertical telemetry spine conduits piercing all 4 strata */}
-      <g stroke="var(--sky-blue)" strokeOpacity="0.55" strokeWidth="1.25">
-        <path d="M126 50v172" />
-        <path d="M170 36v196" stroke="var(--accent-highlight)" strokeOpacity="0.7" strokeDasharray="4 4" />
-        <path d="M214 50v172" />
-      </g>
-
-      {strata.map((layer) => (
-        <g key={layer.label}>
-          {/* Isometric stratum plane */}
-          <path
-            d={`m66 ${layer.y} 104-32 104 32-104 32-104-32Z`}
-            fill={layer.accent ? "var(--rankrise-blue)" : "var(--sky-blue)"}
-            fillOpacity={layer.accent ? "0.2" : "0.1"}
-            stroke={layer.accent ? "var(--accent-highlight)" : "var(--sky-blue)"}
-            strokeWidth={layer.accent ? "1.5" : "1.25"}
-            strokeLinejoin="round"
-          />
-          {/* Subtle stratum edge thickness */}
-          <path
-            d={`m66 ${layer.y} 104 32 104-32v6l-104 32-104-32v-6Z`}
-            fill="currentColor"
-            fillOpacity="0.06"
-            stroke="currentColor"
-            strokeOpacity="0.22"
-            strokeWidth="0.9"
-            strokeLinejoin="round"
-          />
-          {/* Internal isometric cross-partitions */}
-          <path
-            d={`m118 ${layer.y - 16} l104 32 M118 ${layer.y + 16} l104-32`}
-            stroke="currentColor"
-            strokeOpacity="0.16"
-            strokeWidth="0.85"
-          />
-          {/* Conduit junction node */}
-          <circle
-            cx="170"
-            cy={layer.y}
-            r={layer.accent ? "4" : "3"}
-            fill={layer.accent ? "var(--accent-highlight)" : "var(--sky-blue)"}
-          />
-          {/* Callout leader line */}
-          <path
-            d={`M278 ${layer.y}h40`}
-            stroke={layer.accent ? "var(--accent-highlight)" : "currentColor"}
-            strokeOpacity={layer.accent ? "0.85" : "0.3"}
-            strokeWidth="1.1"
-          />
-          <circle
-            cx="278"
-            cy={layer.y}
-            r="2"
-            fill={layer.accent ? "var(--accent-highlight)" : "var(--sky-blue)"}
-          />
-          {/* Architectural layer label */}
-          <text
-            x="328"
-            y={layer.y + 3.5}
-            fill="currentColor"
-            fillOpacity={layer.accent ? "0.95" : "0.72"}
-            fontSize="10"
-            fontWeight="600"
-            fontFamily="var(--font-inter), sans-serif"
-            letterSpacing="1.4"
-          >
-            {layer.label}
-          </text>
-        </g>
-      ))}
-    </svg>
+    <div className={joinClasses("rr-showcase-media", "rr-stack-showcase", className)}>
+      <img
+        src="/images/showcases/stack-cloud-topology.jpg"
+        alt="Multi-stratum cloud infrastructure, runtime, API, and frontend delivery topology"
+        className="showcase-image"
+        width={1376}
+        height={768}
+        loading="lazy"
+        decoding="async"
+      />
+    </div>
   );
 }
 
@@ -636,3 +430,106 @@ export function FinalCtaField({ className }: SvgBaseProps) {
     </svg>
   );
 }
+
+type InnerHeroMotif = "ai" | "industries" | "products" | "editorial" | "software";
+
+function resolveInnerHeroShowcase(slug: string): {
+  motif: InnerHeroMotif;
+  src: string;
+  alt: string;
+} {
+  const s = slug.toLowerCase();
+  if (s === "products/trimarkity" || s.startsWith("products/trimarkity/")) {
+    return {
+      motif: "products",
+      src: "/images/showcases/product-trimarkity.jpg",
+      alt: "TriMarkity marketing analytics and campaign intelligence interface preview",
+    };
+  }
+  if (s === "products/1socialsnap" || s.startsWith("products/1socialsnap/")) {
+    return {
+      motif: "products",
+      src: "/images/showcases/product-1socialsnap.jpg",
+      alt: "1SocialSnap social publishing and engagement analytics interface preview",
+    };
+  }
+  if (s.startsWith("products")) {
+    return {
+      motif: "products",
+      src: "/images/showcases/product-trimarkity.jpg",
+      alt: "RankRise in-house product engineering platform interface preview",
+    };
+  }
+  if (
+    s.includes("ai") ||
+    s.includes("automation") ||
+    s.includes("chatbot") ||
+    s.includes("agent") ||
+    s.includes("analytics") ||
+    /(?:^|[-/])ml(?:$|[-/])/.test(s)
+  ) {
+    return {
+      motif: "ai",
+      src: "/images/showcases/ai-orchestration-ui.jpg",
+      alt: "AI workflow orchestration and human-in-the-loop reasoning dashboard",
+    };
+  }
+  if (s.startsWith("industries") || s.startsWith("locations")) {
+    return {
+      motif: "industries",
+      src: "/images/showcases/inner-industries-operations.jpg",
+      alt: "RankRise multi-industry operational telemetry and operations console",
+    };
+  }
+  if (
+    s.startsWith("insights") ||
+    s.startsWith("about") ||
+    s.startsWith("portfolio") ||
+    s.startsWith("global") ||
+    s.startsWith("investors") ||
+    s.startsWith("careers")
+  ) {
+    return {
+      motif: "editorial",
+      src: "/images/showcases/inner-editorial-studio.jpg",
+      alt: "RankRise engineering workspace and software craftsmanship studio",
+    };
+  }
+  return {
+    motif: "software",
+    src: "/images/showcases/hero-command-dashboard.jpg",
+    alt: "RankRise engineering systems and telemetry command dashboard preview",
+  };
+}
+
+/**
+ * InnerHeroIllustration
+ * Route-matched dashboard & studio visual showcase for inner page heroes.
+ */
+export function InnerHeroIllustration({
+  slug,
+  className,
+}: {
+  slug: string;
+  className?: string;
+}) {
+  const showcase = resolveInnerHeroShowcase(slug);
+
+  return (
+    <div
+      className={joinClasses("rr-showcase-media", "rr-inner-hero-showcase", className)}
+      data-hero-motif={showcase.motif}
+    >
+      <img
+        src={showcase.src}
+        alt={showcase.alt}
+        className="showcase-image"
+        width={1200}
+        height={896}
+        loading="eager"
+        decoding="async"
+      />
+    </div>
+  );
+}
+
