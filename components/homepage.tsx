@@ -1,7 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useState, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
   AI_EXPLORATIONS,
   CORE_CAPABILITIES,
@@ -37,6 +39,7 @@ import { InitialPageLoader } from "./motion/page-loader";
 import { HeroAnimation } from "./motion/hero-animation";
 import { GlobalHero } from "./global-hero";
 import { AccentThemeDock } from "./accent-theme-dock";
+import Stats01 from "@/components/originkit/stats-01";
 
 const COMPANY_PILLARS = [
   {
@@ -59,13 +62,22 @@ const COMPANY_PILLARS = [
   },
 ] as const;
 
-function ProductPanel({ product, index }: { product: Product; index: number }) {
+function ProductPanel({
+  product,
+  index,
+  isActive,
+}: {
+  product: Product;
+  index: number;
+  isActive: boolean;
+}) {
   return (
     <SpotlightCard
       as="article"
-      className={`product-card${index === 0 ? " product-featured" : ""}`}
+      className={`product-card product-featured${isActive ? " is-active" : " is-inactive"}`}
       id={`product-${product.id}`}
       aria-labelledby={`product-${product.id}-title`}
+      aria-hidden={!isActive ? undefined : undefined}
     >
       <div className="product-content">
         <div className="product-topline">
@@ -76,7 +88,9 @@ function ProductPanel({ product, index }: { product: Product; index: number }) {
         <p className="product-headline">{product.headline}</p>
         <p className="product-description">{product.positioning} {product.value}</p>
         <p className="product-endorsement">{SITE_IDENTITY.productEndorsement}</p>
-        <Link className="text-link" href={product.href}>Explore {product.name}<Icon name="arrow-up-right" /></Link>
+        <Link className="text-link" href={product.href} tabIndex={isActive ? 0 : -1}>
+          Explore {product.name}<Icon name="arrow-up-right" />
+        </Link>
       </div>
       <figure className="product-media">
         <ProductMotif id={product.id} />
@@ -89,13 +103,71 @@ function ProductPanel({ product, index }: { product: Product; index: number }) {
   );
 }
 
+function getCapabilitySpanClass(index: number, total: number): string {
+  if (index === total - 1 && total % 2 === 1) {
+    return "capability-span-3";
+  }
+  const pairIndex = Math.floor(index / 2);
+  const posInPair = index % 2;
+  const isTwoWide = pairIndex % 2 === 0 ? posInPair === 0 : posInPair === 1;
+  return isTwoWide ? "capability-span-2" : "capability-span-1";
+}
+
 interface HomepageProps {
   heroVariant?: "default" | "global";
 }
 
 export function Homepage({ heroVariant = "default" }: HomepageProps) {
   const [dialogState, setDialogState] = useState<DialogState | null>(null);
+  const [activeProductIndex, setActiveProductIndex] = useState(0);
+  const [productScrollProgress, setProductScrollProgress] = useState(0);
   const heroRef = useRef<HTMLElement>(null);
+  const productsSectionRef = useRef<HTMLElement>(null);
+  const productsTriggerRef = useRef<ScrollTrigger | null>(null);
+
+  useEffect(() => {
+    const sectionEl = productsSectionRef.current;
+    if (!sectionEl || typeof window === "undefined" || typeof window.matchMedia !== "function") return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    gsap.registerPlugin(ScrollTrigger);
+    const ctx = gsap.context(() => {
+      const st = ScrollTrigger.create({
+        trigger: sectionEl,
+        start: "top top",
+        end: () => `+=${PRODUCTS.length * 520}`,
+        pin: true,
+        pinSpacing: true,
+        anticipatePin: 1,
+        scrub: true,
+        invalidateOnRefresh: true,
+        onUpdate: (self) => {
+          setProductScrollProgress(self.progress);
+          const idx = Math.min(
+            PRODUCTS.length - 1,
+            Math.max(0, Math.floor(self.progress * PRODUCTS.length)),
+          );
+          setActiveProductIndex((prev) => (prev === idx ? prev : idx));
+        },
+      });
+      productsTriggerRef.current = st;
+    }, sectionEl);
+
+    return () => {
+      productsTriggerRef.current = null;
+      ctx.revert();
+    };
+  }, []);
+
+  const selectProduct = (index: number) => {
+    setActiveProductIndex(index);
+    const st = productsTriggerRef.current;
+    if (st && typeof window !== "undefined") {
+      const targetProgress = (index + 0.15) / PRODUCTS.length;
+      const targetY = st.start + (st.end - st.start) * targetProgress;
+      window.scrollTo({ top: targetY, behavior: "smooth" });
+    }
+  };
   const openInquiry = (context?: string) => setDialogState({ kind: "inquiry", context });
 
   // Split H1 text into lines for GSAP animation
@@ -157,34 +229,8 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
           </section>
         )}
 
-        <section id="about" className="section company-section" data-section="company-introduction" aria-labelledby="company-heading">
-          <div className="container company-grid">
-            <ScrollReveal variant="fade-up">
-              <p className="eyebrow">Beyond the brief</p>
-              <h2 id="company-heading">Beyond Development. We Engineer Possibilities.</h2>
-            </ScrollReveal>
-            <ScrollReveal variant="fade-up" delay={100} className="company-copy">
-              <p className="lead-copy">Custom-built for your challenges. Product-minded by design.</p>
-              <p>RankRise Technologies brings software engineering, AI innovation and digital transformation into one connected direction. We build custom client technology alongside our own digital products, with a focus on useful experiences and practical business needs.</p>
-              <Link className="text-link" href={routeHref("/about")}>About RankRise<Icon name="arrow-right" /></Link>
-            </ScrollReveal>
-          </div>
-          <div className="container">
-            <div className="company-pillars-ledger">
-              {COMPANY_PILLARS.map((pillar, index) => (
-                <div key={pillar.title} className="company-pillar-item">
-                  <ScrollReveal variant="fade-up" delay={index * 60}>
-                    <div className="pillar-item-icon" aria-hidden="true">
-                      <Icon name={pillar.icon} width="18" height="18" />
-                    </div>
-                    <h3>{pillar.title}</h3>
-                    <p>{pillar.description}</p>
-                  </ScrollReveal>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
+        {/* SECTION 2: COMPANY INTRODUCTION (ORIGINKIT STATS-01 INTEGRATION) */}
+        <Stats01 />
 
         <section id="capabilities" className="section capabilities-section" data-section="core-capabilities" aria-labelledby="capabilities-heading">
           <div className="container">
@@ -194,8 +240,13 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
             </ScrollReveal>
             <div className="capability-grid">
               {CORE_CAPABILITIES.map((capability, index) => (
-                <ScrollReveal key={capability.id} variant="fade-up" delay={index * 60}>
-                  <SpotlightCard as="article" className="capability-card">
+                <ScrollReveal
+                  key={capability.id}
+                  variant="fade-up"
+                  delay={index * 60}
+                  className={getCapabilitySpanClass(index, CORE_CAPABILITIES.length)}
+                >
+                  <article className="capability-card">
                     <div className="capability-card-top">
                       <div className="capability-icon"><Icon name={capability.icon} width="22" height="22" /></div>
                       <div className="capability-schematic-slot" aria-hidden="true">
@@ -204,26 +255,76 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
                     </div>
                     <h3>{capability.name}</h3>
                     <p>{capability.description}</p>
-                    <Link className="text-link" href={capability.href} aria-label={`Explore ${capability.name}`}>Explore capability<Icon name="arrow-up-right" width="18" height="18" /></Link>
-                  </SpotlightCard>
+                    <Link
+                      className="capability-arrow-link"
+                      href={capability.href}
+                      aria-label={`Explore ${capability.name}`}
+                    >
+                      <span className="capability-arrow-icon is-primary" aria-hidden="true">
+                        <Icon name="arrow-up-right" width="20" height="20" />
+                      </span>
+                      <span className="capability-arrow-icon is-incoming" aria-hidden="true">
+                        <Icon name="arrow-up-right" width="20" height="20" />
+                      </span>
+                    </Link>
+                  </article>
                 </ScrollReveal>
               ))}
             </div>
           </div>
         </section>
 
-        <section id="products" className="section products-section" data-section="in-house-products" aria-labelledby="products-heading">
+        <section id="products" ref={productsSectionRef} className="section products-section" data-section="in-house-products" aria-labelledby="products-heading">
           <div className="container">
             <ScrollReveal variant="fade-up" className="section-heading products-heading">
               <p className="eyebrow">Our in-house products</p>
               <h2 id="products-heading">Innovation That We Build. Products That We Own.</h2>
               <p>Four distinct product directions. One engineering mindset. Purpose-built platforms designed to streamline operations, enhance social engagement, and accelerate growth.</p>
             </ScrollReveal>
-            <div className="product-grid">
+            <div className="product-switcher-row">
+              <div className="product-switcher" role="tablist" aria-label="In-house product selector">
+                {PRODUCTS.map((product, index) => {
+                  const isActive = index === activeProductIndex;
+                  return (
+                    <button
+                      key={product.id}
+                      type="button"
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-controls={`product-${product.id}`}
+                      className={`product-switcher-tab${isActive ? " is-active" : ""}`}
+                      onClick={() => selectProduct(index)}
+                      onKeyDown={(event) => {
+                        if (event.key === "ArrowRight") {
+                          event.preventDefault();
+                          selectProduct((index + 1) % PRODUCTS.length);
+                        } else if (event.key === "ArrowLeft") {
+                          event.preventDefault();
+                          selectProduct((index - 1 + PRODUCTS.length) % PRODUCTS.length);
+                        }
+                      }}
+                    >
+                      <span className="product-switcher-num" aria-hidden="true">0{index + 1}</span>
+                      <span>{product.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="product-scroll-track" aria-hidden="true">
+                <div
+                  className="product-scroll-fill"
+                  style={{ width: `${Math.max(25, Math.round(productScrollProgress * 100))}%` }}
+                />
+              </div>
+            </div>
+            <div className="product-stage">
               {PRODUCTS.map((product, index) => (
-                <ScrollReveal key={product.id} variant="fade-up" delay={index * 80} className={index === 0 ? "col-span-full" : undefined}>
-                  <ProductPanel product={product} index={index} />
-                </ScrollReveal>
+                <ProductPanel
+                  key={product.id}
+                  product={product}
+                  index={index}
+                  isActive={index === activeProductIndex}
+                />
               ))}
             </div>
           </div>
