@@ -8,6 +8,7 @@ import { Icon } from "./icon";
 import { Wordmark } from "./site-navigation";
 import { ScrollProgressBar } from "./motion/scroll-progress";
 import { LabelSlideButton } from "./label-slide-button";
+import { LiquidNavbar, NimbusIcons, type LiquidNavItem, type NimbusFx } from "@/components/ui/liquid-glass-navbar";
 
 const HEADER_CTA_COLORS: Record<
   string,
@@ -185,6 +186,75 @@ const CTA_ARROW_ICON = (
   </svg>
 );
 
+const navIcon = (d: React.ReactNode) => (
+  <svg
+    viewBox="0 0 24 24"
+    width="15"
+    height="15"
+    fill="none"
+    stroke="currentColor"
+    strokeWidth="1.8"
+    strokeLinecap="round"
+    strokeLinejoin="round"
+    aria-hidden="true"
+  >
+    {d}
+  </svg>
+);
+
+const NAV_ICON_MAP: Record<string, { icon: React.ReactNode; fx: NimbusFx }> = {
+  Home: { icon: NimbusIcons.home, fx: "glow" },
+  About: {
+    icon: navIcon(
+      <>
+        <circle cx="12" cy="8.5" r="3.5" />
+        <path d="M5 19.5c1.3-3.2 3.8-4.7 7-4.7s5.7 1.5 7 4.7" />
+      </>
+    ),
+    fx: "wave",
+  },
+  Services: {
+    icon: navIcon(
+      <>
+        <rect x="3.5" y="4" width="7" height="7" rx="1.5" />
+        <rect x="13.5" y="4" width="7" height="7" rx="1.5" />
+        <rect x="3.5" y="13" width="7" height="7" rx="1.5" />
+        <path d="M13.5 16.5h7M17 13v7" />
+      </>
+    ),
+    fx: "pop",
+  },
+  Industries: {
+    icon: navIcon(
+      <>
+        <path d="M4 20h16" />
+        <path d="M6 20V9l6-4 6 4v11" />
+        <path d="M10 20v-5h4v5" />
+      </>
+    ),
+    fx: "pop",
+  },
+  Products: {
+    icon: navIcon(
+      <>
+        <path d="M12 3.5 4.5 7.7v8.6L12 20.5l7.5-4.2V7.7L12 3.5Z" />
+        <path d="M4.5 7.7 12 12l7.5-4.3M12 12v8.5" />
+      </>
+    ),
+    fx: "drop",
+  },
+  Insights: {
+    icon: navIcon(
+      <>
+        <path d="M6 4.5h9l3.5 3.5V19.5H6z" />
+        <path d="M9.5 12h5M9.5 15.5h3.5" />
+      </>
+    ),
+    fx: "wave",
+  },
+  Global: { icon: NimbusIcons.globe, fx: "spin" },
+};
+
 /**
  * Shared floating glass header used by every local route.
  *
@@ -278,6 +348,59 @@ export function SiteHeader({
     return activePath === href || activePath.startsWith(href);
   }
 
+  const activeIndex = Math.max(
+    0,
+    NAVIGATION_ITEMS.findIndex((item) => isActive(item.href))
+  );
+  const productsIndex = NAVIGATION_ITEMS.findIndex((item) => item.label === "Products");
+  const visualActiveIndex = productsOpen && productsIndex >= 0 ? productsIndex : activeIndex;
+
+  const navItems: LiquidNavItem[] = NAVIGATION_ITEMS.map((item) => {
+    const meta = NAV_ICON_MAP[item.label];
+    if (item.label === "Products") {
+      return {
+        label: item.label,
+        icon: meta?.icon,
+        fx: meta?.fx ?? "drop",
+        asButton: true,
+        className: `navigation-link products-toggle${isActive(item.href) ? " is-active" : ""}`,
+        wrapperClassName: "products-navigation",
+        ariaExpanded: productsOpen,
+        ariaControls: "products-dropdown",
+        buttonRef: productsToggleRef,
+        onClick: () => setProductsOpen((open) => !open),
+        suffix: <Icon name="chevron-down" width="13" height="13" />,
+        dropdown: (
+          <div className="products-dropdown" id="products-dropdown" hidden={!productsOpen}>
+            <Link className="dropdown-overview" href={item.href} onClick={closeMenus}>
+              Our in-house products
+              <Icon name="arrow-right" width="15" height="15" />
+            </Link>
+            <ul>
+              {PRODUCTS.map((product) => (
+                <li key={product.id}>
+                  <Link href={product.href} onClick={closeMenus}>
+                    <span>{product.name}</span>
+                    <small>{product.category}</small>
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ),
+      };
+    }
+
+    return {
+      label: item.label,
+      href: item.href,
+      icon: meta?.icon,
+      fx: meta?.fx ?? "pop",
+      className: `navigation-link${isActive(item.href) ? " is-active" : ""}`,
+      onClick: closeMenus,
+    };
+  });
+
   return (
     <>
       <ScrollProgressBar />
@@ -295,59 +418,17 @@ export function SiteHeader({
             className={`primary-navigation${mobileOpen ? " is-open" : ""}`}
             aria-label="Main navigation"
           >
-            <ul className="navigation-list">
-              {NAVIGATION_ITEMS.map((item) => (
-                <li
-                  key={item.label}
-                  className={item.label === "Products" ? "products-navigation" : undefined}
-                >
-                  {item.label === "Products" ? (
-                    <>
-                      <button
-                        className={`navigation-link products-toggle${isActive(item.href) ? " is-active" : ""}`}
-                        type="button"
-                        ref={productsToggleRef}
-                        aria-expanded={productsOpen}
-                        aria-controls="products-dropdown"
-                        onClick={() => setProductsOpen(!productsOpen)}
-                      >
-                        Products
-                        <Icon name="chevron-down" width="13" height="13" />
-                      </button>
-                      <div
-                        className="products-dropdown"
-                        id="products-dropdown"
-                        hidden={!productsOpen}
-                      >
-                        <Link className="dropdown-overview" href={item.href} onClick={closeMenus}>
-                          Our in-house products
-                          <Icon name="arrow-right" width="15" height="15" />
-                        </Link>
-                        <ul>
-                          {PRODUCTS.map((product) => (
-                            <li key={product.id}>
-                              <Link href={product.href} onClick={closeMenus}>
-                                <span>{product.name}</span>
-                                <small>{product.category}</small>
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      </div>
-                    </>
-                  ) : (
-                    <Link
-                      className={`navigation-link${isActive(item.href) ? " is-active" : ""}`}
-                      href={item.href}
-                      aria-current={isActive(item.href) ? "page" : undefined}
-                      onClick={closeMenus}
-                    >
-                      {item.label}
-                    </Link>
-                  )}
-                </li>
-              ))}
-            </ul>
+            <LiquidNavbar
+              as="div"
+              tone={theme}
+              accentColor={ctaColors.fill}
+              compact={false}
+              hoverFollow
+              listClassName="navigation-list"
+              className="site-liquid-navbar"
+              active={visualActiveIndex}
+              items={navItems}
+            />
 
             <LabelSlideButton
               label="Get in touch"

@@ -25,10 +25,10 @@ import {
   CapabilitySchematic,
   EditorialSealVisual,
   FinalCtaField,
-  ProcessConduitLine,
   ProductMotif,
   StackBlueprintVisual,
 } from "./section-illustrations";
+import { ProcessPathway } from "./process-pathway";
 import { Icon } from "./icon";
 import { PreviewDialog, type DialogState } from "./preview-dialog";
 import { SiteHeader } from "./site-header";
@@ -120,10 +120,80 @@ interface HomepageProps {
 export function Homepage({ heroVariant = "default" }: HomepageProps) {
   const [dialogState, setDialogState] = useState<DialogState | null>(null);
   const [activeProductIndex, setActiveProductIndex] = useState(0);
+  const [activeAiIndex, setActiveAiIndex] = useState(0);
+  const [activeIndustryIndex, setActiveIndustryIndex] = useState(0);
+  const [activeStackIndex, setActiveStackIndex] = useState(0);
   const [productScrollProgress, setProductScrollProgress] = useState(0);
   const heroRef = useRef<HTMLElement>(null);
+  const heroPinStageRef = useRef<HTMLDivElement>(null);
+  const heroScrimRef = useRef<HTMLDivElement>(null);
+  const sectionTwoRef = useRef<HTMLDivElement>(null);
+  const coverEdgeShadowRef = useRef<HTMLDivElement>(null);
   const productsSectionRef = useRef<HTMLElement>(null);
   const productsTriggerRef = useRef<ScrollTrigger | null>(null);
+
+  useEffect(() => {
+    const heroStageEl = heroPinStageRef.current;
+    const scrimEl = heroScrimRef.current;
+    const sectionTwoEl = sectionTwoRef.current;
+    if (
+      !heroStageEl ||
+      !scrimEl ||
+      !sectionTwoEl ||
+      typeof window === "undefined" ||
+      typeof window.matchMedia !== "function"
+    ) {
+      return;
+    }
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    let isDisposed = false;
+    gsap.registerPlugin(ScrollTrigger);
+
+    const ctx = gsap.context(() => {
+      const edgeShadowEl = coverEdgeShadowRef.current;
+
+      const tl = gsap.timeline({
+        scrollTrigger: {
+          id: "hero-section-cover",
+          trigger: heroStageEl,
+          start: () => (heroStageEl.offsetHeight > window.innerHeight ? "bottom bottom" : "top top"),
+          endTrigger: sectionTwoEl,
+          end: "top top",
+          pin: true,
+          pinSpacing: false,
+          anticipatePin: 1,
+          scrub: true,
+          invalidateOnRefresh: true,
+          refreshPriority: 20,
+        },
+      });
+
+      tl.fromTo(scrimEl, { opacity: 0 }, { opacity: 1, duration: 1, ease: "none" }, 0);
+
+      if (edgeShadowEl) {
+        tl.fromTo(
+          edgeShadowEl,
+          { opacity: 0 },
+          { opacity: 1, duration: 0.15, ease: "none" },
+          0,
+        ).to(edgeShadowEl, { opacity: 0, duration: 0.15, ease: "none" }, 0.85);
+      }
+    }, heroStageEl);
+
+    if (document.fonts?.ready) {
+      void document.fonts.ready.then(() => {
+        if (!isDisposed) {
+          ScrollTrigger.refresh();
+        }
+      });
+    }
+
+    return () => {
+      isDisposed = true;
+      ctx.revert();
+    };
+  }, [heroVariant]);
 
   useEffect(() => {
     const sectionEl = productsSectionRef.current;
@@ -131,7 +201,9 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     gsap.registerPlugin(ScrollTrigger);
-    const ctx = gsap.context(() => {
+    const mm = gsap.matchMedia();
+
+    mm.add("(min-width: 740px) and (min-height: 620px)", () => {
       const st = ScrollTrigger.create({
         trigger: sectionEl,
         start: "top top",
@@ -141,6 +213,7 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
         anticipatePin: 1,
         scrub: true,
         invalidateOnRefresh: true,
+        refreshPriority: 10,
         onUpdate: (self) => {
           setProductScrollProgress(self.progress);
           const idx = Math.min(
@@ -151,11 +224,16 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
         },
       });
       productsTriggerRef.current = st;
-    }, sectionEl);
+      ScrollTrigger.refresh();
+
+      return () => {
+        productsTriggerRef.current = null;
+      };
+    });
 
     return () => {
       productsTriggerRef.current = null;
-      ctx.revert();
+      mm.revert();
     };
   }, []);
 
@@ -189,48 +267,55 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
       <SiteHeader overHero={heroVariant === "global"} activePath="/" />
       <main id="main-content">
         {/* Hero Section — conditional rendering based on variant */}
-        {heroVariant === "global" ? (
-          <GlobalHero onOpenInquiry={openInquiry} />
-        ) : (
-          <section id="home" ref={heroRef} className="hero-section" data-section="hero" aria-labelledby="hero-heading">
-            <HeroAnimation heroRef={heroRef} />
-            <div className="container">
-              <div className="hero-grid">
-                <div className="hero-copy">
-                  <p className="eyebrow hero-eyebrow"><span aria-hidden="true" />Engineering a connected future</p>
-                  <h1 id="hero-heading">{splitH1Lines()}</h1>
-                  <p className="hero-description">{SITE_IDENTITY.heroDescription}</p>
-                  <div className="hero-actions">
-                    <a className="button button-primary" href="#capabilities">Explore Our Capabilities<Icon name="arrow-right" /></a>
-                    <button className="button button-secondary" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry()}>Discuss Your Project<Icon name="arrow-up-right" /></button>
+        <div ref={heroPinStageRef} className="hero-pin-stage">
+          {heroVariant === "global" ? (
+            <GlobalHero onOpenInquiry={openInquiry} />
+          ) : (
+            <section id="home" ref={heroRef} className="hero-section" data-section="hero" aria-labelledby="hero-heading">
+              <HeroAnimation heroRef={heroRef} />
+              <div className="container">
+                <div className="hero-grid">
+                  <div className="hero-copy">
+                    <p className="eyebrow hero-eyebrow"><span aria-hidden="true" />Engineering a connected future</p>
+                    <h1 id="hero-heading">{splitH1Lines()}</h1>
+                    <p className="hero-description">{SITE_IDENTITY.heroDescription}</p>
+                    <div className="hero-actions">
+                      <a className="button button-primary" href="#capabilities">Explore Our Capabilities<Icon name="arrow-right" /></a>
+                      <button className="button button-secondary" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry()}>Discuss Your Project<Icon name="arrow-up-right" /></button>
+                    </div>
+                    <div className="hero-telemetry-ribbon" aria-label="System telemetry">
+                      <div className="telemetry-item"><span aria-hidden="true" /><span>4 In-House Products</span></div>
+                      <div className="telemetry-item"><span aria-hidden="true" /><span>10 Industry Domains</span></div>
+                      <div className="telemetry-item"><span aria-hidden="true" /><span>6-Stage Delivery Process</span></div>
+                      <div className="telemetry-item"><span aria-hidden="true" /><span>Strict Type-Safe Core</span></div>
+                    </div>
+                    <p className="hero-preview-note">Building Intelligence <span aria-hidden="true">·</span> Driving Growth</p>
                   </div>
-                  <div className="hero-telemetry-ribbon" aria-label="System telemetry">
-                    <div className="telemetry-item"><span aria-hidden="true" /><span>4 In-House Products</span></div>
-                    <div className="telemetry-item"><span aria-hidden="true" /><span>10 Industry Domains</span></div>
-                    <div className="telemetry-item"><span aria-hidden="true" /><span>6-Stage Delivery Process</span></div>
-                    <div className="telemetry-item"><span aria-hidden="true" /><span>Strict Type-Safe Core</span></div>
+                  <div className="hero-visual-wrapper">
+                    <span className="hero-hud-card hero-hud-card-top" aria-hidden="true">
+                      <span className="status-dot" /> RR-CORE / VERIFIED
+                    </span>
+                    <EngineeringVisual />
+                    <span className="hero-hud-card hero-hud-card-bottom" aria-hidden="true">
+                      RUNTIME / NEXT.JS APP ROUTER
+                    </span>
                   </div>
-                  <p className="hero-preview-note">Building Intelligence <span aria-hidden="true">·</span> Driving Growth</p>
                 </div>
-                <div className="hero-visual-wrapper">
-                  <span className="hero-hud-card hero-hud-card-top" aria-hidden="true">
-                    <span className="status-dot" /> RR-CORE / VERIFIED
-                  </span>
-                  <EngineeringVisual />
-                  <span className="hero-hud-card hero-hud-card-bottom" aria-hidden="true">
-                    RUNTIME / NEXT.JS APP ROUTER
-                  </span>
-                </div>
+                <ul className="pillar-strip" aria-label="Our four pillars">
+                  {FOUR_PILLARS.map((pillar, index) => <li key={pillar}><span aria-hidden="true">0{index + 1}</span>{pillar}</li>)}
+                </ul>
               </div>
-              <ul className="pillar-strip" aria-label="Our four pillars">
-                {FOUR_PILLARS.map((pillar, index) => <li key={pillar}><span aria-hidden="true">0{index + 1}</span>{pillar}</li>)}
-              </ul>
-            </div>
-          </section>
-        )}
+            </section>
+          )}
+          <div ref={heroScrimRef} className="hero-cover-scrim" aria-hidden="true" />
+        </div>
 
-        {/* SECTION 2: COMPANY INTRODUCTION (ORIGINKIT STATS-01 INTEGRATION) */}
-        <Stats01 />
+        <div className="homepage-cover-stack">
+          {/* SECTION 2: COMPANY INTRODUCTION (ORIGINKIT STATS-01 INTEGRATION) */}
+          <div ref={sectionTwoRef} className="section-two-cover">
+            <div ref={coverEdgeShadowRef} className="section-two-edge-shadow" aria-hidden="true" />
+            <Stats01 />
+          </div>
 
         <section id="capabilities" className="section capabilities-section" data-section="core-capabilities" aria-labelledby="capabilities-heading">
           <div className="container">
@@ -276,9 +361,11 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
 
         <section id="products" ref={productsSectionRef} className="section products-section" data-section="in-house-products" aria-labelledby="products-heading">
           <div className="container">
-            <ScrollReveal variant="fade-up" className="section-heading products-heading">
-              <p className="eyebrow">Our in-house products</p>
-              <h2 id="products-heading">Innovation That We Build. Products That We Own.</h2>
+            <ScrollReveal variant="fade-up" className="section-heading products-heading heading-split">
+              <div>
+                <p className="eyebrow">Our in-house products</p>
+                <h2 id="products-heading">Innovation That We Build. Products That We Own.</h2>
+              </div>
               <p>Four distinct product directions. One engineering mindset. Purpose-built platforms designed to streamline operations, enhance social engagement, and accelerate growth.</p>
             </ScrollReveal>
             <div className="product-switcher-row">
@@ -336,13 +423,36 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
               <p className="eyebrow">AI &amp; Emerging Technologies</p>
               <h2 id="ai-heading">Intelligence with<br className="desktop-break" /> a practical purpose.</h2>
               <p className="section-intro">The useful question is not simply what AI can do. It is where it could make work clearer, decisions better informed and processes more connected.</p>
-              <div className="ai-areas">{AI_EXPLORATIONS.map((area) => <div key={area.title}><h3>{area.title}</h3><p>{area.description}</p></div>)}</div>
+              <div className="ai-areas">
+                {AI_EXPLORATIONS.map((area, index) => {
+                  const isActive = index === activeAiIndex;
+                  return (
+                    <button
+                      key={area.title}
+                      type="button"
+                      className={`ai-area-item${isActive ? " is-active" : ""}`}
+                      aria-pressed={isActive}
+                      onClick={() => setActiveAiIndex(index)}
+                      onMouseEnter={() => setActiveAiIndex(index)}
+                    >
+                      <span className="ai-area-index" aria-hidden="true">0{index + 1}</span>
+                      <div className="ai-area-body">
+                        <h3>{area.title}</h3>
+                        <p>{area.description}</p>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
               <p className="small-note ai-scope-note">Practical AI integration tailored to your existing data pipelines, operational workflows, and security guardrails.</p>
               <Link className="text-link" href={routeHref("/services/ai-solutions-automation")}>Explore AI &amp; Emerging Technologies<Icon name="arrow-right" /></Link>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={120} className="ai-feature">
-              <IntelligenceVisual />
-              <div className="ai-feature-copy"><h3>Start with the context.<br />Keep people in the loop.</h3><p>Explore relevance, data readiness and human judgment before deciding what to build.</p></div>
+              <IntelligenceVisual activeMode={activeAiIndex} />
+              <div className="ai-feature-copy">
+                <h3>Start with the context.<br />Keep people in the loop.</h3>
+                <p>Explore relevance, data readiness and human judgment before deciding what to build.</p>
+              </div>
             </ScrollReveal>
           </div>
         </section>
@@ -353,15 +463,67 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
               <div><p className="eyebrow">Context comes first</p><h2 id="industries-heading">Industries We Serve</h2></div>
               <p>Specialized domain insights and tailored technology solutions engineered across ten core industry sectors.</p>
             </ScrollReveal>
-            <ul className="industry-list">
-              {INDUSTRIES.map((industry, index) => (
-                <li key={industry.name}>
-                  <span className="industry-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
-                  <Link href={industry.href}><h3>{industry.name}</h3><p>{industry.theme}</p></Link>
-                  <Icon name="layers" width="22" height="22" />
-                </li>
-              ))}
-            </ul>
+            <div className="industries-explorer">
+              <ul className="industry-list">
+                {INDUSTRIES.map((industry, index) => {
+                  const isActive = index === activeIndustryIndex;
+                  return (
+                    <li
+                      key={industry.name}
+                      className={isActive ? "is-active" : undefined}
+                      onMouseEnter={() => setActiveIndustryIndex(index)}
+                    >
+                      <span className="industry-number" aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+                      <Link
+                        href={industry.href}
+                        onFocus={() => setActiveIndustryIndex(index)}
+                      >
+                        <h3>{industry.name}</h3>
+                        <p>{industry.theme}</p>
+                      </Link>
+                      <Icon name="arrow-up-right" width="18" height="18" />
+                    </li>
+                  );
+                })}
+              </ul>
+              <aside className="industry-context-card" aria-label="Selected industry context">
+                {(() => {
+                  const activeIndustry = INDUSTRIES[activeIndustryIndex] ?? INDUSTRIES[0];
+                  return (
+                    <>
+                      <div className="industry-context-top">
+                        <span className="eyebrow">
+                          {String(activeIndustryIndex + 1).padStart(2, "0")} / Sector Brief
+                        </span>
+                        <span className="industry-context-tag" aria-hidden="true">Hover any sector</span>
+                      </div>
+                      <p className="industry-context-title">{activeIndustry.name}</p>
+                      <p className="industry-context-pain">{activeIndustry.pain}</p>
+                      <div className="industry-solutions-block">
+                        <p className="industry-solutions-label">Typical Solution Directions</p>
+                        <ul className="industry-solutions-chips">
+                          {activeIndustry.solutions.map((solution) => (
+                            <li key={solution}>{solution}</li>
+                          ))}
+                        </ul>
+                      </div>
+                      <div className="industry-context-footer">
+                        <button
+                          type="button"
+                          className="button button-primary"
+                          aria-haspopup="dialog"
+                          aria-controls="preview-dialog"
+                          onClick={() => openInquiry(`${activeIndustry.name} software solution`)}
+                        >
+                          Discuss {activeIndustry.name}
+                          <Icon name="arrow-up-right" width="16" height="16" />
+                        </button>
+                      </div>
+                    </>
+                  );
+                })()}
+              </aside>
+            </div>
           </div>
         </section>
 
@@ -390,30 +552,28 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
               <div className="stack-blueprint-frame" aria-hidden="true">
                 <StackBlueprintVisual />
               </div>
-              <ul className="stack-category-list">{STACK_CATEGORIES.map((category) => <li key={category.name}><h3>{category.name}</h3><p>{category.context}</p></li>)}</ul>
+              <ul className="stack-category-list">
+                {STACK_CATEGORIES.map((category, index) => (
+                  <li
+                    key={category.name}
+                    className={index === activeStackIndex ? "is-active" : undefined}
+                    onMouseEnter={() => setActiveStackIndex(index)}
+                    onClick={() => setActiveStackIndex(index)}
+                  >
+                    <span className="stack-category-num" aria-hidden="true">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <h3>{category.name}</h3>
+                    <p>{category.context}</p>
+                  </li>
+                ))}
+              </ul>
             </ScrollReveal>
           </div>
         </section>
 
         <section id="process" className="section process-section" data-section="development-process" aria-labelledby="process-heading">
-          <div className="container">
-            <ScrollReveal variant="fade-up" className="section-heading heading-split">
-              <div><p className="eyebrow">Development Process</p><h2 id="process-heading">A clear path from<br className="desktop-break" /> possibility to progress.</h2></div>
-              <p>A considered working approach, with shared understanding and useful decisions at every stage.</p>
-            </ScrollReveal>
-            <div className="process-conduit-wrap" aria-hidden="true">
-              <ProcessConduitLine />
-            </div>
-            <ol className="process-list">
-              {PROCESS_STAGES.map((stage, index) => (
-                <li key={stage.name}>
-                  <span className="process-number" aria-hidden="true">0{index + 1}</span>
-                  <h3>{stage.name}</h3>
-                  <p>{stage.description}</p>
-                </li>
-              ))}
-            </ol>
-          </div>
+          <ProcessPathway />
         </section>
 
         <section id="portfolio" className="section portfolio-section" data-section="portfolio" aria-labelledby="portfolio-heading">
@@ -423,6 +583,8 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
               <p>We are preparing approved case studies for publication. We will not publish fabricated project results, client logos or metrics.</p>
             </ScrollReveal>
             <ScrollReveal variant="fade-up" delay={100} className="evidence-state">
+              <span className="media-corner media-corner-top" aria-hidden="true" />
+              <span className="media-corner media-corner-bottom" aria-hidden="true" />
               <div className="evidence-marker" aria-hidden="true"><EditorialSealVisual variant="evidence" /></div>
               <div className="evidence-copy">
                 <h3>Authentic Delivery Over Manufactured Proof</h3>
@@ -515,6 +677,7 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
             </ScrollReveal>
           </div>
         </section>
+        </div>
       </main>
       <SiteFooter />
       <PreviewDialog state={dialogState} onDismiss={() => setDialogState(null)} onPrepareBrief={openInquiry} />
