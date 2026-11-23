@@ -539,7 +539,8 @@ describe("RankRise homepage regression & design invariants", () => {
     expect(
       within(ai).getByRole("link", { name: "Explore AI & Emerging Technologies" })
     ).toHaveAttribute("href", "/services/ai-solutions-automation");
-    expect(headingNames(ai, 3).slice(0, 4)).toEqual(AI_EXPLORATIONS.map((area) => area.title));
+    const matrix = ai.querySelector<HTMLElement>(".ai-matrix-grid")!;
+    expect(headingNames(matrix, 3)).toEqual(AI_EXPLORATIONS.map((area) => area.title));
 
     const industries = section("industries");
     expect(headingNames(industries, 3)).toEqual(INDUSTRIES.map((industry) => industry.name));

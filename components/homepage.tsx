@@ -20,7 +20,7 @@ import {
   type Product,
 } from "@/lib/site-content";
 import { routeHref } from "@/lib/routes";
-import { EngineeringVisual, IntelligenceVisual } from "./engineering-visual";
+import { AiCapabilityMatrix, AiPrincipleCard, EngineeringVisual } from "./engineering-visual";
 import {
   CapabilitySchematic,
   EditorialSealVisual,
@@ -419,40 +419,20 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
 
         <section id="ai" className="section ai-section" data-section="ai-emerging-technologies" aria-labelledby="ai-heading">
           <div className="container ai-grid">
-            <ScrollReveal variant="fade-up">
+            <ScrollReveal variant="fade-up" className="ai-spine">
               <p className="eyebrow">AI &amp; Emerging Technologies</p>
               <h2 id="ai-heading">Intelligence with<br className="desktop-break" /> a practical purpose.</h2>
               <p className="section-intro">The useful question is not simply what AI can do. It is where it could make work clearer, decisions better informed and processes more connected.</p>
-              <div className="ai-areas">
-                {AI_EXPLORATIONS.map((area, index) => {
-                  const isActive = index === activeAiIndex;
-                  return (
-                    <button
-                      key={area.title}
-                      type="button"
-                      className={`ai-area-item${isActive ? " is-active" : ""}`}
-                      aria-pressed={isActive}
-                      onClick={() => setActiveAiIndex(index)}
-                      onMouseEnter={() => setActiveAiIndex(index)}
-                    >
-                      <span className="ai-area-index" aria-hidden="true">0{index + 1}</span>
-                      <div className="ai-area-body">
-                        <h3>{area.title}</h3>
-                        <p>{area.description}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
+              <AiPrincipleCard activeIndex={activeAiIndex} />
               <p className="small-note ai-scope-note">Practical AI integration tailored to your existing data pipelines, operational workflows, and security guardrails.</p>
               <Link className="text-link" href={routeHref("/services/ai-solutions-automation")}>Explore AI &amp; Emerging Technologies<Icon name="arrow-right" /></Link>
             </ScrollReveal>
-            <ScrollReveal variant="fade-up" delay={120} className="ai-feature">
-              <IntelligenceVisual activeMode={activeAiIndex} />
-              <div className="ai-feature-copy">
-                <h3>Start with the context.<br />Keep people in the loop.</h3>
-                <p>Explore relevance, data readiness and human judgment before deciding what to build.</p>
-              </div>
+            <ScrollReveal variant="fade-up" delay={120} className="ai-matrix-column">
+              <AiCapabilityMatrix
+                areas={AI_EXPLORATIONS}
+                activeIndex={activeAiIndex}
+                onSelect={setActiveAiIndex}
+              />
             </ScrollReveal>
           </div>
         </section>
