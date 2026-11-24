@@ -413,7 +413,12 @@ export default function Globe({
         camera.position.set(0, 0, cameraDistance);
         camera.lookAt(0, 0, 0);
 
-        const renderer = new WebGLRenderer({ antialias: true, alpha: true });
+        let renderer: WebGLRenderer;
+        try {
+            renderer = new WebGLRenderer({ antialias: true, alpha: true });
+        } catch {
+            return;
+        }
         renderer.setSize(containerWidth, containerHeight);
         renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
         renderer.outputColorSpace = "srgb";

@@ -68,7 +68,7 @@ const VALID_ACCENTS: AccentId[] = [
 export function AccentThemeDock() {
 	const [accent, setAccent] = useState<AccentId>("vermilion");
 	const [theme, setTheme] = useState<"light" | "dark">("light");
-	const [collapsed, setCollapsed] = useState(false);
+	const [collapsed, setCollapsed] = useState(true);
 
 	// Sync initial state from localStorage / DOM on mount ONLY — NO setItem in useEffect!
 	useEffect(() => {

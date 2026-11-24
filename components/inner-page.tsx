@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import type { SitePage } from "@/lib/site-content";
 import {
@@ -12,13 +13,14 @@ import {
 import { SiteHeader } from "./site-header";
 import { SiteFooter } from "./site-footer";
 import { AccentThemeDock } from "./accent-theme-dock";
+import { InnerHero } from "./inner-hero/InnerHero";
 import { LeadForm } from "./lead-form";
 import { Icon } from "./icon";
+import { ScrollReveal } from "./motion/scroll-reveal";
 import { SpotlightCard } from "./motion/spotlight-card";
 import {
   EditorialSealVisual,
   FinalCtaField,
-  InnerHeroIllustration,
   ProductMotif,
 } from "./section-illustrations";
 
@@ -26,60 +28,8 @@ function serviceGroup(index: number): string {
   return index < 5 ? "Build" : index < 10 ? "Automate" : "Connect";
 }
 
-function visualCaptionForSlug(slug: string): {
-  tag: string;
-  title: string;
-  subtitle: string;
-} {
-  if (
-    slug.includes("ai-") ||
-    slug.includes("automation") ||
-    slug.includes("chatbot") ||
-    slug.includes("agents") ||
-    slug.includes("analytics")
-  ) {
-    return {
-      tag: "AI & Automation Architecture",
-      title: "Human-in-the-Loop Systems",
-      subtitle: "Context ingestion to calibrated inference",
-    };
-  }
-  if (slug.startsWith("industries") || slug.startsWith("locations")) {
-    return {
-      tag: "Sector Context Matrix",
-      title: "Domain-First Workflows",
-      subtitle: "Mapped to real operational constraints",
-    };
-  }
-  if (slug.startsWith("products")) {
-    return {
-      tag: "Proprietary Product Suite",
-      title: "Engineered & Owned In-House",
-      subtitle: "Modular platforms for sustained operations",
-    };
-  }
-  if (
-    slug.startsWith("insights") ||
-    slug.startsWith("about") ||
-    slug.startsWith("portfolio") ||
-    slug.startsWith("global") ||
-    slug.startsWith("investors") ||
-    slug.startsWith("careers")
-  ) {
-    return {
-      tag: "RankRise Perspective",
-      title: "Evidence & Engineering Rigor",
-      subtitle: "Clear principles, substantiated delivery",
-    };
-  }
-  return {
-    tag: "Business → Technology",
-    title: "Software + AI Systems",
-    subtitle: "Built around real workflows",
-  };
-}
-
 export function InnerPage({ page }: { page: SitePage }) {
+  const [activeIndustryIndex, setActiveIndustryIndex] = useState(0);
   const isExcludedCta =
     page.slug.startsWith("contact") ||
     page.slug.startsWith("privacy") ||
@@ -88,122 +38,11 @@ export function InnerPage({ page }: { page: SitePage }) {
     page.slug.startsWith("disclaimer") ||
     page.slug.startsWith("data-security");
 
-  const segments = page.slug ? page.slug.split("/").filter(Boolean) : [];
-  const visualMeta = visualCaptionForSlug(page.slug);
-
   return (
     <>
-      <SiteHeader activePath={page.slug ? `/${page.slug}` : "/"} />
+      <SiteHeader overHero activePath={page.slug ? `/${page.slug}` : "/"} />
       <main id="main-content" className="inner-page">
-        {/* Inner Hero Header Band */}
-        <section className="section inner-hero">
-          <div className="container inner-hero-grid">
-            <div className="inner-hero-copy">
-              {segments.length > 0 && (
-                <nav className="inner-breadcrumb" aria-label="Breadcrumbs">
-                  <Link href="/">Home</Link>
-                  <span className="inner-breadcrumb-sep" aria-hidden="true">
-                    /
-                  </span>
-                  {segments.map((seg, idx) => {
-                    const isLast = idx === segments.length - 1;
-                    const href = `/${segments.slice(0, idx + 1).join("/")}`;
-                    const label = seg
-                      .replace(/-/g, " ")
-                      .replace(/\b\w/g, (c) => c.toUpperCase());
-                    return (
-                      <span key={href} className="breadcrumb-item">
-                        {isLast ? (
-                          <span
-                            className="inner-breadcrumb-current"
-                            aria-current="page"
-                          >
-                            {label}
-                          </span>
-                        ) : (
-                          <>
-                            <Link href={href}>{label}</Link>
-                            <span
-                              className="inner-breadcrumb-sep"
-                              aria-hidden="true"
-                            >
-                              /
-                            </span>
-                          </>
-                        )}
-                      </span>
-                    );
-                  })}
-                </nav>
-              )}
-
-              <p className="eyebrow">
-                {page.eyebrow || "RankRise Technologies"}
-              </p>
-
-              <h1>{page.h1}</h1>
-
-              <p className="lead-copy">{page.lead}</p>
-
-              {(page.cta || page.secondaryCta) && (
-                <div className="hero-actions inner-hero-actions">
-                  {page.cta &&
-                    (page.cta.external ? (
-                      <a
-                        className="button button-primary"
-                        href={page.cta.href}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {page.cta.label}
-                        <Icon name="arrow-up-right" width="16" height="16" />
-                      </a>
-                    ) : (
-                      <Link
-                        className="button button-primary"
-                        href={page.cta.href}
-                      >
-                        {page.cta.label}
-                        <Icon name="arrow-right" width="16" height="16" />
-                      </Link>
-                    ))}
-
-                  {page.secondaryCta &&
-                    (page.secondaryCta.external ? (
-                      <a
-                        className="button button-secondary"
-                        href={page.secondaryCta.href}
-                        target="_blank"
-                        rel="noreferrer"
-                      >
-                        {page.secondaryCta.label}
-                      </a>
-                    ) : (
-                      <Link
-                        className="button button-secondary"
-                        href={page.secondaryCta.href}
-                      >
-                        {page.secondaryCta.label}
-                      </Link>
-                    ))}
-                </div>
-              )}
-            </div>
-
-            <div className="inner-hero-visual">
-              <div className="inner-visual-frame">
-                <InnerHeroIllustration slug={page.slug} />
-                <div className="inner-visual-meta">
-                  <span className="inner-visual-tag">{visualMeta.tag}</span>
-                  <div className="inner-visual-caption">
-                    <strong>{visualMeta.title}</strong>
-                    <span>{visualMeta.subtitle}</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
+        <InnerHero page={page} />
 
         {/* Numbered Architectural Narrative Ledger */}
         {page.sections && page.sections.length > 0 && (
@@ -228,7 +67,14 @@ export function InnerPage({ page }: { page: SitePage }) {
                 </div>
               </aside>
 
-              <div className="inner-story-list">
+              <div
+                className="inner-story-list"
+                data-layout={
+                  page.sections.length >= 4 && !page.slug.startsWith("insights")
+                    ? "grid"
+                    : "stack"
+                }
+              >
                 {page.sections.map((section, idx) => (
                   <article
                     className="inner-story-item"
@@ -255,6 +101,13 @@ export function InnerPage({ page }: { page: SitePage }) {
                           ))}
                         </ul>
                       )}
+                      {page.slug === "products" &&
+                        (section.id === "salesapp" || section.id === "hrms") && (
+                          <Link href="/contact" className="text-link">
+                            Request {section.id === "salesapp" ? "SalesApp" : "HRMS"} Demo
+                            <Icon name="arrow-right" width="16" height="16" />
+                          </Link>
+                        )}
                     </div>
                   </article>
                 ))}
@@ -267,7 +120,7 @@ export function InnerPage({ page }: { page: SitePage }) {
         {page.slug === "services" && (
           <section className="section inner-showcase-band">
             <div className="container">
-              <div className="section-heading heading-split">
+              <ScrollReveal variant="fade-up" className="section-heading heading-split">
                 <div>
                   <p className="eyebrow">Capabilities Directory</p>
                   <h2>
@@ -281,15 +134,11 @@ export function InnerPage({ page }: { page: SitePage }) {
                   to AI automation, integration and cloud — without forcing
                   every problem into the same technology.
                 </p>
-              </div>
+              </ScrollReveal>
 
               <div className="inner-bento-grid">
                 {SERVICES_LIST.map((s, i) => (
-                  <SpotlightCard
-                    as="article"
-                    className="inner-service-card"
-                    key={s.slug}
-                  >
+                  <article className="inner-service-card" key={s.slug}>
                     <div className="inner-service-top">
                       <span className="eyebrow">{serviceGroup(i)}</span>
                       <span className="inner-index-mono" aria-hidden="true">
@@ -307,13 +156,17 @@ export function InnerPage({ page }: { page: SitePage }) {
                     <p>{s.short}</p>
                     <Link
                       href={`/services/${s.slug}`}
-                      className="text-link"
+                      className="capability-arrow-link"
                       aria-label={`Explore ${s.name}`}
                     >
-                      Explore capability
-                      <Icon name="arrow-up-right" width="16" height="16" />
+                      <span className="capability-arrow-icon is-primary" aria-hidden="true">
+                        <Icon name="arrow-up-right" width="20" height="20" />
+                      </span>
+                      <span className="capability-arrow-icon is-incoming" aria-hidden="true">
+                        <Icon name="arrow-up-right" width="20" height="20" />
+                      </span>
                     </Link>
-                  </SpotlightCard>
+                  </article>
                 ))}
               </div>
             </div>
@@ -323,37 +176,81 @@ export function InnerPage({ page }: { page: SitePage }) {
         {/* Showcase: /industries */}
         {page.slug === "industries" && (
           <section className="section inner-showcase-band">
-            <div className="container inner-industries-split">
-              <div className="inner-industries-sticky">
-                <p className="eyebrow">Industries</p>
-                <h2>
-                  Different industries.
-                  <br />
-                  Different operating realities.
-                </h2>
-                <p className="section-intro">
+            <div className="container">
+              <ScrollReveal variant="fade-up" className="section-heading heading-split">
+                <div>
+                  <p className="eyebrow">Context comes first</p>
+                  <h2>
+                    Different industries.
+                    <br />
+                    Different operating realities.
+                  </h2>
+                </div>
+                <p>
                   We map the software and AI solution to the workflow, users and
                   information environment of each sector.
                 </p>
-                <div className="inner-industries-visual" aria-hidden="true">
-                  <InnerHeroIllustration slug="industries" />
-                </div>
-              </div>
+              </ScrollReveal>
 
-              <ul className="industry-list inner-industry-directory">
-                {INDUSTRIES.map((x, i) => (
-                  <li key={x.slug}>
-                    <span className="industry-number" aria-hidden="true">
-                      {String(i + 1).padStart(2, "0")}
-                    </span>
-                    <Link href={`/industries/${x.slug}`}>
-                      <h3>{x.name}</h3>
-                      <p>{x.theme}</p>
-                    </Link>
-                    <Icon name="arrow-up-right" width="18" height="18" />
-                  </li>
-                ))}
-              </ul>
+              <div className="industries-explorer">
+                <ul className="industry-list">
+                  {INDUSTRIES.map((industry, index) => {
+                    const isActive = index === activeIndustryIndex;
+                    return (
+                      <li
+                        key={industry.slug}
+                        className={isActive ? "is-active" : undefined}
+                        onMouseEnter={() => setActiveIndustryIndex(index)}
+                      >
+                        <span className="industry-number" aria-hidden="true">
+                          {String(index + 1).padStart(2, "0")}
+                        </span>
+                        <Link
+                          href={`/industries/${industry.slug}`}
+                          onFocus={() => setActiveIndustryIndex(index)}
+                        >
+                          <h3>{industry.name}</h3>
+                          <p>{industry.theme}</p>
+                        </Link>
+                        <Icon name="arrow-up-right" width="18" height="18" />
+                      </li>
+                    );
+                  })}
+                </ul>
+                <aside className="industry-context-card" aria-label="Selected industry context">
+                  {(() => {
+                    const activeIndustry = INDUSTRIES[activeIndustryIndex] ?? INDUSTRIES[0];
+                    return (
+                      <>
+                        <div className="industry-context-top">
+                          <span className="eyebrow">
+                            {String(activeIndustryIndex + 1).padStart(2, "0")} / Sector Brief
+                          </span>
+                          <span className="industry-context-tag" aria-hidden="true">
+                            Hover any sector
+                          </span>
+                        </div>
+                        <p className="industry-context-title">{activeIndustry.name}</p>
+                        <p className="industry-context-pain">{activeIndustry.pain}</p>
+                        <div className="industry-solutions-block">
+                          <p className="industry-solutions-label">Typical Solution Directions</p>
+                          <ul className="industry-solutions-chips">
+                            {activeIndustry.solutions.map((solution) => (
+                              <li key={solution}>{solution}</li>
+                            ))}
+                          </ul>
+                        </div>
+                        <div className="industry-context-footer">
+                          <Link href="/contact" className="button button-primary">
+                            Discuss {activeIndustry.name}
+                            <Icon name="arrow-up-right" width="16" height="16" />
+                          </Link>
+                        </div>
+                      </>
+                    );
+                  })()}
+                </aside>
+              </div>
             </div>
           </section>
         )}
@@ -397,10 +294,17 @@ export function InnerPage({ page }: { page: SitePage }) {
                       <p className="product-description">
                         {prod.positioning} {prod.value}
                       </p>
-                      <Link href={prod.href} className="text-link">
-                        Explore {prod.name}
-                        <Icon name="arrow-up-right" width="16" height="16" />
-                      </Link>
+                      {prod.href.startsWith("/products#") ? (
+                        <Link href="/contact" className="text-link">
+                          Request {prod.name} Demo
+                          <Icon name="arrow-up-right" width="16" height="16" />
+                        </Link>
+                      ) : (
+                        <Link href={prod.href} className="text-link">
+                          Explore {prod.name}
+                          <Icon name="arrow-up-right" width="16" height="16" />
+                        </Link>
+                      )}
                     </div>
                     <div className="product-media inner-product-specimen">
                       <ProductMotif id={prod.id} />
@@ -429,26 +333,27 @@ export function InnerPage({ page }: { page: SitePage }) {
 
               <div className="insights-cards-grid">
                 {INSIGHT_ARTICLES.map((a, i) => (
-                  <SpotlightCard
-                    as="article"
-                    className="insight-card"
-                    key={a.slug}
-                  >
-                    <div className="insight-card-top">
-                      <span className="eyebrow">Perspective</span>
-                      <span className="insight-number" aria-hidden="true">
-                        {String(i + 1).padStart(2, "0")}
-                      </span>
-                    </div>
-                    <h3>
-                      <Link href={`/insights/${a.slug}`}>{a.title}</Link>
-                    </h3>
-                    <p>{a.intro}</p>
-                    <Link href={`/insights/${a.slug}`} className="text-link">
-                      Read article
-                      <Icon name="arrow-up-right" width="16" height="16" />
-                    </Link>
-                  </SpotlightCard>
+                  <ScrollReveal key={a.slug} variant="fade-up" delay={i * 80}>
+                    <SpotlightCard
+                      as="article"
+                      className="insight-card"
+                    >
+                      <div className="insight-card-top">
+                        <span className="eyebrow">Perspective</span>
+                        <span className="insight-number" aria-hidden="true">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
+                      </div>
+                      <h3>
+                        <Link href={`/insights/${a.slug}`}>{a.title}</Link>
+                      </h3>
+                      <p>{a.intro}</p>
+                      <Link href={`/insights/${a.slug}`} className="text-link">
+                        Read article
+                        <Icon name="arrow-up-right" width="16" height="16" />
+                      </Link>
+                    </SpotlightCard>
+                  </ScrollReveal>
                 ))}
               </div>
             </div>
@@ -657,6 +562,17 @@ export function InnerPage({ page }: { page: SitePage }) {
                   >
                     Ask RankRise AI
                   </button>
+                </div>
+                <div className="final-contact-direct" aria-label="Direct contact details">
+                  <a href={`tel:${SITE_IDENTITY.phoneHref}`} className="final-contact-link">
+                    <Icon name="phone" width="15" height="15" />
+                    <span>{SITE_IDENTITY.phone}</span>
+                  </a>
+                  <span className="final-contact-sep" aria-hidden="true">·</span>
+                  <a href={`mailto:${SITE_IDENTITY.email}`} className="final-contact-link">
+                    <span className="email-symbol" aria-hidden="true">✉</span>
+                    <span>{SITE_IDENTITY.email}</span>
+                  </a>
                 </div>
               </div>
             </div>

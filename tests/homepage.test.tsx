@@ -17,7 +17,6 @@ import {
   STATIC_ROUTES,
 } from "@/lib/routes";
 import {
-  AI_EXPLORATIONS,
   CORE_CAPABILITIES,
   FOOTER_AUTOMATE_SERVICES,
   FOOTER_BUILD_SERVICES,
@@ -31,10 +30,7 @@ import {
   NAVIGATION_ITEMS,
   PROCESS_STAGES,
   PRODUCTS,
-  PUBLISHED_TECH_STACK,
   SITE_IDENTITY,
-  STACK_CATEGORIES,
-  WEBSITE_STACK,
   WHY_RANKRISE,
 } from "@/lib/site-content";
 import { answerLocally, assistantContext } from "@/lib/assistant";
@@ -52,9 +48,7 @@ const SECTION_ORDER = [
   "company-introduction",
   "core-capabilities",
   "in-house-products",
-  "ai-emerging-technologies",
   "industries",
-  "technology-stack",
   "development-process",
   "portfolio",
   "why-rankrise",
@@ -235,7 +229,7 @@ function preventJsdomNavigation(container: HTMLElement) {
 }
 
 describe("RankRise homepage regression & design invariants", () => {
-  it("preserves all fourteen labelled sections, exact primary copy and design tokens", () => {
+  it("preserves all twelve labelled sections, exact primary copy and design tokens", () => {
     const { container } = render(<Homepage />);
     const sections = [...container.querySelectorAll<HTMLElement>("[data-section]")];
     expect(sections.map((element) => element.dataset.section)).toEqual(SECTION_ORDER);
@@ -533,36 +527,13 @@ describe("RankRise homepage regression & design invariants", () => {
     );
   });
 
-  it("renders AI section with service link, 10 demo2 industries, published technology stack and 9 stack categories", () => {
+  it("renders 10 demo2 industries", () => {
     render(<Homepage />);
-    const ai = section("ai");
-    expect(
-      within(ai).getByRole("link", { name: "Explore AI & Emerging Technologies" })
-    ).toHaveAttribute("href", "/services/ai-solutions-automation");
-    const matrix = ai.querySelector<HTMLElement>(".ai-matrix-grid")!;
-    expect(headingNames(matrix, 3)).toEqual(AI_EXPLORATIONS.map((area) => area.title));
-
     const industries = section("industries");
     expect(headingNames(industries, 3)).toEqual(INDUSTRIES.map((industry) => industry.name));
     expect(within(industries).getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(
       INDUSTRIES.map((industry) => industry.href)
     );
-
-    const technologies = section("technologies");
-    const taxonomy = technologies.querySelector<HTMLElement>(".stack-category-list")!;
-    expect(headingNames(taxonomy, 3)).toEqual(STACK_CATEGORIES.map((c) => c.name));
-    const publishedList = technologies.querySelector<HTMLElement>(".published-stack-list")!;
-    expect(
-      within(publishedList)
-        .getAllByRole("listitem")
-        .map((item) => item.textContent)
-    ).toEqual([...PUBLISHED_TECH_STACK]);
-    const websiteStack = technologies.querySelector<HTMLElement>(".website-stack")!;
-    expect(
-      within(websiteStack)
-        .getAllByRole("listitem")
-        .map((item) => item.textContent)
-    ).toEqual([...WEBSITE_STACK]);
   });
 
   it("renders honest portfolio messaging and 3 insight article cards linking to real routes", () => {

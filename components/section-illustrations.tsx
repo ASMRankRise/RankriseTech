@@ -192,7 +192,7 @@ export function ProductMotif({ id, className }: { id: string; className?: string
         className="showcase-image"
         width={1200}
         height={896}
-        loading="lazy"
+        loading="eager"
         decoding="async"
       />
     </div>

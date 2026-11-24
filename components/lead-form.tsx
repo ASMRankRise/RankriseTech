@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState, type FormEvent, type ChangeEvent } from "react";
-import { SERVICES_LIST } from "@/lib/site-content";
+import { PRODUCTS, SERVICES_LIST } from "@/lib/site-content";
 
 export type LeadFormType =
   | "project"
@@ -181,11 +181,20 @@ export function LeadForm({
                 <option value="Not Sure / Need Consultation">
                   Not Sure / Need Consultation
                 </option>
-                {SERVICES_LIST.map((s) => (
-                  <option key={s.slug} value={s.name}>
-                    {s.name}
-                  </option>
-                ))}
+                <optgroup label="In-House Products">
+                  {PRODUCTS.map((p) => (
+                    <option key={p.id} value={`${p.name} (Product Demo)`}>
+                      {p.name} (Product Demo)
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Engineering &amp; AI Services">
+                  {SERVICES_LIST.map((s) => (
+                    <option key={s.slug} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 
@@ -369,11 +378,20 @@ export function LeadForm({
                 <option value="Not Sure / Need Consultation">
                   Not Sure / Need Consultation
                 </option>
-                {SERVICES_LIST.map((s) => (
-                  <option key={s.slug} value={s.name}>
-                    {s.name}
-                  </option>
-                ))}
+                <optgroup label="In-House Products">
+                  {PRODUCTS.map((p) => (
+                    <option key={p.id} value={`${p.name} (Product Demo)`}>
+                      {p.name} (Product Demo)
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Engineering &amp; AI Services">
+                  {SERVICES_LIST.map((s) => (
+                    <option key={s.slug} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </div>
           </>
@@ -392,11 +410,20 @@ export function LeadForm({
                 <option value="Not Sure / Need Consultation">
                   Not Sure / Need Consultation
                 </option>
-                {SERVICES_LIST.map((s) => (
-                  <option key={s.slug} value={s.name}>
-                    {s.name}
-                  </option>
-                ))}
+                <optgroup label="In-House Products">
+                  {PRODUCTS.map((p) => (
+                    <option key={p.id} value={`${p.name} (Product Demo)`}>
+                      {p.name} (Product Demo)
+                    </option>
+                  ))}
+                </optgroup>
+                <optgroup label="Engineering &amp; AI Services">
+                  {SERVICES_LIST.map((s) => (
+                    <option key={s.slug} value={s.name}>
+                      {s.name}
+                    </option>
+                  ))}
+                </optgroup>
               </select>
             </div>
 

@@ -5,6 +5,15 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   devIndicators: false,
+  async redirects() {
+    return [
+      {
+        source: "/terms-of-service",
+        destination: "/terms-conditions",
+        permanent: true,
+      },
+    ];
+  },
   async headers() {
     return [
       {

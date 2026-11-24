@@ -32,9 +32,7 @@ export const HOME_SECTION_ORDER = [
   "company-introduction",
   "core-capabilities",
   "in-house-products",
-  "ai-emerging-technologies",
   "industries",
-  "technology-stack",
   "development-process",
   "portfolio",
   "why-rankrise",
@@ -535,7 +533,7 @@ function servicePage(s: (typeof SERVICES_LIST)[number]): SitePage {
       { heading: "Security, Confidentiality & Support", body: "We consider access control, secure integrations, data handling and deployment requirements during solution planning. NDA-based engagement can be used where appropriate, and ongoing maintenance or enhancement support can be scoped separately." }
     ],
     faq: [
-      { q: `Can RankRise Technologies build a custom ${s.name.toLowerCase()} solution?`, a: `Yes. We can scope ${s.name.toLowerCase()} around your users, workflows, integrations and business objectives rather than limiting the project to a fixed package.` },
+      { q: s.name.toLowerCase().startsWith("custom ") ? `Can RankRise Technologies build a ${s.name.toLowerCase()} solution?` : `Can RankRise Technologies build a custom ${s.name.toLowerCase()} solution?`, a: `Yes. We can scope ${s.name.toLowerCase()} around your users, workflows, integrations and business objectives rather than limiting the project to a fixed package.` },
       { q: "Can this integrate with our existing systems?", a: "Often yes. We first review the systems, APIs, data access and security requirements before confirming the right integration approach." },
       { q: "Do you show fixed pricing on the website?", a: "No. Project scope can vary significantly, so we first understand the requirement and then propose an appropriate engagement." },
       ...COMMON_FAQ

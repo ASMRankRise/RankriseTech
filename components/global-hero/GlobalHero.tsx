@@ -188,6 +188,19 @@ const ACCENT_HERO_CONFIG: Record<
  *
  * Navigation intentionally lives in the shared SiteHeader component.
  */
+function supportsRefraction() {
+	if (typeof window === "undefined" || typeof CSS === "undefined") return false;
+	const ua = navigator.userAgent;
+	return (
+		/Chrome\/|Chromium\/|Edg\//.test(ua) &&
+		!/Firefox\//.test(ua) &&
+		!!(CSS as unknown as { supports?: (prop: string, val: string) => boolean }).supports?.(
+			"backdrop-filter",
+			"url(#a)"
+		)
+	);
+}
+
 export function GlobalHero({
 	onOpenInquiry,
 }: {
@@ -203,6 +216,11 @@ export function GlobalHero({
 	const [reducedMotion, setReducedMotion] = useState(false);
 	const [hasLoaded, setHasLoaded] = useState(() => hasPlayedHeroEntrance);
 	const [animationComplete, setAnimationComplete] = useState(() => hasPlayedHeroEntrance);
+	const [refract, setRefract] = useState(false);
+
+	useEffect(() => {
+		setRefract(supportsRefraction());
+	}, []);
 
 	useEffect(() => {
 		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -375,6 +393,7 @@ export function GlobalHero({
 				hasLoaded ? ` ${styles.sceneLoaded}` : ""
 			}${animationComplete ? ` ${styles.animationComplete}` : ""}`}
 			data-section="hero"
+			data-refract={refract ? "on" : "off"}
 			aria-labelledby="hero-heading"
 			style={
 				{
@@ -425,6 +444,23 @@ export function GlobalHero({
 						<h1 id="hero-heading" className={styles.headline}>
 							<span className={styles.headlineLine}>Building Intelligent Software</span>{" "}
 							<span className={`${styles.headlineLine} ${styles.headlineHighlight}`}>
+								<svg
+									viewBox="0 0 400 70"
+									preserveAspectRatio="none"
+									className={styles.handHighlighter}
+									aria-hidden="true"
+								>
+									<path
+										className={styles.handHighlighterBase}
+										d="M 10 18 C 68 10, 152 13, 238 11 C 312 9, 368 12, 395 16 L 389 56 C 325 60, 240 56, 156 59 C 88 61, 32 58, 5 53 Z"
+										fill="var(--accent-highlight, #FF4F1F)"
+									/>
+									<path
+										className={styles.handHighlighterPass}
+										d="M 16 24 C 95 17, 210 21, 304 18 C 348 17, 376 19, 391 22 L 386 49 C 310 53, 195 49, 102 52 C 52 53, 24 51, 11 47 Z"
+										fill="var(--accent-highlight, #FF4F1F)"
+									/>
+								</svg>
 								<span className={styles.headlineHighlightText}>
 									for a Smarter Digital World.
 								</span>
@@ -457,7 +493,7 @@ export function GlobalHero({
 						className={`${styles.ctaWrapper} ${
 							hasLoaded ? styles.ctaLoaded : styles.ctaInitial
 						}`}
-						onClick={() => onOpenInquiry("Start a Project — Global Hero")}
+						onClick={() => onOpenInquiry("Start a Project")}
 					>
 						<ArrowRevealButton
 							label="Start a Project"
@@ -498,7 +534,15 @@ export function GlobalHero({
 					</div>
 				</div>
 
-				<div className={styles.cardsContainer}>
+			<svg width="0" height="0" style={{ position: "absolute" }} aria-hidden="true">
+				<filter id="hero-glass-refract" x="0" y="0" width="100%" height="100%" colorInterpolationFilters="sRGB">
+					<feTurbulence type="fractalNoise" baseFrequency="0.006 0.02" numOctaves="2" seed="7" result="noise" />
+					<feGaussianBlur in="noise" stdDeviation="2" result="soft" />
+					<feDisplacementMap in="SourceGraphic" in2="soft" scale="60" xChannelSelector="R" yChannelSelector="G" />
+				</filter>
+			</svg>
+
+			<div className={styles.cardsContainer}>
 					<div
 						className={`${styles.glassCard} ${styles.glassCardLeft} ${
 							hasLoaded ? styles.cardLeftLoaded : styles.cardLeftInitial

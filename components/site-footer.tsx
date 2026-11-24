@@ -115,7 +115,7 @@ export function SiteFooter() {
 
         <div className="footer-bottom">
           <p className="footer-copyright">
-            © {currentYear} {SITE_IDENTITY.legalIndia} &amp; {SITE_IDENTITY.legalUs}. All rights reserved.
+            © {currentYear}{" "}{SITE_IDENTITY.legalIndia} &amp; {SITE_IDENTITY.legalUs}. All rights reserved.
           </p>
           <div className="legal-actions flex-wrap" aria-label="Legal information">
             {FOOTER_LEGAL.map((legal) => (

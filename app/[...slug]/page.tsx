@@ -53,9 +53,27 @@ export default async function CatchAllPage({ params }: PageProps) {
     { name: "Home", url: "/" },
     ...slug.map((segment, index) => {
       const href = `/${slug.slice(0, index + 1).join("/")}`;
-      const name = segment
-        .replace(/-/g, " ")
-        .replace(/\b\w/g, (char) => char.toUpperCase());
+      const segmentMap: Record<string, string> = {
+        "1socialsnap": "1SocialSnap",
+        trimarkity: "TriMarkity",
+        salesapp: "SalesApp",
+        hrms: "HRMS",
+      };
+      const wordMap: Record<string, string> = {
+        Ai: "AI",
+        Erp: "ERP",
+        Crm: "CRM",
+        Api: "API",
+        Smes: "SMEs",
+        Edtech: "EdTech",
+        Saas: "SaaS",
+      };
+      const name =
+        segmentMap[segment.toLowerCase()] ??
+        segment
+          .replace(/-/g, " ")
+          .replace(/\b\w/g, (char) => char.toUpperCase())
+          .replace(/\b(Ai|Erp|Crm|Api|Smes|Edtech|Saas)\b/g, (m) => wordMap[m] ?? m);
       return { name, url: href };
     }),
   ];

@@ -5,28 +5,23 @@ import { useEffect, useState, useRef } from "react";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import {
-  AI_EXPLORATIONS,
   CORE_CAPABILITIES,
   FOUR_PILLARS,
   INDUSTRIES,
   INSIGHT_ARTICLES,
   PROCESS_STAGES,
   PRODUCTS,
-  PUBLISHED_TECH_STACK,
   SITE_IDENTITY,
-  STACK_CATEGORIES,
-  WEBSITE_STACK,
   WHY_RANKRISE,
   type Product,
 } from "@/lib/site-content";
 import { routeHref } from "@/lib/routes";
-import { AiCapabilityMatrix, AiPrincipleCard, EngineeringVisual } from "./engineering-visual";
+import { EngineeringVisual } from "./engineering-visual";
 import {
   CapabilitySchematic,
   EditorialSealVisual,
   FinalCtaField,
   ProductMotif,
-  StackBlueprintVisual,
 } from "./section-illustrations";
 import { ProcessPathway } from "./process-pathway";
 import { Icon } from "./icon";
@@ -120,80 +115,11 @@ interface HomepageProps {
 export function Homepage({ heroVariant = "default" }: HomepageProps) {
   const [dialogState, setDialogState] = useState<DialogState | null>(null);
   const [activeProductIndex, setActiveProductIndex] = useState(0);
-  const [activeAiIndex, setActiveAiIndex] = useState(0);
   const [activeIndustryIndex, setActiveIndustryIndex] = useState(0);
-  const [activeStackIndex, setActiveStackIndex] = useState(0);
   const [productScrollProgress, setProductScrollProgress] = useState(0);
   const heroRef = useRef<HTMLElement>(null);
-  const heroPinStageRef = useRef<HTMLDivElement>(null);
-  const heroScrimRef = useRef<HTMLDivElement>(null);
-  const sectionTwoRef = useRef<HTMLDivElement>(null);
-  const coverEdgeShadowRef = useRef<HTMLDivElement>(null);
   const productsSectionRef = useRef<HTMLElement>(null);
   const productsTriggerRef = useRef<ScrollTrigger | null>(null);
-
-  useEffect(() => {
-    const heroStageEl = heroPinStageRef.current;
-    const scrimEl = heroScrimRef.current;
-    const sectionTwoEl = sectionTwoRef.current;
-    if (
-      !heroStageEl ||
-      !scrimEl ||
-      !sectionTwoEl ||
-      typeof window === "undefined" ||
-      typeof window.matchMedia !== "function"
-    ) {
-      return;
-    }
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-
-    let isDisposed = false;
-    gsap.registerPlugin(ScrollTrigger);
-
-    const ctx = gsap.context(() => {
-      const edgeShadowEl = coverEdgeShadowRef.current;
-
-      const tl = gsap.timeline({
-        scrollTrigger: {
-          id: "hero-section-cover",
-          trigger: heroStageEl,
-          start: () => (heroStageEl.offsetHeight > window.innerHeight ? "bottom bottom" : "top top"),
-          endTrigger: sectionTwoEl,
-          end: "top top",
-          pin: true,
-          pinSpacing: false,
-          anticipatePin: 1,
-          scrub: true,
-          invalidateOnRefresh: true,
-          refreshPriority: 20,
-        },
-      });
-
-      tl.fromTo(scrimEl, { opacity: 0 }, { opacity: 1, duration: 1, ease: "none" }, 0);
-
-      if (edgeShadowEl) {
-        tl.fromTo(
-          edgeShadowEl,
-          { opacity: 0 },
-          { opacity: 1, duration: 0.15, ease: "none" },
-          0,
-        ).to(edgeShadowEl, { opacity: 0, duration: 0.15, ease: "none" }, 0.85);
-      }
-    }, heroStageEl);
-
-    if (document.fonts?.ready) {
-      void document.fonts.ready.then(() => {
-        if (!isDisposed) {
-          ScrollTrigger.refresh();
-        }
-      });
-    }
-
-    return () => {
-      isDisposed = true;
-      ctx.revert();
-    };
-  }, [heroVariant]);
 
   useEffect(() => {
     const sectionEl = productsSectionRef.current;
@@ -267,7 +193,7 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
       <SiteHeader overHero={heroVariant === "global"} activePath="/" />
       <main id="main-content">
         {/* Hero Section — conditional rendering based on variant */}
-        <div ref={heroPinStageRef} className="hero-pin-stage">
+        <div className="hero-pin-stage">
           {heroVariant === "global" ? (
             <GlobalHero onOpenInquiry={openInquiry} />
           ) : (
@@ -307,13 +233,11 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
               </div>
             </section>
           )}
-          <div ref={heroScrimRef} className="hero-cover-scrim" aria-hidden="true" />
         </div>
 
         <div className="homepage-cover-stack">
           {/* SECTION 2: COMPANY INTRODUCTION (ORIGINKIT STATS-01 INTEGRATION) */}
-          <div ref={sectionTwoRef} className="section-two-cover">
-            <div ref={coverEdgeShadowRef} className="section-two-edge-shadow" aria-hidden="true" />
+          <div className="section-two-cover">
             <Stats01 />
           </div>
 
@@ -417,26 +341,6 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
           </div>
         </section>
 
-        <section id="ai" className="section ai-section" data-section="ai-emerging-technologies" aria-labelledby="ai-heading">
-          <div className="container ai-grid">
-            <ScrollReveal variant="fade-up" className="ai-spine">
-              <p className="eyebrow">AI &amp; Emerging Technologies</p>
-              <h2 id="ai-heading">Intelligence with<br className="desktop-break" /> a practical purpose.</h2>
-              <p className="section-intro">The useful question is not simply what AI can do. It is where it could make work clearer, decisions better informed and processes more connected.</p>
-              <AiPrincipleCard activeIndex={activeAiIndex} />
-              <p className="small-note ai-scope-note">Practical AI integration tailored to your existing data pipelines, operational workflows, and security guardrails.</p>
-              <Link className="text-link" href={routeHref("/services/ai-solutions-automation")}>Explore AI &amp; Emerging Technologies<Icon name="arrow-right" /></Link>
-            </ScrollReveal>
-            <ScrollReveal variant="fade-up" delay={120} className="ai-matrix-column">
-              <AiCapabilityMatrix
-                areas={AI_EXPLORATIONS}
-                activeIndex={activeAiIndex}
-                onSelect={setActiveAiIndex}
-              />
-            </ScrollReveal>
-          </div>
-        </section>
-
         <section id="industries" className="section industries-section" data-section="industries" aria-labelledby="industries-heading">
           <div className="container">
             <ScrollReveal variant="fade-up" className="section-heading heading-split">
@@ -504,51 +408,6 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
                 })()}
               </aside>
             </div>
-          </div>
-        </section>
-
-        <section id="technologies" className="section technologies-section" data-section="technology-stack" aria-labelledby="technologies-heading">
-          <div className="container technology-grid">
-            <ScrollReveal variant="fade-up" className="technology-intro">
-              <p className="eyebrow">Technology Stack</p>
-              <h2 id="technologies-heading">The right foundation.<br />Not just more tools.</h2>
-              <p>Technology choices should follow the challenge, the constraints and the people who will own the system.</p>
-              <div className="website-stack">
-                <h3>This website&apos;s stack</h3>
-                <ul>{WEBSITE_STACK.map((technology) => <li key={technology}>{technology}</li>)}</ul>
-                <p>Engineered with Next.js App Router, React, TypeScript, and modern styling.</p>
-              </div>
-              <div className="published-stack-wrap">
-                <h3>Core Production Technologies</h3>
-                <ul className="published-stack-list">
-                  {PUBLISHED_TECH_STACK.map((technology) => (
-                    <li key={technology} className="published-stack-item">{technology}</li>
-                  ))}
-                </ul>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal variant="fade-up" delay={100} className="technology-taxonomy">
-              <p className="technology-status"><span className="status-dot" aria-hidden="true" />Engineering categories &amp; production capabilities</p>
-              <div className="stack-blueprint-frame" aria-hidden="true">
-                <StackBlueprintVisual />
-              </div>
-              <ul className="stack-category-list">
-                {STACK_CATEGORIES.map((category, index) => (
-                  <li
-                    key={category.name}
-                    className={index === activeStackIndex ? "is-active" : undefined}
-                    onMouseEnter={() => setActiveStackIndex(index)}
-                    onClick={() => setActiveStackIndex(index)}
-                  >
-                    <span className="stack-category-num" aria-hidden="true">
-                      {String(index + 1).padStart(2, "0")}
-                    </span>
-                    <h3>{category.name}</h3>
-                    <p>{category.context}</p>
-                  </li>
-                ))}
-              </ul>
-            </ScrollReveal>
           </div>
         </section>
 
