@@ -4,6 +4,8 @@ import userEvent from "@testing-library/user-event";
 import { afterAll, afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import CatchAllPage, { dynamicParams, generateMetadata, generateStaticParams } from "@/app/[...slug]/page";
 import { ACCENT_PRESETS } from "@/components/accent-theme-dock";
+import { GLOBE_COUNTRIES } from "@/components/global-hero/globe-countries";
+import { latLngToPosition } from "@/components/global-hero/originkit-globe";
 import { Homepage } from "@/components/homepage";
 import { InnerPage } from "@/components/inner-page";
 import {
@@ -706,6 +708,89 @@ describe("RankRise homepage regression & design invariants", () => {
     expect(cta).toHaveAttribute("href", "/contact");
     expect(cta).toHaveClass("header-cta");
     expect(cta).toHaveAttribute("aria-label", "Let's Talk Business");
+  });
+});
+
+describe("GlobalHero variant and globe projection", () => {
+  it("renders [data-country-labels] with aria-hidden, all 11 GLOBE_COUNTRIES pills, and no duplicate IDs", () => {
+    vi.stubGlobal(
+      "matchMedia",
+      vi.fn((query: string) => ({
+        matches: false,
+        media: query,
+        onchange: null,
+        addListener: vi.fn(),
+        removeListener: vi.fn(),
+        addEventListener: vi.fn(),
+        removeEventListener: vi.fn(),
+        dispatchEvent: vi.fn(),
+      }))
+    );
+    vi.stubGlobal(
+      "ResizeObserver",
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      }
+    );
+
+    const { container } = render(<Homepage heroVariant="global" />);
+    const labelsLayer = container.querySelector<HTMLElement>("[data-country-labels]");
+    expect(labelsLayer).not.toBeNull();
+    expect(labelsLayer).toHaveAttribute("aria-hidden", "true");
+
+    expect(GLOBE_COUNTRIES).toHaveLength(11);
+    const pills = [...labelsLayer!.querySelectorAll<HTMLElement>("[data-country]")];
+    expect(pills).toHaveLength(11);
+    expect(pills.map((pill) => pill.dataset.country)).toEqual(
+      GLOBE_COUNTRIES.map((country) => country.id)
+    );
+    for (const country of GLOBE_COUNTRIES) {
+      const pill = labelsLayer!.querySelector<HTMLElement>(`[data-country="${country.id}"]`);
+      expect(pill, `Missing country pill for ${country.id}`).not.toBeNull();
+      expect(pill).toHaveTextContent(country.name);
+    }
+
+    const ids = [...container.querySelectorAll("[id]")].map((element) => element.id);
+    expect(ids.length).toBeGreaterThan(0);
+    expect(new Set(ids).size).toBe(ids.length);
+  });
+
+  it("computes unit-length spherical vectors from latLngToPosition", () => {
+    const origin = latLngToPosition(0, 0);
+    expect(origin.x).toBeCloseTo(0, 10);
+    expect(origin.y).toBeCloseTo(0, 10);
+    expect(origin.z).toBeCloseTo(1, 10);
+
+    const northPole = latLngToPosition(90, 0);
+    expect(northPole.x).toBeCloseTo(0, 10);
+    expect(northPole.y).toBeCloseTo(1, 10);
+    expect(northPole.z).toBeCloseTo(0, 10);
+
+    const eastEquator = latLngToPosition(0, 90);
+    expect(eastEquator.x).toBeCloseTo(1, 10);
+    expect(eastEquator.y).toBeCloseTo(0, 10);
+    expect(eastEquator.z).toBeCloseTo(0, 10);
+
+    const southPole = latLngToPosition(-90, 0);
+    expect(southPole.x).toBeCloseTo(0, 10);
+    expect(southPole.y).toBeCloseTo(-1, 10);
+    expect(southPole.z).toBeCloseTo(0, 10);
+
+    const antiMeridian = latLngToPosition(0, 180);
+    expect(antiMeridian.x).toBeCloseTo(0, 10);
+    expect(antiMeridian.y).toBeCloseTo(0, 10);
+    expect(antiMeridian.z).toBeCloseTo(-1, 10);
+
+    for (const { lat, lng } of [
+      ...GLOBE_COUNTRIES,
+      { lat: 45, lng: -45 },
+      { lat: -33.8, lng: 151.2 },
+    ]) {
+      const { x, y, z } = latLngToPosition(lat, lng);
+      expect(x * x + y * y + z * z).toBeCloseTo(1, 10);
+    }
   });
 });
 

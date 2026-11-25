@@ -1,10 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
-import Globe from "./originkit-globe";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import Globe, { type ProjectedGlobeLocation } from "./originkit-globe";
+import { GLOBE_COUNTRIES, CountryFlag } from "./globe-countries";
 import styles from "./global-hero.module.css";
 import { StageBackdrop } from "./Hands";
 import ArrowRevealButton from "./arrow-reveal-button";
+
+const COUNTRY_BY_ID = new Map(GLOBE_COUNTRIES.map((country) => [country.id, country]));
+
+function smoothstep(edge0: number, edge1: number, x: number): number {
+	const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+	return t * t * (3 - 2 * t);
+}
 
 /* Stable prop identities: the globe re-runs its scene effect when these change. */
 const GLOBE_DOTS_DARK = { color: "#ffffff", size: 5, density: 8, allDots: false };
@@ -218,13 +226,25 @@ export function GlobalHero({
 	const [animationComplete, setAnimationComplete] = useState(() => hasPlayedHeroEntrance);
 	const [refract, setRefract] = useState(false);
 
+	const pillRefs = useRef<Record<string, HTMLDivElement | null>>({});
+	const skipEntranceRef = useRef(hasPlayedHeroEntrance);
+	const reducedMotionRef = useRef(false);
+	const mountTimeRef = useRef(0);
+
+	useEffect(() => {
+		mountTimeRef.current = performance.now();
+	}, []);
+
 	useEffect(() => {
 		setRefract(supportsRefraction());
 	}, []);
 
 	useEffect(() => {
 		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-		const sync = () => setReducedMotion(mediaQuery.matches);
+		const sync = () => {
+			reducedMotionRef.current = mediaQuery.matches;
+			setReducedMotion(mediaQuery.matches);
+		};
 		sync();
 		mediaQuery.addEventListener("change", sync);
 		return () => mediaQuery.removeEventListener("change", sync);
@@ -385,6 +405,91 @@ export function GlobalHero({
 		[modeConfig.markerColor]
 	);
 
+	const handleProjectLocations = useCallback(
+		(projected: ProjectedGlobeLocation[], viewport: { width: number; height: number }) => {
+			const entranceAlpha =
+				skipEntranceRef.current || reducedMotionRef.current
+					? 1
+					: smoothstep(
+							0,
+							1,
+							(performance.now() - mountTimeRef.current - 380) / 550
+					  );
+
+			const isMobile = viewport.width <= 768;
+			const widthScale = isMobile ? 0.88 : 1;
+			const pillHeight = isMobile ? 24 : 28;
+			const padX = 6;
+			const padY = 4;
+
+			const visibleItems: ProjectedGlobeLocation[] = [];
+			for (let i = 0; i < projected.length; i++) {
+				const item = projected[i];
+				if (!item.visible) {
+					const el = pillRefs.current[item.id];
+					if (el) {
+						el.style.opacity = "0";
+						el.style.visibility = "hidden";
+					}
+				} else {
+					visibleItems.push(item);
+				}
+			}
+
+			visibleItems.sort((a, b) => b.facing - a.facing);
+
+			const placed: Array<{
+				x: number;
+				y: number;
+				halfW: number;
+				halfH: number;
+				alpha: number;
+			}> = [];
+
+			for (let i = 0; i < visibleItems.length; i++) {
+				const item = visibleItems[i];
+				const el = pillRefs.current[item.id];
+				if (!el) continue;
+
+				const horizonAlpha = smoothstep(0.06, 0.28, item.facing);
+				const depthScale = 0.88 + 0.12 * smoothstep(0.06, 0.45, item.facing);
+				const widthEstimate = COUNTRY_BY_ID.get(item.id)?.widthEstimate ?? 96;
+				const halfW = widthEstimate * widthScale * depthScale * 0.5 + padX;
+				const halfH = pillHeight * depthScale * 0.5 + padY;
+
+				let collisionFade = 1;
+				for (let j = 0; j < placed.length; j++) {
+					const p = placed[j];
+					const dx = Math.abs(item.x - p.x);
+					const dy = Math.abs(item.y - p.y);
+					const reqW = halfW + p.halfW;
+					const reqH = halfH + p.halfH;
+					if (dx < reqW && dy < reqH) {
+						const overlap = Math.max(0, 1 - Math.max(dx / reqW, dy / reqH));
+						const fade = 1 - smoothstep(0, 0.35, overlap) * p.alpha;
+						if (fade < collisionFade) collisionFade = fade;
+					}
+				}
+
+				const finalOpacity = entranceAlpha * horizonAlpha * collisionFade;
+				if (finalOpacity > 0.08) {
+					placed.push({
+						x: item.x,
+						y: item.y,
+						halfW,
+						halfH,
+						alpha: finalOpacity,
+					});
+				}
+
+				el.style.opacity = finalOpacity.toFixed(3);
+				el.style.visibility = finalOpacity > 0.01 ? "visible" : "hidden";
+				el.style.transform = `translate3d(${item.x.toFixed(2)}px, ${item.y.toFixed(2)}px, 0) translate(-50%, -50%) scale(${depthScale.toFixed(3)})`;
+			}
+		},
+		[]
+	);
+
 	return (
 		<section
 			ref={heroRef}
@@ -431,7 +536,29 @@ export function GlobalHero({
 							markerConfig={globeMarkerConfig}
 							showGrid={false}
 							style={{ transform: "translateY(21%)" }}
+							locationAnchors={GLOBE_COUNTRIES}
+							onProjectLocations={handleProjectLocations}
 						/>
+					</div>
+				</div>
+
+				<div className={styles.countryLabelsLayer} data-country-labels aria-hidden="true">
+					<div className={styles.countryLabelsStage}>
+						{GLOBE_COUNTRIES.map((country) => (
+							<div
+								key={country.id}
+								ref={(el) => {
+									pillRefs.current[country.id] = el;
+								}}
+								className={styles.countryGlassPill}
+								data-country={country.id}
+							>
+								<span className={styles.countryName}>{country.name}</span>
+								<span className={styles.countryFlag}>
+									<CountryFlag code={country.id} />
+								</span>
+							</div>
+						))}
 					</div>
 				</div>
 

@@ -144,7 +144,7 @@ function simplifyRing(ring: number[][], detail: number): number[][] {
     return simplified.length >= 2 ? simplified : ring;
 }
 
-function latLngToPosition(
+export function latLngToPosition(
     lat: number,
     lng: number
 ): { x: number; y: number; z: number } {
@@ -326,6 +326,18 @@ interface DotsConfig {
     density: number;
     allDots: boolean;
 }
+export interface GlobeLocationAnchor {
+    id: string;
+    lat: number;
+    lng: number;
+}
+export interface ProjectedGlobeLocation {
+    id: string;
+    x: number;
+    y: number;
+    facing: number;
+    visible: boolean;
+}
 interface GlobeProps {
     speed?: number;
     smoothing?: number;
@@ -347,6 +359,11 @@ interface GlobeProps {
     dragSpeed?: number;
     detail?: number;
     style?: CSSProperties;
+    locationAnchors?: readonly GlobeLocationAnchor[];
+    onProjectLocations?: (
+        locations: ProjectedGlobeLocation[],
+        viewport: { width: number; height: number }
+    ) => void;
 }
 
 export default function Globe({
@@ -370,8 +387,14 @@ export default function Globe({
     dragSpeed = 5,
     detail = 5,
     style,
+    locationAnchors,
+    onProjectLocations,
 }: GlobeProps) {
     const containerRef = useRef<HTMLDivElement>(null);
+    const locationAnchorsRef = useRef(locationAnchors);
+    const onProjectLocationsRef = useRef(onProjectLocations);
+    locationAnchorsRef.current = locationAnchors;
+    onProjectLocationsRef.current = onProjectLocations;
     const [, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
@@ -399,6 +422,8 @@ export default function Globe({
             container.clientWidth || container.offsetWidth || 800;
         const containerHeight =
             container.clientHeight || container.offsetHeight || 600;
+        let currentWidth = containerWidth;
+        let currentHeight = containerHeight;
 
         const scene = new Scene();
         const camera = new PerspectiveCamera(
@@ -755,6 +780,7 @@ export default function Globe({
 
                 updateMarkers();
                 renderer.render(scene, camera);
+                projectLocations();
                 canvas.style.opacity = "1";
                 canvas.style.visibility = "visible";
                 setIsLoading(false);
@@ -827,6 +853,50 @@ export default function Globe({
         globeGroup.add(continentOutlineGroup);
         markerMeshes.forEach((mesh) => globeGroup.add(mesh));
 
+        const localVec = new Vector3();
+        const worldVec = new Vector3();
+        const normalVec = new Vector3();
+        const camPosVec = new Vector3();
+        const toCamVec = new Vector3();
+        const ndcVec = new Vector3();
+        const projectedBuffer: ProjectedGlobeLocation[] = [];
+
+        const projectLocations = () => {
+            const anchors = locationAnchorsRef.current;
+            const cb = onProjectLocationsRef.current;
+            if (!anchors || anchors.length === 0 || !cb) return;
+
+            globeGroup.updateMatrixWorld();
+            camera.updateMatrixWorld();
+            camPosVec.setFromMatrixPosition(camera.matrixWorld);
+
+            for (let i = 0; i < anchors.length; i++) {
+                const anchor = anchors[i];
+                const unit = latLngToPosition(anchor.lat, anchor.lng);
+                localVec.set(
+                    unit.x * globeRadius,
+                    unit.y * globeRadius,
+                    unit.z * globeRadius
+                );
+                worldVec.copy(localVec).applyMatrix4(globeGroup.matrixWorld);
+                normalVec.copy(worldVec).normalize();
+                toCamVec.copy(camPosVec).sub(worldVec).normalize();
+                const facing = normalVec.dot(toCamVec);
+                ndcVec.copy(worldVec).project(camera);
+                const x = (ndcVec.x * 0.5 + 0.5) * currentWidth;
+                const y = (-ndcVec.y * 0.5 + 0.5) * currentHeight;
+                projectedBuffer[i] = {
+                    id: anchor.id,
+                    x,
+                    y,
+                    facing,
+                    visible: facing > 0.06,
+                };
+            }
+            projectedBuffer.length = anchors.length;
+            cb(projectedBuffer, { width: currentWidth, height: currentHeight });
+        };
+
         const animate = () => {
             let needsRender = false;
             const threshold = 0.01;
@@ -875,6 +945,7 @@ export default function Globe({
                 globeGroup.rotation.y = rotation.x;
                 globeGroup.rotation.x = rotation.y;
                 renderer.render(scene, camera);
+                projectLocations();
             }
             const hasVelocity =
                 Math.abs(velocity.x) > threshold || Math.abs(velocity.y) > threshold;
@@ -948,6 +1019,8 @@ export default function Globe({
                 container.clientWidth || container.offsetWidth || 800;
             const newHeight =
                 container.clientHeight || container.offsetHeight || 600;
+            currentWidth = newWidth;
+            currentHeight = newHeight;
             camera.aspect = newWidth / newHeight;
             camera.updateProjectionMatrix();
             renderer.setSize(newWidth, newHeight);
@@ -955,6 +1028,7 @@ export default function Globe({
             camera.position.set(0, 0, newCameraDistance);
             camera.lookAt(0, 0, 0);
             renderer.render(scene, camera);
+            projectLocations();
         });
         resizeObserver.observe(container);
 
