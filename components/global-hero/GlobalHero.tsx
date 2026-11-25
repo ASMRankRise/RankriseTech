@@ -328,12 +328,27 @@ export function GlobalHero({
 		if (!root) return;
 		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
 		let frameId = 0;
+		let lastP1 = Number.NaN;
+		let lastP2 = Number.NaN;
+		let lastP3 = Number.NaN;
 		const updateParallax = () => {
 			frameId = 0;
 			const scroll = mediaQuery.matches ? 0 : window.scrollY;
-			root.style.setProperty("--hero-parallax", `${Math.max(-58, -scroll * 0.13)}px`);
-			root.style.setProperty("--hero-hands-parallax", `${Math.max(-34, -scroll * 0.075)}px`);
-			root.style.setProperty("--hero-cards-parallax", `${Math.max(-22, -scroll * 0.045)}px`);
+			const p1 = Math.max(-58, -scroll * 0.13);
+			const p2 = Math.max(-34, -scroll * 0.075);
+			const p3 = Math.max(-22, -scroll * 0.045);
+			if (p1 !== lastP1) {
+				lastP1 = p1;
+				root.style.setProperty("--hero-parallax", `${p1}px`);
+			}
+			if (p2 !== lastP2) {
+				lastP2 = p2;
+				root.style.setProperty("--hero-hands-parallax", `${p2}px`);
+			}
+			if (p3 !== lastP3) {
+				lastP3 = p3;
+				root.style.setProperty("--hero-cards-parallax", `${p3}px`);
+			}
 		};
 		const handleScroll = () => {
 			if (!frameId) frameId = window.requestAnimationFrame(updateParallax);
@@ -365,8 +380,18 @@ export function GlobalHero({
 		let frameId = 0;
 
 		const render = () => {
-			currentX += (targetX - currentX) * 0.085;
-			currentY += (targetY - currentY) * 0.085;
+			const dx = targetX - currentX;
+			const dy = targetY - currentY;
+			if (Math.abs(dx) < 0.04 && Math.abs(dy) < 0.04) {
+				currentX = targetX;
+				currentY = targetY;
+				root.style.setProperty("--globe-cursor-x", `${currentX.toFixed(2)}px`);
+				root.style.setProperty("--globe-cursor-y", `${currentY.toFixed(2)}px`);
+				frameId = 0;
+				return;
+			}
+			currentX += dx * 0.085;
+			currentY += dy * 0.085;
 			root.style.setProperty("--globe-cursor-x", `${currentX.toFixed(2)}px`);
 			root.style.setProperty("--globe-cursor-y", `${currentY.toFixed(2)}px`);
 			frameId = window.requestAnimationFrame(render);
@@ -378,11 +403,13 @@ export function GlobalHero({
 			const vertical = event.clientY / window.innerHeight - 0.5;
 			targetX = horizontal * 44;
 			targetY = vertical * 16;
+			if (!frameId) frameId = window.requestAnimationFrame(render);
 		};
 
 		const handlePointerLeave = () => {
 			targetX = 0;
 			targetY = 0;
+			if (!frameId) frameId = window.requestAnimationFrame(render);
 		};
 
 		root.addEventListener("pointermove", handlePointerMove);

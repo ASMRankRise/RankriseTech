@@ -4,7 +4,6 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties } from "react";
-import landFeaturesData from "@/public/ne_50m_land.json";
 import {
     Scene,
     PerspectiveCamera,
@@ -163,6 +162,22 @@ const cachedLandMask = new Map<
     { pixels: Uint8ClampedArray; width: number; height: number }
 >();
 const cachedDotUnitPositions = new Map<string, UnitPoint[]>();
+let cachedLandPromise: Promise<any> | null = null;
+
+function fetchLandFeatures(): Promise<any> {
+    if (!cachedLandPromise) {
+        cachedLandPromise = fetch("/ne_50m_land.json", { cache: "force-cache" })
+            .then((res) => {
+                if (!res.ok) throw new Error(`HTTP ${res.status}`);
+                return res.json();
+            })
+            .catch((err) => {
+                cachedLandPromise = null;
+                throw err;
+            });
+    }
+    return cachedLandPromise;
+}
 
 function isLandFeature(feature: any): boolean {
     const featureType =
@@ -417,6 +432,7 @@ export default function Globe({
 
     useEffect(() => {
         if (!containerRef.current) return;
+        let disposed = false;
         const container = containerRef.current;
         const containerWidth =
             container.clientWidth || container.offsetWidth || 800;
@@ -637,8 +653,10 @@ export default function Globe({
 
         const loadWorldData = async () => {
             try {
+                if (typeof fetch !== "function") return;
                 setIsLoading(true);
-                const landFeatures = landFeaturesData as any;
+                const landFeatures = await fetchLandFeatures();
+                if (disposed) return;
 
                 while (continentOutlineGroup.children.length > 0) {
                     continentOutlineGroup.remove(
@@ -785,6 +803,7 @@ export default function Globe({
                 canvas.style.visibility = "visible";
                 setIsLoading(false);
             } catch (err) {
+                if (disposed) return;
                 setError("Failed to load land map data");
                 setIsLoading(false);
             }
@@ -897,7 +916,15 @@ export default function Globe({
             cb(projectedBuffer, { width: currentWidth, height: currentHeight });
         };
 
+        let isInViewport = true;
+        let isDocVisible =
+            typeof document !== "undefined" ? !document.hidden : true;
+
         const animate = () => {
+            if (disposed || !isInViewport || !isDocVisible) {
+                animationFrameId = null;
+                return;
+            }
             let needsRender = false;
             const threshold = 0.01;
             if (
@@ -953,7 +980,7 @@ export default function Globe({
                 Math.abs(dx) > threshold || Math.abs(dy) > threshold;
             const needsContinue =
                 isDragging || rotationSpeed !== 0 || hasVelocity || hasLerpDelta;
-            if (needsContinue) {
+            if (needsContinue && !disposed && isInViewport && isDocVisible) {
                 animationFrameId = requestAnimationFrame(animate);
             } else {
                 animationFrameId = null;
@@ -961,10 +988,48 @@ export default function Globe({
         };
 
         const startAnimation = () => {
-            if (animationFrameId === null) {
+            if (
+                !disposed &&
+                isInViewport &&
+                isDocVisible &&
+                animationFrameId === null
+            ) {
                 animationFrameId = requestAnimationFrame(animate);
             }
         };
+
+        const resumeIfNeeded = () => {
+            if (
+                rotationSpeed !== 0 ||
+                isDragging ||
+                Math.abs(velocity.x) > 0.01 ||
+                Math.abs(velocity.y) > 0.01 ||
+                Math.abs(targetRotation.x - rotation.x) > 0.01 ||
+                Math.abs(targetRotation.y - rotation.y) > 0.01
+            ) {
+                startAnimation();
+            }
+        };
+
+        const intersectionObserver =
+            typeof IntersectionObserver !== "undefined"
+                ? new IntersectionObserver((entries) => {
+                      isInViewport = entries.some((entry) => entry.isIntersecting);
+                      if (isInViewport && isDocVisible) {
+                          resumeIfNeeded();
+                      }
+                  })
+                : null;
+        intersectionObserver?.observe(container);
+
+        const handleVisibilityChange = () => {
+            isDocVisible = !document.hidden;
+            if (isDocVisible && isInViewport) {
+                resumeIfNeeded();
+            }
+        };
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+
         if (rotationSpeed !== 0) {
             startAnimation();
         }
@@ -1003,14 +1068,27 @@ export default function Globe({
 
         const raycaster = new Raycaster();
         const mouse = new Vector2();
-        const handleMouseMove = (event: MouseEvent) => {
-            if (!stopOnHover) return;
+        let hoverRafId = 0;
+        let lastHoverX = 0;
+        let lastHoverY = 0;
+        const runHoverRaycast = () => {
+            hoverRafId = 0;
+            if (disposed || !stopOnHover) return;
             const rect = canvas.getBoundingClientRect();
-            mouse.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
-            mouse.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            if (!rect.width || !rect.height) return;
+            mouse.x = ((lastHoverX - rect.left) / rect.width) * 2 - 1;
+            mouse.y = -((lastHoverY - rect.top) / rect.height) * 2 + 1;
             raycaster.setFromCamera(mouse, camera);
             const intersects = raycaster.intersectObject(oceanMesh);
             isHovering = intersects.length > 0;
+        };
+        const handleMouseMove = (event: MouseEvent) => {
+            if (!stopOnHover) return;
+            lastHoverX = event.clientX;
+            lastHoverY = event.clientY;
+            if (!hoverRafId) {
+                hoverRafId = requestAnimationFrame(runHoverRaycast);
+            }
         };
         canvas.addEventListener("mousemove", handleMouseMove);
 
@@ -1035,8 +1113,12 @@ export default function Globe({
         loadWorldData();
 
         return () => {
+            disposed = true;
             if (animationFrameId !== null)
                 cancelAnimationFrame(animationFrameId);
+            if (hoverRafId) cancelAnimationFrame(hoverRafId);
+            intersectionObserver?.disconnect();
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
             canvas.removeEventListener("mousedown", handleMouseDown);
             canvas.removeEventListener("mousemove", handleMouseMove);
             resizeObserver.disconnect();

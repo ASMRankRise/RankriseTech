@@ -116,7 +116,7 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
   const [dialogState, setDialogState] = useState<DialogState | null>(null);
   const [activeProductIndex, setActiveProductIndex] = useState(0);
   const [activeIndustryIndex, setActiveIndustryIndex] = useState(0);
-  const [productScrollProgress, setProductScrollProgress] = useState(0);
+  const productScrollFillRef = useRef<HTMLDivElement>(null);
   const heroRef = useRef<HTMLElement>(null);
   const productsSectionRef = useRef<HTMLElement>(null);
   const productsTriggerRef = useRef<ScrollTrigger | null>(null);
@@ -141,7 +141,9 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
         invalidateOnRefresh: true,
         refreshPriority: 10,
         onUpdate: (self) => {
-          setProductScrollProgress(self.progress);
+          if (productScrollFillRef.current) {
+            productScrollFillRef.current.style.width = `${Math.max(25, Math.round(self.progress * 100))}%`;
+          }
           const idx = Math.min(
             PRODUCTS.length - 1,
             Math.max(0, Math.floor(self.progress * PRODUCTS.length)),
@@ -323,8 +325,9 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
               </div>
               <div className="product-scroll-track" aria-hidden="true">
                 <div
+                  ref={productScrollFillRef}
                   className="product-scroll-fill"
-                  style={{ width: `${Math.max(25, Math.round(productScrollProgress * 100))}%` }}
+                  style={{ width: "25%" }}
                 />
               </div>
             </div>

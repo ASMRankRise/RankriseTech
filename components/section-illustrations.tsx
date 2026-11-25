@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { useId } from "react";
 
 type SvgBaseProps = {
@@ -186,14 +187,14 @@ export function ProductMotif({ id, className }: { id: string; className?: string
       className={joinClasses("rr-showcase-media", "rr-product-showcase", className)}
       data-product-motif={id}
     >
-      <img
+      <Image
         src={media.src}
         alt={media.alt}
         className="showcase-image"
         width={1200}
         height={896}
-        loading="eager"
-        decoding="async"
+        quality={90}
+        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 55vw, 680px"
       />
     </div>
   );
@@ -206,14 +207,14 @@ export function ProductMotif({ id, className }: { id: string; className?: string
 export function StackBlueprintVisual({ className }: SvgBaseProps) {
   return (
     <div className={joinClasses("rr-showcase-media", "rr-stack-showcase", className)}>
-      <img
+      <Image
         src="/images/showcases/stack-cloud-topology.jpg"
         alt="Multi-stratum cloud infrastructure, runtime, API, and frontend delivery topology"
         className="showcase-image"
         width={1376}
         height={768}
-        loading="lazy"
-        decoding="async"
+        quality={90}
+        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 85vw, 1100px"
       />
     </div>
   );
@@ -520,14 +521,15 @@ export function InnerHeroIllustration({
       className={joinClasses("rr-showcase-media", "rr-inner-hero-showcase", className)}
       data-hero-motif={showcase.motif}
     >
-      <img
+      <Image
         src={showcase.src}
         alt={showcase.alt}
         className="showcase-image"
         width={1200}
         height={896}
-        loading="eager"
-        decoding="async"
+        quality={90}
+        sizes="(max-width: 768px) 100vw, (max-width: 1280px) 55vw, 680px"
+        priority
       />
     </div>
   );

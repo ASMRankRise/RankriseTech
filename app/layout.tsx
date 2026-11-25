@@ -61,6 +61,12 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       className={`${inter.variable} ${manrope.variable}`}
     >
       <head>
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        <link
+          rel="stylesheet"
+          href="https://fonts.googleapis.com/css2?family=Archivo+Black&display=swap"
+        />
         <OrganizationSchema />
         <WebSiteSchema />
       </head>

@@ -428,16 +428,20 @@ export function LiquidNavbar({
 
   const loop = React.useCallback(() => {
     const s = st.current
-    if (s.raf) return
+    if (s.raf || !s.visible || (typeof document !== "undefined" && document.hidden)) return
     s.last = performance.now()
     const tick = (now: number) => {
+      if (!s.visible || (typeof document !== "undefined" && document.hidden)) {
+        s.raf = 0
+        return
+      }
       const dt = Math.min((now - s.last) / 1000, 1 / 30)
       s.last = now
       step(dt, now)
       draw()
       const busy = s.moving || s.rips.length || s.sats.length || s.mouse.s > 0.01
       // ambient water keeps moving while visible; reduced-motion only animates on change
-      if (s.visible && (!s.reduce || busy)) s.raf = requestAnimationFrame(tick)
+      if (s.visible && !document.hidden && (!s.reduce || busy)) s.raf = requestAnimationFrame(tick)
       else s.raf = 0
     }
     s.raf = requestAnimationFrame(tick)
@@ -506,19 +510,24 @@ export function LiquidNavbar({
       setGl("off")
     }
     cv?.addEventListener("webglcontextlost", lost)
+    let inView = true
+    const syncVis = () => {
+      s.visible = inView && !document.hidden
+      if (s.visible) loop()
+    }
     let io: IntersectionObserver | null = null
     if (typeof IntersectionObserver !== "undefined" && navRef.current) {
       io = new IntersectionObserver(([e]) => {
-        s.visible = e.isIntersecting
-        if (s.visible) loop()
+        inView = e.isIntersecting
+        syncVis()
       })
       io.observe(navRef.current)
     }
     const vis = () => {
-      s.visible = document.visibilityState === "visible"
-      if (s.visible) loop()
+      syncVis()
     }
     document.addEventListener("visibilitychange", vis)
+    syncVis()
     return () => {
       cv?.removeEventListener("webglcontextlost", lost)
       io?.disconnect()

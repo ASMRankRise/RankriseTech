@@ -616,6 +616,7 @@ function PlinthTally(props) {
     liveRef.current = { glyphs: list, stack, spacing, depth, grain, entrance, parallax, drift, smoothing, scale, adv };
     const dirtyRef = useRef(true);
     dirtyRef.current = true;
+    const scheduleFrameRef = useRef(null);
     // Fields rebuild only when what feeds them changes.
     const fieldKey = JSON.stringify([list.map((g) => g.character), font.fontFamily, font.fontWeight, font.fontStyle, adv.stretch]);
     const fieldsRef = useRef(null);
@@ -651,6 +652,7 @@ function PlinthTally(props) {
             size.h = root.offsetHeight || 1250;
             setMinSide(Math.min(size.w, size.h));
             dirtyRef.current = true;
+            scheduleFrameRef.current?.();
         };
         measure();
         const ro = typeof ResizeObserver !== "undefined" ? new ResizeObserver(measure) : null;
@@ -670,36 +672,63 @@ function PlinthTally(props) {
         const { u } = gpu;
         const mq = typeof window.matchMedia === "function" ? window.matchMedia("(prefers-reduced-motion: reduce)") : null;
         const ptr = { tx: 0, ty: 0, x: 0, y: 0 };
-        const onMove = (e) => {
-            const r = root.getBoundingClientRect();
-            ptr.tx = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
-            ptr.ty = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
-        };
-        const onLeave = () => {
-            ptr.tx = 0;
-            ptr.ty = 0;
-        };
-        root.addEventListener("pointermove", onMove);
-        root.addEventListener("pointerleave", onLeave);
         // Assume visible until the observer says otherwise; below the fold it
         // reports within a frame or two, freezing the clock (and the entrance).
         let visible = true;
         let enterStart = -1;
-        const io = new IntersectionObserver((es) => {
-            visible = es.some((e) => e.isIntersecting);
-            dirtyRef.current = true;
-        });
-        io.observe(root);
         let uploaded = "";
         let raf = 0;
         let last = -1;
         let clock = 0;
+        let bufCap = 0;
+        let rotBuf = new Float32Array(0);
+        let posBuf = new Float32Array(0);
+        let inkBuf = new Float32Array(0);
+        let alphaBuf = new Float32Array(0);
+        let fromBuf = new Float32Array(0);
+        let toBuf = new Float32Array(0);
+        let rimBuf = new Float32Array(0);
+        const scheduleFrame = () => {
+            if (!raf && visible && !document.hidden)
+                raf = requestAnimationFrame(frame);
+        };
+        scheduleFrameRef.current = scheduleFrame;
+        const onMove = (e) => {
+            const r = root.getBoundingClientRect();
+            ptr.tx = Math.max(-1, Math.min(1, ((e.clientX - r.left) / r.width) * 2 - 1));
+            ptr.ty = Math.max(-1, Math.min(1, ((e.clientY - r.top) / r.height) * 2 - 1));
+            scheduleFrame();
+        };
+        const onLeave = () => {
+            ptr.tx = 0;
+            ptr.ty = 0;
+            scheduleFrame();
+        };
+        root.addEventListener("pointermove", onMove);
+        root.addEventListener("pointerleave", onLeave);
+        const io = typeof IntersectionObserver !== "undefined" ? new IntersectionObserver((es) => {
+            visible = es.some((e) => e.isIntersecting);
+            if (visible) {
+                dirtyRef.current = true;
+                scheduleFrame();
+            }
+        }) : null;
+        if (io) io.observe(root);
+        const onVisibilityChange = () => {
+            if (!document.hidden && visible) {
+                dirtyRef.current = true;
+                scheduleFrame();
+            }
+        };
+        document.addEventListener("visibilitychange", onVisibilityChange);
         const frame = (now) => {
-            raf = requestAnimationFrame(frame);
+            raf = 0;
+            if (!visible || document.hidden) {
+                last = -1;
+                return;
+            }
             const dt = last < 0 ? 0 : Math.min(0.05, (now - last) / 1000);
             last = now;
-            if (!visible)
-                return;
             const L = liveRef.current;
             const field = fieldsRef.current;
             if (!field || !field.fields.length)
@@ -739,8 +768,10 @@ function PlinthTally(props) {
             const N = field.fields.length;
             const enterT = clock - enterStart - num(ent.delay, 0.2);
             const entering = ent.animate && !still && enterT < ENTER_SEC + Math.max(0, num(ent.stagger, 0.18)) * (N - 1);
-            if (!dirtyRef.current && !settling && driftAmt === 0 && !entering)
+            if (!dirtyRef.current && !settling && driftAmt === 0 && !entering) {
+                last = -1;
                 return;
+            }
             dirtyRef.current = false;
             const dpr = window.devicePixelRatio || 1;
             const scale = Math.max(1, Math.min(dpr * 1.5, Math.sqrt(PIXEL_BUDGET / (size.w * size.h))));
@@ -801,8 +832,16 @@ function PlinthTally(props) {
             const yaw = ptr.x * par * 0.06 + Math.sin(clock * 0.35) * driftAmt * 0.016;
             const pitch = ptr.y * par * 0.04 + Math.sin(clock * 0.27 + 1) * driftAmt * 0.009;
             const G = mul(rotY(yaw), rotX(pitch));
-            const rot = [], P = [], ink = [], alpha = [];
-            const from = [], to = [], rim = [];
+            if (bufCap !== N) {
+                bufCap = N;
+                rotBuf = new Float32Array(N * 9);
+                posBuf = new Float32Array(N * 3);
+                inkBuf = new Float32Array(N * 2);
+                alphaBuf = new Float32Array(N);
+                fromBuf = new Float32Array(N * 3);
+                toBuf = new Float32Array(N * 3);
+                rimBuf = new Float32Array(N * 3);
+            }
             for (let i = 0; i < N; i++) {
                 let e = 1;
                 if (ent.animate && !still) {
@@ -813,30 +852,46 @@ function PlinthTally(props) {
                 const sg = lean[i] < 0 ? -1 : 1;
                 const ang = lean[i] + (sg * Math.PI / 2 - lean[i]) * (1 - e);
                 const M = mul(G, rotX(ang));
+                const rBase = i * 9;
                 for (let r = 0; r < 9; r++)
-                    rot.push(M[r]);
+                    rotBuf[rBase + r] = M[r];
                 const rest = [pos[i][0] - cx, pos[i][1] - cy - (1 - e) * 0.25, pos[i][2]];
-                P.push(...apply(G, rest));
+                const applied = apply(G, rest);
+                const pBase = i * 3;
+                posBuf[pBase] = applied[0];
+                posBuf[pBase + 1] = applied[1];
+                posBuf[pBase + 2] = applied[2];
                 const f = field.fields[i];
-                ink.push(f.inkW / 2, f.inkH / 2);
-                alpha.push(Math.max(0, Math.min(1, e * 2.5)));
+                const iBase = i * 2;
+                inkBuf[iBase] = f.inkW / 2;
+                inkBuf[iBase + 1] = f.inkH / 2;
+                alphaBuf[i] = Math.max(0, Math.min(1, e * 2.5));
                 const g = L.glyphs[i] ?? {};
                 const d = DEFAULT_GLYPHS[i % 2];
-                from.push(...parseColor(g.from, parseColor(d.from, [0, 0, 1])));
-                to.push(...parseColor(g.to, parseColor(d.to, [0, 0.5, 1])));
-                rim.push(...parseColor(g.rim, parseColor(d.rim, [1, 0, 0])));
+                const fc = parseColor(g.from, parseColor(d.from, [0, 0, 1]));
+                const tc = parseColor(g.to, parseColor(d.to, [0, 0.5, 1]));
+                const rc = parseColor(g.rim, parseColor(d.rim, [1, 0, 0]));
+                fromBuf[pBase] = fc[0];
+                fromBuf[pBase + 1] = fc[1];
+                fromBuf[pBase + 2] = fc[2];
+                toBuf[pBase] = tc[0];
+                toBuf[pBase + 1] = tc[1];
+                toBuf[pBase + 2] = tc[2];
+                rimBuf[pBase] = rc[0];
+                rimBuf[pBase + 1] = rc[1];
+                rimBuf[pBase + 2] = rc[2];
             }
             gl.uniform1i(u.uSdf, 0);
             gl.uniform2f(u.uRes, cw, ch);
             gl.uniform1i(u.uCount, N);
             // Row-major local→world is column-major world→local.
-            gl.uniformMatrix3fv(u.uRot, false, new Float32Array(rot));
-            gl.uniform3fv(u.uPos, new Float32Array(P));
-            gl.uniform2fv(u.uInk, new Float32Array(ink));
-            gl.uniform1fv(u.uAlpha, new Float32Array(alpha));
-            gl.uniform3fv(u.uFrom, new Float32Array(from));
-            gl.uniform3fv(u.uTo, new Float32Array(to));
-            gl.uniform3fv(u.uRim, new Float32Array(rim));
+            gl.uniformMatrix3fv(u.uRot, false, rotBuf);
+            gl.uniform3fv(u.uPos, posBuf);
+            gl.uniform2fv(u.uInk, inkBuf);
+            gl.uniform1fv(u.uAlpha, alphaBuf);
+            gl.uniform3fv(u.uFrom, fromBuf);
+            gl.uniform3fv(u.uTo, toBuf);
+            gl.uniform3fv(u.uRim, rimBuf);
             gl.uniform1f(u.uHalfD, halfD);
             gl.uniform1f(u.uCellEm, CELL_EM);
             gl.uniform1f(u.uCells, N);
@@ -858,18 +913,26 @@ function PlinthTally(props) {
             gl.activeTexture(gl.TEXTURE0);
             gl.bindTexture(gl.TEXTURE_2D, gpu.tex);
             gl.drawArrays(gl.TRIANGLES, 0, 3);
+            if (driftAmt > 0 || entering || settling || dirtyRef.current)
+                raf = requestAnimationFrame(frame);
+            else
+                last = -1;
         };
-        raf = requestAnimationFrame(frame);
+        scheduleFrame();
         return () => {
-            cancelAnimationFrame(raf);
-            ro.disconnect();
-            io.disconnect();
+            if (raf) cancelAnimationFrame(raf);
+            raf = 0;
+            scheduleFrameRef.current = null;
+            ro?.disconnect();
+            io?.disconnect();
+            document.removeEventListener("visibilitychange", onVisibilityChange);
             root.removeEventListener("pointermove", onMove);
             root.removeEventListener("pointerleave", onLeave);
         };
     }, []);
     useEffect(() => {
         dirtyRef.current = true;
+        scheduleFrameRef.current?.();
     }, [fieldTick]);
     const starCount = Math.max(0, Math.min(STARS.length, Math.round(num(sparkles, 4))));
     const starColor = adv.sparkleColor;

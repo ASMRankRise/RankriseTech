@@ -85,6 +85,9 @@ export function AiConstellationCanvas({ activeMode }: AiConstellationProps) {
     let height = 340;
     let rafId = 0;
     let tick = 0;
+    let disposed = false;
+    let isInViewport = true;
+    let isDocVisible = typeof document !== "undefined" ? !document.hidden : true;
 
     const resize = () => {
       const rect = container.getBoundingClientRect();
@@ -116,7 +119,36 @@ export function AiConstellationCanvas({ activeMode }: AiConstellationProps) {
     container.addEventListener("pointermove", onPointerMove);
     container.addEventListener("pointerleave", onPointerLeave);
 
+    const startLoop = () => {
+      if (!disposed && !reducedMotion && isInViewport && isDocVisible && !rafId) {
+        rafId = requestAnimationFrame(drawFrame);
+      }
+    };
+
+    const io =
+      typeof IntersectionObserver !== "undefined"
+        ? new IntersectionObserver((entries) => {
+            isInViewport = entries.some((entry) => entry.isIntersecting);
+            if (isInViewport && isDocVisible) {
+              startLoop();
+            }
+          })
+        : null;
+    io?.observe(container);
+
+    const onVisibilityChange = () => {
+      isDocVisible = !document.hidden;
+      if (isDocVisible && isInViewport) {
+        startLoop();
+      }
+    };
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
     const drawFrame = () => {
+      rafId = 0;
+      if (disposed || !isInViewport || !isDocVisible) {
+        return;
+      }
       tick += 0.016;
       const mode = modeRef.current;
 
@@ -252,7 +284,7 @@ export function AiConstellationCanvas({ activeMode }: AiConstellationProps) {
       }
       ctx.globalAlpha = 1;
 
-      if (!reducedMotion) {
+      if (!disposed && !reducedMotion && isInViewport && isDocVisible) {
         rafId = requestAnimationFrame(drawFrame);
       }
     };
@@ -260,7 +292,11 @@ export function AiConstellationCanvas({ activeMode }: AiConstellationProps) {
     drawFrame();
 
     return () => {
+      disposed = true;
       if (rafId) cancelAnimationFrame(rafId);
+      rafId = 0;
+      io?.disconnect();
+      document.removeEventListener("visibilitychange", onVisibilityChange);
       ro?.disconnect();
       observer?.disconnect();
       container.removeEventListener("pointermove", onPointerMove);

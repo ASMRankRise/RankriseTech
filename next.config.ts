@@ -5,6 +5,13 @@ const nextConfig: NextConfig = {
   poweredByHeader: false,
   compress: true,
   devIndicators: false,
+  images: {
+    formats: ["image/avif", "image/webp"],
+    qualities: [75, 90],
+  },
+  experimental: {
+    optimizePackageImports: ["gsap", "three", "d3-geo"],
+  },
   async redirects() {
     return [
       {
@@ -16,6 +23,18 @@ const nextConfig: NextConfig = {
   },
   async headers() {
     return [
+      {
+        source: "/ne_50m_land.json",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
+      {
+        source: "/images/:path*",
+        headers: [
+          { key: "Cache-Control", value: "public, max-age=31536000, immutable" },
+        ],
+      },
       {
         source: "/(.*)",
         headers: [

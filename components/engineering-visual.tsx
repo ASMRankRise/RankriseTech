@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { AiConstellationCanvas } from "./ai-constellation";
 
 const AI_STAGE_MODES = [
@@ -29,14 +30,15 @@ export function EngineeringVisual() {
         <span className="visual-coordinate">RR / ENGINEERING</span>
       </div>
       <div className="hero-showcase-frame">
-        <img
+        <Image
           src="/images/showcases/hero-command-dashboard.jpg"
           alt="RankRise engineering systems and telemetry command dashboard preview"
           className="showcase-image hero-showcase-image"
           width={1200}
           height={896}
-          loading="eager"
-          decoding="async"
+          quality={90}
+          sizes="(max-width: 768px) 100vw, (max-width: 1280px) 55vw, 680px"
+          priority
         />
       </div>
       <figcaption>
