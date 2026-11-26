@@ -19,14 +19,13 @@ import { routeHref } from "@/lib/routes";
 import { EngineeringVisual } from "./engineering-visual";
 import {
   CapabilitySchematic,
-  EditorialSealVisual,
-  FinalCtaField,
   ProductMotif,
 } from "./section-illustrations";
 import { ProcessPathway } from "./process-pathway";
 import { Icon } from "./icon";
 import { PreviewDialog, type DialogState } from "./preview-dialog";
 import { SiteHeader } from "./site-header";
+import { EntryPointCta } from "./ui/entry-point-cta";
 import { SiteFooter } from "./site-footer";
 import { ScrollReveal } from "./motion/scroll-reveal";
 import { SpotlightCard } from "./motion/spotlight-card";
@@ -420,24 +419,54 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
 
         <section id="portfolio" className="section portfolio-section" data-section="portfolio" aria-labelledby="portfolio-heading">
           <div className="container">
-            <ScrollReveal variant="fade-up" className="section-heading heading-split">
+            <ScrollReveal variant="fade-up" className="section-heading">
               <div><p className="eyebrow">Portfolio &amp; Case Studies</p><h2 id="portfolio-heading">Selected Technology Projects</h2></div>
-              <p>We are preparing approved case studies for publication. We will not publish fabricated project results, client logos or metrics.</p>
             </ScrollReveal>
-            <ScrollReveal variant="fade-up" delay={100} className="evidence-state">
-              <span className="media-corner media-corner-top" aria-hidden="true" />
-              <span className="media-corner media-corner-bottom" aria-hidden="true" />
-              <div className="evidence-marker" aria-hidden="true"><EditorialSealVisual variant="evidence" /></div>
-              <div className="evidence-copy">
-                <h3>Authentic Delivery Over Manufactured Proof</h3>
-                <p>Every case study represents genuine technical challenges, specific solution architectures, and validated business impact.</p>
-                <p className="small-note">Explore our portfolio overview or speak directly with our engineering team to discuss relevant domain experience.</p>
-              </div>
-              <div className="portfolio-actions">
-                <Link className="button button-secondary" href={routeHref("/portfolio")}>View Portfolio Overview<Icon name="arrow-right" /></Link>
-                <button className="button button-primary" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry("A business challenge to explore")}>Discuss your challenge<Icon name="arrow-up-right" /></button>
-              </div>
-            </ScrollReveal>
+            <div className="portfolio-preview-grid" aria-label="Case study showcase slots">
+              {[
+                {
+                  index: "01",
+                  tag: "Showcase Slot · Web & Cloud",
+                  title: "Case Study 1",
+                  summary:
+                    "Preview slot for an approved enterprise platform architecture, integration topology, and verified delivery scope.",
+                },
+                {
+                  index: "02",
+                  tag: "Showcase Slot · AI & Automation",
+                  title: "Case Study 2",
+                  summary:
+                    "Preview slot for an approved intelligent workflow, orchestration pipeline, and operational outcome.",
+                },
+                {
+                  index: "03",
+                  tag: "Showcase Slot · Product Engineering",
+                  title: "Case Study 3",
+                  summary:
+                    "Preview slot for an approved digital product build, multi-tenant system design, and release milestone.",
+                },
+              ].map((slot, idx) => (
+                <ScrollReveal key={slot.index} variant="fade-up" delay={idx * 80}>
+                  <SpotlightCard className="portfolio-preview-card">
+                    <div className="portfolio-preview-top">
+                      <span className="eyebrow">{slot.tag}</span>
+                      <span className="portfolio-preview-index" aria-hidden="true">
+                        {slot.index}
+                      </span>
+                    </div>
+                    <h3>{slot.title}</h3>
+                    <p>{slot.summary}</p>
+                    <div className="portfolio-preview-footer">
+                      <span className="portfolio-preview-status">Awaiting approved publication</span>
+                      <Link className="text-link" href={routeHref("/portfolio")}>
+                        Preview layout
+                        <Icon name="arrow-up-right" />
+                      </Link>
+                    </div>
+                  </SpotlightCard>
+                </ScrollReveal>
+              ))}
+            </div>
           </div>
         </section>
 
@@ -482,43 +511,23 @@ export function Homepage({ heroVariant = "default" }: HomepageProps) {
                 </ScrollReveal>
               ))}
             </div>
-            <div className="insights-seal-row" aria-hidden="true">
-              <EditorialSealVisual variant="insights" />
-            </div>
           </div>
         </section>
 
-        <section id="contact" className="section final-cta-section" data-section="final-cta" aria-labelledby="contact-heading">
-          <div className="final-cta-backdrop" aria-hidden="true">
-            <FinalCtaField />
-          </div>
-          <div className="container final-cta-grid">
-            <ScrollReveal variant="fade-up">
-              <div>
-                <p className="eyebrow">Your next possibility</p>
-                <h2 id="contact-heading">Have an Idea? Let&apos;s Engineer It.</h2>
-              </div>
-            </ScrollReveal>
-            <ScrollReveal variant="fade-up" delay={100} className="final-cta-copy">
-              <p>Bring your challenge, your ambition or your next product idea. Start with a clear brief or reach out to our team directly.</p>
-              <div className="final-cta-actions">
-                <button className="button button-inverse" type="button" aria-haspopup="dialog" aria-controls="preview-dialog" onClick={() => openInquiry()}>Start a Project<Icon name="arrow-up-right" /></button>
-                <Link className="button button-secondary" href={routeHref("/contact")}>Contact Page<Icon name="arrow-right" /></Link>
-              </div>
-              <div className="final-contact-direct" aria-label="Direct contact details">
-                <a href={`tel:${SITE_IDENTITY.phoneHref}`} className="final-contact-link">
-                  <Icon name="phone" width="15" height="15" />
-                  <span>{SITE_IDENTITY.phone}</span>
-                </a>
-                <span className="final-contact-sep" aria-hidden="true">·</span>
-                <a href={`mailto:${SITE_IDENTITY.email}`} className="final-contact-link">
-                  <span className="email-symbol" aria-hidden="true">✉</span>
-                  <span>{SITE_IDENTITY.email}</span>
-                </a>
-              </div>
-            </ScrollReveal>
-          </div>
-        </section>
+        <EntryPointCta
+          id="contact"
+          dataSection="final-cta"
+          headingId="contact-heading"
+          theme="night"
+          href={routeHref("/contact")}
+          eyebrow="Your next possibility · RankRise Technologies"
+          headline={<>Have an Idea? Let&apos;s Engineer It.</>}
+          details={[
+            SITE_IDENTITY.email,
+            SITE_IDENTITY.phone,
+            "Kolhapur, India · US & Global",
+          ]}
+        />
         </div>
       </main>
       <SiteFooter />

@@ -470,26 +470,25 @@ describe("RankRise homepage regression & design invariants", () => {
     );
   });
 
-  it("renders footer with real contact info, dual legal entities, engineering, AI & automation, industries and company columns", () => {
+  it("renders footer with real contact info, dual legal entities, engineering, AI & automation, industries, company and products columns", () => {
     render(<Homepage />);
     const footer = screen.getByRole("contentinfo", { name: "RankRise Technologies footer" });
     expect(headingNames(footer, 3)).toEqual([
-      "Reach Us",
       "Engineering",
       "AI & Automation",
       "Industries",
       "Company",
+      "Products",
     ]);
-    const reachUs = within(footer).getByRole("heading", { level: 3, name: "Reach Us" }).parentElement!;
-    expect(within(reachUs).getByRole("link", { name: SITE_IDENTITY.phone })).toHaveAttribute(
+    expect(within(footer).getByRole("link", { name: SITE_IDENTITY.phone })).toHaveAttribute(
       "href",
       `tel:${SITE_IDENTITY.phoneHref}`
     );
-    expect(within(reachUs).getByRole("link", { name: SITE_IDENTITY.email })).toHaveAttribute(
+    expect(within(footer).getByRole("link", { name: SITE_IDENTITY.email })).toHaveAttribute(
       "href",
       `mailto:${SITE_IDENTITY.email}`
     );
-    expect(reachUs.querySelector("address")).toHaveTextContent(SITE_IDENTITY.address);
+    expect(footer.querySelector("address")).toHaveTextContent(SITE_IDENTITY.address);
 
     const column = (name: string) =>
       within(footer).getByRole("heading", { level: 3, name }).parentElement!;
@@ -511,9 +510,10 @@ describe("RankRise homepage regression & design invariants", () => {
     expect(within(column("Company")).getAllByRole("link").map((link) => link.textContent)).toEqual(
       FOOTER_COMPANY.map((s) => s.name)
     );
-
-    const productsStrip = footer.querySelector(".footer-products-strip")!;
-    expect(within(productsStrip).getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(
+    expect(within(column("Products")).getAllByRole("link").map((link) => link.textContent)).toEqual(
+      PRODUCT_NAMES
+    );
+    expect(within(column("Products")).getAllByRole("link").map((link) => link.getAttribute("href"))).toEqual(
       PRODUCT_PATHS
     );
 
@@ -538,19 +538,16 @@ describe("RankRise homepage regression & design invariants", () => {
     );
   });
 
-  it("renders honest portfolio messaging and 3 insight article cards linking to real routes", () => {
+  it("renders portfolio case study showcase slots and 3 insight article cards linking to real routes", () => {
     render(<Homepage />);
     const portfolio = section("portfolio");
-    expect(portfolio).toHaveTextContent(
-      "We are preparing approved case studies for publication. We will not publish fabricated project results, client logos or metrics."
+    expect(within(portfolio).getByRole("heading", { level: 2 })).toHaveTextContent(
+      "Selected Technology Projects"
     );
-    expect(within(portfolio).getByRole("link", { name: "View Portfolio Overview" })).toHaveAttribute(
-      "href",
-      "/portfolio"
-    );
-    expect(
-      within(portfolio).getByRole("button", { name: "Discuss your challenge" })
-    ).toHaveAttribute("aria-haspopup", "dialog");
+    expect(within(portfolio).getAllByRole("heading", { level: 3 })).toHaveLength(3);
+    for (const link of within(portfolio).getAllByRole("link", { name: "Preview layout" })) {
+      expect(link).toHaveAttribute("href", "/portfolio");
+    }
 
     const insights = section("insights");
     expect(within(insights).getByRole("link", { name: "Explore all insights" })).toHaveAttribute(
@@ -569,19 +566,9 @@ describe("RankRise homepage regression & design invariants", () => {
     }
 
     const contact = section("contact");
-    expect(
-      within(contact).getByRole("link", { name: SITE_IDENTITY.phone })
-    ).toHaveAttribute("href", `tel:${SITE_IDENTITY.phoneHref}`);
-    expect(
-      within(contact).getByRole("link", { name: SITE_IDENTITY.email })
-    ).toHaveAttribute("href", `mailto:${SITE_IDENTITY.email}`);
-    expect(within(contact).getByRole("link", { name: "Contact Page" })).toHaveAttribute(
-      "href",
-      "/contact"
-    );
-    expect(
-      within(contact).getByRole("button", { name: "Start a Project" })
-    ).toHaveAttribute("aria-haspopup", "dialog");
+    expect(within(contact).getByRole("link")).toHaveAttribute("href", "/contact");
+    expect(contact).toHaveTextContent(SITE_IDENTITY.phone);
+    expect(contact).toHaveTextContent(SITE_IDENTITY.email);
   });
 
   it("opens interactive LeadForm in preview dialog, submits inquiry via POST /api/submit, and handles errors", async () => {

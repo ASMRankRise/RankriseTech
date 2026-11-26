@@ -52,6 +52,8 @@ export interface AnimatedButtonProps {
 	hoverLabel?: React.ReactNode;
 	spacerLabel?: React.ReactNode;
 	ariaLabel?: string;
+	ariaHasPopup?: React.AriaAttributes["aria-haspopup"];
+	ariaControls?: string;
 	screenReaderLabel?: string;
 	font?: React.CSSProperties;
 	padding?: string;
@@ -105,6 +107,8 @@ export function LabelSlideButton(props: AnimatedButtonProps) {
 		hoverLabel,
 		spacerLabel,
 		ariaLabel,
+		ariaHasPopup,
+		ariaControls,
 		screenReaderLabel,
 		font = {
 			fontSize: "13px",
@@ -450,6 +454,8 @@ export function LabelSlideButton(props: AnimatedButtonProps) {
 			className={className}
 			onClick={onClick as React.MouseEventHandler<HTMLButtonElement>}
 			aria-label={computedAriaLabel}
+			aria-haspopup={ariaHasPopup}
+			aria-controls={ariaControls}
 			onMouseEnter={onEnter}
 			onMouseLeave={onLeave}
 			onFocus={onEnter}

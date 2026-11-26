@@ -1,12 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import Link from "next/link";
 import type { SitePage } from "@/lib/site-content";
 import { SITE_IDENTITY } from "@/lib/site-content";
 import { LabelSlideButton } from "../label-slide-button";
 import { Icon } from "../icon";
-import Globe from "../global-hero/originkit-globe";
+import Globe, { type ProjectedGlobeLocation } from "../global-hero/originkit-globe";
+import {
+	GLOBE_COUNTRIES,
+	CountryFlag,
+	projectCountryPills,
+} from "../global-hero/globe-countries";
 import styles from "./inner-hero.module.css";
 
 const GLOBE_DOTS_DARK = { color: "#ffffff", size: 5, density: 8, allDots: false };
@@ -237,6 +242,10 @@ function formatSegment(seg: string): string {
 
 export function InnerHero({ page }: { page: SitePage }) {
 	const heroRef = useRef<HTMLElement>(null);
+	const pillRefs = useRef<Record<string, HTMLDivElement | null>>({});
+	const mountTimeRef = useRef<number>(typeof performance !== "undefined" ? performance.now() : 0);
+	const skipEntranceRef = useRef<boolean>(hasPlayedInnerEntrance);
+	const reducedMotionRef = useRef<boolean>(false);
 	const [lightMode, setLightMode] = useState(() =>
 		hasPlayedInnerEntrance ? readClientHeroTheme().lightMode : true
 	);
@@ -252,7 +261,10 @@ export function InnerHero({ page }: { page: SitePage }) {
 		setRefract(supportsRefraction());
 		if (typeof window.matchMedia !== "function") return;
 		const mediaQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-		const sync = () => setReducedMotion(mediaQuery.matches);
+		const sync = () => {
+			reducedMotionRef.current = mediaQuery.matches;
+			setReducedMotion(mediaQuery.matches);
+		};
 		sync();
 		mediaQuery.addEventListener("change", sync);
 		return () => mediaQuery.removeEventListener("change", sync);
@@ -437,6 +449,21 @@ export function InnerHero({ page }: { page: SitePage }) {
 		[modeConfig.markerColor]
 	);
 
+	const handleProjectLocations = useCallback(
+		(projected: ProjectedGlobeLocation[], viewport: { width: number; height: number }) => {
+			let entranceAlpha = 1;
+			if (!skipEntranceRef.current && !reducedMotionRef.current) {
+				const t = Math.max(
+					0,
+					Math.min(1, (performance.now() - mountTimeRef.current - 380) / 550)
+				);
+				entranceAlpha = t * t * (3 - 2 * t);
+			}
+			projectCountryPills(projected, viewport, pillRefs.current, entranceAlpha);
+		},
+		[]
+	);
+
 	const segments = page.slug ? page.slug.split("/").filter(Boolean) : [];
 	const words = page.h1.trim().split(/\s+/);
 	const hasSplitH1 = words.length >= 3;
@@ -510,7 +537,29 @@ export function InnerHero({ page }: { page: SitePage }) {
 							markerConfig={globeMarkerConfig}
 							showGrid={false}
 							style={{ transform: "translateY(21%)" }}
+							locationAnchors={GLOBE_COUNTRIES}
+							onProjectLocations={handleProjectLocations}
 						/>
+					</div>
+				</div>
+
+				<div className={styles.countryLabelsLayer} data-country-labels aria-hidden="true">
+					<div className={styles.countryLabelsStage}>
+						{GLOBE_COUNTRIES.map((country) => (
+							<div
+								key={country.id}
+								ref={(el) => {
+									pillRefs.current[country.id] = el;
+								}}
+								className={styles.countryGlassPill}
+								data-country={country.id}
+							>
+								<span className={styles.countryName}>{country.name}</span>
+								<span className={styles.countryFlag}>
+									<CountryFlag code={country.id} />
+								</span>
+							</div>
+						))}
 					</div>
 				</div>
 

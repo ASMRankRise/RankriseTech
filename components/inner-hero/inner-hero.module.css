@@ -110,6 +110,81 @@
 	opacity: 1;
 }
 
+/* Liquid-glass country pills synchronized with the 3D globe rotation */
+.countryLabelsLayer {
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	pointer-events: none;
+	transform: translate3d(
+		var(--globe-cursor-x),
+		calc(var(--inner-parallax) + var(--globe-cursor-y)),
+		0
+	);
+	will-change: transform;
+}
+
+.countryLabelsStage {
+	position: absolute;
+	inset: 0;
+	transform: translateY(21%);
+	pointer-events: none;
+}
+
+.countryGlassPill {
+	position: absolute;
+	top: 0;
+	left: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	height: 28px;
+	padding: 0 5px 0 11px;
+	border-radius: 999px;
+	opacity: 0;
+	visibility: hidden;
+	pointer-events: none;
+	user-select: none;
+	white-space: nowrap;
+	background: var(--hero-glass-tint);
+	-webkit-backdrop-filter: blur(12px) saturate(1.45) brightness(1.08);
+	backdrop-filter: blur(12px) saturate(1.45) brightness(1.08);
+	box-shadow:
+		inset 0 1px 1.2px var(--hero-glass-rim),
+		inset 0 -1px 1px rgba(0, 0, 0, 0.28),
+		inset 0 0 0 1px rgba(148, 184, 235, 0.24),
+		0 10px 24px -8px rgba(5, 13, 26, 0.65),
+		0 2px 6px rgba(5, 13, 26, 0.35);
+	color: #f4f9ff;
+	will-change: transform, opacity;
+}
+
+.countryName {
+	font-size: 12px;
+	font-weight: 500;
+	letter-spacing: -0.01em;
+	line-height: 1;
+	text-shadow: 0 1px 6px rgba(2, 10, 24, 0.55);
+}
+
+.countryFlag {
+	width: 20px;
+	height: 20px;
+	border-radius: 50%;
+	overflow: hidden;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.24);
+}
+
+.countryFlag svg {
+	width: 100%;
+	height: 100%;
+	display: block;
+}
+
 /* Upper centre copy */
 .heroContent {
 	position: absolute;
@@ -324,8 +399,8 @@
 	flex-direction: column;
 	justify-content: center;
 	overflow: hidden;
-	width: clamp(230px, 21vw, 300px);
-	padding: 14px 16px;
+	width: clamp(230px, 21.5%, 310px);
+	padding: 12px 14px;
 	border: 0;
 	border-radius: 16px;
 	background: var(--hero-glass-tint);
@@ -347,36 +422,37 @@
 
 .cardSlot0 {
 	position: absolute;
-	top: 45%;
-	left: clamp(24px, 6vw, 104px);
+	top: 44%;
+	left: 17.11%;
 }
 
 .cardSlot1 {
 	position: absolute;
-	top: 58%;
-	right: clamp(24px, 6vw, 104px);
+	top: 56%;
+	left: 65.84%;
+	width: clamp(220px, 20.5%, 300px);
 }
 
 .cardSlot2 {
 	position: absolute;
-	bottom: 36px;
-	left: clamp(56px, 13vw, 210px);
+	top: 69%;
+	left: 17.11%;
 }
 
 .cardsContainer[data-count="2"] .cardSlot0 {
-	top: 48%;
-	left: clamp(32px, 10vw, 160px);
+	top: 48.5%;
+	left: 17.11%;
 }
 
 .cardsContainer[data-count="2"] .cardSlot1 {
-	top: 61%;
-	right: clamp(32px, 10vw, 160px);
+	top: 63.26%;
+	left: 65.84%;
+	width: clamp(220px, 20.5%, 300px);
 }
 
 .cardsContainer[data-count="1"] .cardSlot0 {
-	top: auto;
-	bottom: 42px;
-	left: clamp(32px, 10vw, 160px);
+	top: 56%;
+	left: 17.11%;
 }
 
 .cardInitialLeft {
@@ -556,6 +632,25 @@
 	text-shadow: 0 1px 8px rgba(255, 255, 255, 0.75);
 }
 
+.lightMode .countryGlassPill {
+	background: var(--hero-glass-tint);
+	color: #102b50;
+	box-shadow:
+		inset 0 1px 1.2px var(--hero-glass-rim),
+		inset 0 -1px 1px rgba(16, 43, 80, 0.1),
+		inset 0 0 0 1px rgba(255, 255, 255, 0.48),
+		0 10px 24px -8px rgba(16, 43, 80, 0.28),
+		0 2px 6px rgba(16, 43, 80, 0.12);
+}
+
+.lightMode .countryName {
+	text-shadow: 0 1px 6px rgba(255, 255, 255, 0.72);
+}
+
+.lightMode .countryFlag {
+	box-shadow: inset 0 0 0 1px rgba(16, 43, 80, 0.14);
+}
+
 .lightMode .scrollCue {
 	color: rgba(16, 43, 80, 0.58);
 }
@@ -635,6 +730,21 @@
 		width: 100%;
 		padding: 16px 18px;
 	}
+
+	.countryGlassPill {
+		height: 24px;
+		gap: 5px;
+		padding: 0 4px 0 9px;
+	}
+
+	.countryName {
+		font-size: 10.5px;
+	}
+
+	.countryFlag {
+		width: 17px;
+		height: 17px;
+	}
 }
 
 /* Post-entrance stillness */
@@ -656,6 +766,7 @@
 /* Reduced motion */
 @media (prefers-reduced-motion: reduce) {
 	.globeLayer,
+	.countryLabelsLayer,
 	.globeScaleWrapper,
 	.heroCopyWrapper,
 	.ctaWrapper,

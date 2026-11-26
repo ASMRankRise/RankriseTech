@@ -77,7 +77,11 @@
 }
 
 .sceneLoaded .handsImageWrapper {
-	transform: translate3d(0, var(--hero-hands-parallax), 0) scale(1);
+	transform: translate3d(
+		calc(var(--globe-cursor-x) * 0.45),
+		calc(var(--hero-hands-parallax) + var(--globe-cursor-y) * 0.5),
+		0
+	) scale(1.03);
 	opacity: 1;
 }
 
@@ -813,7 +817,11 @@
 	}
 
 	.sceneLoaded .handsImageWrapper {
-		transform: translate3d(-50%, 0, 0) scale(1);
+		transform: translate3d(
+			calc(-50% + var(--globe-cursor-x) * 0.45),
+			calc(var(--hero-hands-parallax) + var(--globe-cursor-y) * 0.5),
+			0
+		) scale(1);
 	}
 
 	.stageHands {

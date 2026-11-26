@@ -255,6 +255,140 @@ const NAV_ICON_MAP: Record<string, { icon: React.ReactNode; fx: NimbusFx }> = {
   Global: { icon: NimbusIcons.globe, fx: "spin" },
 };
 
+export function ThemedSlideCta({
+  label = "Get in touch",
+  hoverLabel = "Available 24/7",
+  spacerLabel = "Available 24/7",
+  ariaLabel,
+  ariaHasPopup,
+  ariaControls,
+  screenReaderLabel,
+  link,
+  newTab = false,
+  className,
+  onClick,
+  padding = "6px 18px 6px 6px",
+  gap = 10,
+  fontSize = "12.5px",
+  variant = "primary",
+  iconAngle = 0,
+  accent: accentProp,
+  theme: themeProp,
+}: {
+  label?: string;
+  hoverLabel?: string;
+  spacerLabel?: string;
+  ariaLabel?: string;
+  ariaHasPopup?: React.AriaAttributes["aria-haspopup"];
+  ariaControls?: string;
+  screenReaderLabel?: string;
+  link?: string;
+  newTab?: boolean;
+  className?: string;
+  onClick?: () => void;
+  padding?: string;
+  gap?: number;
+  fontSize?: string;
+  variant?: "primary" | "secondary";
+  iconAngle?: number;
+  accent?: string;
+  theme?: "light" | "dark";
+}) {
+  const [accentState, setAccentState] = useState<string>(accentProp ?? "vermilion");
+  const [themeState, setThemeState] = useState<"light" | "dark">(themeProp ?? "light");
+
+  useEffect(() => {
+    if (accentProp !== undefined && themeProp !== undefined) return;
+    const curAccent = document.documentElement.dataset.accent || "vermilion";
+    setAccentState(curAccent);
+    const curTheme = (document.documentElement.dataset.theme as "light" | "dark") || "light";
+    setThemeState(curTheme);
+
+    const handleThemeChange = (e: Event) => {
+      const customEvent = e as CustomEvent<{ theme?: "light" | "dark"; accent?: string }>;
+      if (customEvent.detail?.theme) setThemeState(customEvent.detail.theme);
+      if (customEvent.detail?.accent) setAccentState(customEvent.detail.accent);
+    };
+
+    window.addEventListener("rankrise-theme-change", handleThemeChange);
+    return () => window.removeEventListener("rankrise-theme-change", handleThemeChange);
+  }, [accentProp, themeProp]);
+
+  const activeAccent = accentProp ?? accentState;
+  const activeTheme = themeProp ?? themeState;
+  const activeColorConfig = HEADER_CTA_COLORS[activeAccent] || HEADER_CTA_COLORS.vermilion;
+  const ctaColors =
+    variant === "secondary"
+      ? {
+          fill: "rgba(255, 255, 255, 0.08)",
+          textColor: "#F4F8FE",
+          hoverFill: "rgba(255, 255, 255, 0.16)",
+          hoverTextColor: "#FFFFFF",
+          iconBg: "rgba(255, 255, 255, 0.14)",
+          iconColor: "#FFFFFF",
+          iconHoverBg: "#FFFFFF",
+          iconHoverColor: "#102B50",
+        }
+      : activeTheme === "dark"
+        ? activeColorConfig.dark
+        : activeColorConfig.light;
+
+  return (
+    <LabelSlideButton
+      label={label}
+      hoverLabel={hoverLabel}
+      spacerLabel={spacerLabel}
+      ariaLabel={ariaLabel}
+      ariaHasPopup={ariaHasPopup}
+      ariaControls={ariaControls}
+      screenReaderLabel={screenReaderLabel}
+      link={link}
+      newTab={newTab}
+      className={className}
+      onClick={onClick}
+      padding={padding}
+      gap={gap}
+      rounded={100}
+      border={
+        variant === "secondary"
+          ? {
+              borderColor: "rgba(148, 184, 235, 0.36)",
+              borderStyle: "solid",
+              borderWidth: 1,
+            }
+          : undefined
+      }
+      font={{
+        fontSize,
+        fontWeight: 600,
+        letterSpacing: "-0.01em",
+        lineHeight: "1.3",
+      }}
+      colors={{
+        fill: ctaColors.fill,
+        textColor: ctaColors.textColor,
+        hoverFill: ctaColors.hoverFill,
+        hoverTextColor: ctaColors.hoverTextColor,
+      }}
+      icon={{
+        side: "left",
+        size: 14,
+        padding: 8,
+        rounded: 100,
+        type: "symbol",
+        restSymbol: CTA_ARROW_ICON,
+        hoverSymbol: CTA_ARROW_ICON,
+        restAngle: iconAngle,
+        hoverAngle: iconAngle,
+        background: ctaColors.iconBg,
+        color: ctaColors.iconColor,
+        hoverBackground: ctaColors.iconHoverBg,
+        hoverColor: ctaColors.iconHoverColor,
+      }}
+    />
+  );
+}
+
 /**
  * Shared floating glass header used by every local route.
  *
@@ -430,7 +564,7 @@ export function SiteHeader({
               items={navItems}
             />
 
-            <LabelSlideButton
+            <ThemedSlideCta
               label="Get in touch"
               hoverLabel="Available 24/7"
               spacerLabel="Available 24/7"
@@ -440,36 +574,8 @@ export function SiteHeader({
               newTab={false}
               className="header-cta"
               onClick={closeMenus}
-              padding="6px 18px 6px 6px"
-              gap={10}
-              rounded={100}
-              font={{
-                fontSize: "12.5px",
-                fontWeight: 600,
-                letterSpacing: "-0.01em",
-                lineHeight: "1.3",
-              }}
-              colors={{
-                fill: ctaColors.fill,
-                textColor: ctaColors.textColor,
-                hoverFill: ctaColors.hoverFill,
-                hoverTextColor: ctaColors.hoverTextColor,
-              }}
-              icon={{
-                side: "left",
-                size: 14,
-                padding: 8,
-                rounded: 100,
-                type: "symbol",
-                restSymbol: CTA_ARROW_ICON,
-                hoverSymbol: CTA_ARROW_ICON,
-                restAngle: 0,
-                hoverAngle: 0,
-                background: ctaColors.iconBg,
-                color: ctaColors.iconColor,
-                hoverBackground: ctaColors.iconHoverBg,
-                hoverColor: ctaColors.iconHoverColor,
-              }}
+              accent={accent}
+              theme={theme}
             />
           </nav>
 

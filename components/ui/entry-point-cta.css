@@ -1,0 +1,203 @@
+.epcta {
+  position: relative;
+  display: flex;
+  width: min(1200px, calc(100% - 96px));
+  min-height: 360px;
+  margin: 20px auto 28px;
+  border-radius: 27px;
+  overflow: hidden;
+  --epcta-pad: clamp(32px, 4.5vw, 56px);
+}
+
+.epcta--night {
+  background:
+    radial-gradient(ellipse 80% 70% at 80% 20%, rgba(23, 104, 213, 0.28), transparent 65%),
+    linear-gradient(160deg, #041023 0%, #071936 55%, #040d1d 100%);
+  color: #f4f9ff;
+  --epcta-eyebrow: var(--sky-blue, #8ec5fc);
+  --epcta-details: rgba(212, 229, 250, 0.84);
+  --epcta-border: rgba(148, 184, 235, 0.24);
+  --epcta-fill-bg: var(--cta-bg, #ff4f1f);
+  --epcta-fill-fg: var(--cta-fg, #ffffff);
+  --epcta-fill-eyebrow: var(--cta-fg, #ffffff);
+  --epcta-fill-details: rgba(255, 255, 255, 0.9);
+  --epcta-fill-border: rgba(255, 255, 255, 0.45);
+}
+
+.epcta--paper {
+  background: #f5f9ff;
+  color: #102b50;
+  --epcta-eyebrow: var(--rankrise-blue, #1768d5);
+  --epcta-details: rgba(16, 43, 80, 0.78);
+  --epcta-border: rgba(16, 43, 80, 0.16);
+  --epcta-fill-bg: var(--cta-bg, #1768d5);
+  --epcta-fill-fg: var(--cta-fg, #ffffff);
+  --epcta-fill-eyebrow: var(--cta-fg, #ffffff);
+  --epcta-fill-details: rgba(255, 255, 255, 0.9);
+  --epcta-fill-border: rgba(255, 255, 255, 0.45);
+}
+
+.epcta__link {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  color: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  outline: none;
+  border: 1px solid var(--epcta-border);
+  border-radius: 27px;
+}
+
+.epcta__link:focus-visible {
+  outline: 2px solid var(--sky-blue, #8ec5fc);
+  outline-offset: -4px;
+}
+
+.epcta__face,
+.epcta__fill {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: clamp(20px, 3vw, 32px);
+  width: 100%;
+  height: 100%;
+  padding: var(--epcta-pad);
+}
+
+.epcta__face {
+  position: relative;
+  z-index: 1;
+}
+
+.epcta__fill {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+  background: var(--epcta-fill-bg);
+  color: var(--epcta-fill-fg);
+  pointer-events: none;
+  clip-path: circle(0% at var(--ex, 50%) var(--ey, 50%));
+  transition: clip-path 0.75s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: clip-path;
+}
+
+.epcta__link[data-on] .epcta__fill {
+  clip-path: circle(155% at var(--ex, 50%) var(--ey, 50%));
+}
+
+.epcta__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.epcta__eyebrow {
+  font-size: 12.5px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--epcta-eyebrow);
+}
+
+.epcta__fill .epcta__eyebrow {
+  color: var(--epcta-fill-eyebrow);
+}
+
+.epcta__arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 999px;
+  border: 1px solid var(--epcta-border);
+  flex-shrink: 0;
+  transition: transform 0.37s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.epcta__fill .epcta__arrow {
+  border-color: var(--epcta-fill-border);
+}
+
+.epcta__link[data-on] .epcta__arrow {
+  transform: translate3d(2px, -2px, 0);
+}
+
+.epcta__arrow svg {
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.85;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.epcta__headline {
+  display: block;
+  max-width: 18ch;
+  font-family: var(--font-manrope), sans-serif;
+  font-size: clamp(2.1rem, 4.6vw, 3.85rem);
+  font-weight: 700;
+  letter-spacing: -0.035em;
+  line-height: 1.06;
+  text-wrap: balance;
+}
+
+.epcta__details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 28px;
+  padding-top: 20px;
+  border-top: 1px solid var(--epcta-border);
+  font-size: 13.5px;
+  font-weight: 500;
+  color: var(--epcta-details);
+}
+
+.epcta__fill .epcta__details {
+  border-top-color: var(--epcta-fill-border);
+  color: var(--epcta-fill-details);
+}
+
+.epcta[data-motion="reduced"] .epcta__fill {
+  transition: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .epcta__fill {
+    transition: opacity 0.2s ease;
+    clip-path: none;
+    opacity: 0;
+  }
+
+  .epcta__link[data-on] .epcta__fill {
+    opacity: 1;
+  }
+
+  .epcta__arrow {
+    transition: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .epcta {
+    width: calc(100% - 36px);
+    min-height: 300px;
+    margin: 16px auto 20px;
+  }
+
+  .epcta__arrow {
+    width: 38px;
+    height: 38px;
+  }
+
+  .epcta__details {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

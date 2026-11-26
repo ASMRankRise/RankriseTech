@@ -1,3 +1,5 @@
+import type { ProjectedGlobeLocation } from "./originkit-globe";
+
 export interface GlobeCountry {
 	id: string;
 	name: string;
@@ -153,5 +155,93 @@ export function CountryFlag({ code }: { code: string }) {
 					<circle cx="12" cy="12" r="10" fill="#1768D5" />
 				</svg>
 			);
+	}
+}
+
+const COUNTRY_BY_ID = new Map(GLOBE_COUNTRIES.map((country) => [country.id, country]));
+
+function smoothstep(edge0: number, edge1: number, x: number): number {
+	const t = Math.max(0, Math.min(1, (x - edge0) / (edge1 - edge0)));
+	return t * t * (3 - 2 * t);
+}
+
+/**
+ * Updates DOM transforms and collision-faded opacities for projected globe country pills.
+ */
+export function projectCountryPills(
+	projected: ProjectedGlobeLocation[],
+	viewport: { width: number; height: number },
+	pillElements: Record<string, HTMLDivElement | null>,
+	entranceAlpha: number
+) {
+	const isMobile = viewport.width <= 768;
+	const widthScale = isMobile ? 0.88 : 1;
+	const pillHeight = isMobile ? 24 : 28;
+	const padX = 6;
+	const padY = 4;
+
+	const visibleItems: ProjectedGlobeLocation[] = [];
+	for (let i = 0; i < projected.length; i++) {
+		const item = projected[i];
+		if (!item.visible) {
+			const el = pillElements[item.id];
+			if (el) {
+				el.style.opacity = "0";
+				el.style.visibility = "hidden";
+			}
+		} else {
+			visibleItems.push(item);
+		}
+	}
+
+	visibleItems.sort((a, b) => b.facing - a.facing);
+
+	const placed: Array<{
+		x: number;
+		y: number;
+		halfW: number;
+		halfH: number;
+		alpha: number;
+	}> = [];
+
+	for (let i = 0; i < visibleItems.length; i++) {
+		const item = visibleItems[i];
+		const el = pillElements[item.id];
+		if (!el) continue;
+
+		const horizonAlpha = smoothstep(0.06, 0.28, item.facing);
+		const depthScale = 0.88 + 0.12 * smoothstep(0.06, 0.45, item.facing);
+		const widthEstimate = COUNTRY_BY_ID.get(item.id)?.widthEstimate ?? 96;
+		const halfW = widthEstimate * widthScale * depthScale * 0.5 + padX;
+		const halfH = pillHeight * depthScale * 0.5 + padY;
+
+		let collisionFade = 1;
+		for (let j = 0; j < placed.length; j++) {
+			const p = placed[j];
+			const dx = Math.abs(item.x - p.x);
+			const dy = Math.abs(item.y - p.y);
+			const reqW = halfW + p.halfW;
+			const reqH = halfH + p.halfH;
+			if (dx < reqW && dy < reqH) {
+				const overlap = Math.max(0, 1 - Math.max(dx / reqW, dy / reqH));
+				const fade = 1 - smoothstep(0, 0.35, overlap) * p.alpha;
+				if (fade < collisionFade) collisionFade = fade;
+			}
+		}
+
+		const finalOpacity = entranceAlpha * horizonAlpha * collisionFade;
+		if (finalOpacity > 0.08) {
+			placed.push({
+				x: item.x,
+				y: item.y,
+				halfW,
+				halfH,
+				alpha: finalOpacity,
+			});
+		}
+
+		el.style.opacity = finalOpacity.toFixed(3);
+		el.style.visibility = finalOpacity > 0.01 ? "visible" : "hidden";
+		el.style.transform = `translate3d(${item.x.toFixed(2)}px, ${item.y.toFixed(2)}px, 0) translate(-50%, -50%) scale(${depthScale.toFixed(3)})`;
 	}
 }
