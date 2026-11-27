@@ -1,6 +1,6 @@
 import Link from "next/link";
-import { Icon } from "@/components/icon";
-import { Wordmark } from "@/components/site-navigation";
+import { Icon } from "@/components/ui/icon";
+import { Wordmark } from "@/components/layout/wordmark";
 
 export default function NotFound() {
   return (

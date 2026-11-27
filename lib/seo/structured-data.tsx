@@ -1,3 +1,4 @@
+import { SITE_IDENTITY } from "@/lib/data/site";
 import { siteConfig } from "./site-config";
 
 export function OrganizationSchema() {
@@ -11,19 +12,11 @@ export function OrganizationSchema() {
     email: siteConfig.email,
     address: {
       "@type": "PostalAddress",
-      streetAddress: "410, Krystel Square, Near Khanvilkar Petrol Pump, Nagala Park",
-      addressLocality: "Kolhapur",
-      addressRegion: "Maharashtra",
-      postalCode: "416003",
-      addressCountry: "IN",
+      ...SITE_IDENTITY.postalAddress,
     },
     description: siteConfig.defaultDescription,
     slogan: siteConfig.tagline,
-    sameAs: [
-      "https://www.asmrankrise.com/",
-      "https://trimarkity.app/",
-      "https://www.1socialsnap.com/",
-    ],
+    sameAs: [...SITE_IDENTITY.sameAs],
   };
 
   return (

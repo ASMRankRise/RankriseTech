@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { InnerPage } from "@/components/inner-page";
-import { CATCH_ALL_ROUTES, getSiteRouteBySlug, routeSegments } from "@/lib/routes";
+import { CATCH_ALL_ROUTES, formatSegment, getSiteRouteBySlug, routeSegments } from "@/lib/routes";
 import { getSitePageBySlug } from "@/lib/site-content";
 import { constructMetadata } from "@/lib/seo/metadata";
 import {
@@ -51,31 +51,10 @@ export default async function CatchAllPage({ params }: PageProps) {
 
   const breadcrumbs = [
     { name: "Home", url: "/" },
-    ...slug.map((segment, index) => {
-      const href = `/${slug.slice(0, index + 1).join("/")}`;
-      const segmentMap: Record<string, string> = {
-        "1socialsnap": "1SocialSnap",
-        trimarkity: "TriMarkity",
-        salesapp: "SalesApp",
-        hrms: "HRMS",
-      };
-      const wordMap: Record<string, string> = {
-        Ai: "AI",
-        Erp: "ERP",
-        Crm: "CRM",
-        Api: "API",
-        Smes: "SMEs",
-        Edtech: "EdTech",
-        Saas: "SaaS",
-      };
-      const name =
-        segmentMap[segment.toLowerCase()] ??
-        segment
-          .replace(/-/g, " ")
-          .replace(/\b\w/g, (char) => char.toUpperCase())
-          .replace(/\b(Ai|Erp|Crm|Api|Smes|Edtech|Saas)\b/g, (m) => wordMap[m] ?? m);
-      return { name, url: href };
-    }),
+    ...slug.map((segment, index) => ({
+      name: formatSegment(segment),
+      url: `/${slug.slice(0, index + 1).join("/")}`,
+    })),
   ];
 
   return (

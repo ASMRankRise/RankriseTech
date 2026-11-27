@@ -120,6 +120,33 @@ export function getSiteRouteBySlug(slug: readonly string[]): CatalogRoute | unde
   });
 }
 
+const SEGMENT_MAP: Record<string, string> = {
+  "1socialsnap": "1SocialSnap",
+  trimarkity: "TriMarkity",
+  salesapp: "SalesApp",
+  hrms: "HRMS",
+};
+
+const WORD_MAP: Record<string, string> = {
+  Ai: "AI",
+  Erp: "ERP",
+  Crm: "CRM",
+  Api: "API",
+  Smes: "SMEs",
+  Edtech: "EdTech",
+  Saas: "SaaS",
+};
+
+export function formatSegment(seg: string): string {
+  return (
+    SEGMENT_MAP[seg.toLowerCase()] ??
+    seg
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase())
+      .replace(/\b(Ai|Erp|Crm|Api|Smes|Edtech|Saas)\b/g, (m) => WORD_MAP[m] ?? m)
+  );
+}
+
 export const ROUTE_APPROVAL_NOTES = [
   "Exact 55 URLs approved and implemented matching demo2 SEO_ROUTE_MAP.csv without trailing slashes.",
   "All preview guardrails lifted: 53 routes are fully indexable, with only /portfolio and /maintenance marked noindex.",

@@ -3,10 +3,10 @@ import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { SITE_IDENTITY } from "@/lib/site-content";
 import { OrganizationSchema, WebSiteSchema } from "@/lib/seo/structured-data";
-import { FloatingActions } from "@/components/floating-actions";
-import { ChatWidget } from "@/components/chat-widget";
-import { CookieBanner } from "@/components/cookie-banner";
-import { Analytics } from "@/components/analytics";
+import { FloatingActions } from "@/components/layout/floating-actions";
+import { ChatWidget } from "@/components/layout/chat-widget";
+import { CookieBanner } from "@/components/layout/cookie-banner";
+import { Analytics } from "@/components/layout/analytics";
 import "./globals.css";
 
 const inter = localFont({

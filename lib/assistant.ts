@@ -1,10 +1,9 @@
-import { INDUSTRIES, SERVICES_LIST, SITE_IDENTITY } from "@/lib/site-content";
+import { INDUSTRIES, PUBLISHED_TECH_STACK, SERVICES_LIST, SITE_IDENTITY } from "@/lib/site-content";
 
 type LinkSuggestion = { label: string; href: string };
 export type LocalAnswer = { reply: string; links?: LinkSuggestion[] };
 
-const stack =
-  "Next.js, React, Node.js, Python, FastAPI, Django, Flutter, React Native, PostgreSQL, MongoDB, AWS, Google Cloud, Docker, REST APIs and GraphQL, with AI integrations including OpenAI, Gemini and Claude.";
+const stack = `${PUBLISHED_TECH_STACK.slice(0, -3).join(", ")}, with AI integrations including ${PUBLISHED_TECH_STACK.slice(-3).join(", ")}.`;
 
 function includesAny(q: string, terms: string[]) {
   return terms.some((t) => q.includes(t));
