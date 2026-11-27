@@ -1,6 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  serverExternalPackages: ["nodemailer"],
   reactStrictMode: true,
   poweredByHeader: false,
   compress: true,

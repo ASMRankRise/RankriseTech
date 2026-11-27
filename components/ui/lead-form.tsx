@@ -19,7 +19,7 @@ export function LeadForm({
 }) {
   const idPrefix = useId();
   const [statusMessage, setStatusMessage] = useState<string>("");
-  const [isSuccess, setIsSuccess] = useState<boolean>(false);
+  const [statusKind, setStatusKind] = useState<"idle" | "sending" | "success" | "error">("idle");
   const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -37,7 +37,7 @@ export function LeadForm({
     e.preventDefault();
     setIsSubmitting(true);
     setStatusMessage("Sending…");
-    setIsSuccess(false);
+    setStatusKind("sending");
 
     const form = e.currentTarget;
     const formData = new FormData(form);
@@ -45,6 +45,7 @@ export function LeadForm({
 
     const file = formData.get("file");
     if (file instanceof File && file.size > 4 * 1024 * 1024) {
+      setStatusKind("error");
       setStatusMessage("File exceeds 4 MB limit. Please select a smaller file.");
       setIsSubmitting(false);
       return;
@@ -55,15 +56,15 @@ export function LeadForm({
         method: "POST",
         body: formData,
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => null);
       if (!res.ok) {
-        throw new Error(data.error || "Unable to send inquiry.");
+        throw new Error(data?.error || "Unable to send inquiry. Please call or WhatsApp us.");
       }
-      setIsSuccess(true);
+      setStatusKind("success");
       setStatusMessage("Thank you. Your details have been received.");
       form.reset();
     } catch (err) {
-      setIsSuccess(false);
+      setStatusKind("error");
       setStatusMessage(
         err instanceof Error
           ? err.message
@@ -471,8 +472,14 @@ export function LeadForm({
 
       {statusMessage && (
         <p
-          className={`lead-form-status formStatus${isSuccess ? " is-success" : " is-error"}`}
-          role="status"
+          className={`lead-form-status formStatus${
+            statusKind === "success"
+              ? " is-success"
+              : statusKind === "error"
+                ? " is-error"
+                : ""
+          }`}
+          role={statusKind === "error" ? "alert" : "status"}
           aria-live="polite"
         >
           {statusMessage}

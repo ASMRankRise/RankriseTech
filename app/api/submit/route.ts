@@ -1,4 +1,10 @@
 import { NextResponse } from "next/server";
+import {
+  isSmtpConfigured,
+  resolveLeadRecipient,
+  sendLeadEmail,
+  type LeadAttachment,
+} from "@/lib/mailer";
 
 export const runtime = "nodejs";
 
@@ -10,20 +16,6 @@ const allowed = new Set([
   "image/png",
   "image/jpeg",
 ]);
-
-function escapeHtml(s: string) {
-  return s.replace(
-    /[&<>"']/g,
-    (c) =>
-      ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#039;",
-      }[c] || c)
-  );
-}
 
 export async function POST(req: Request) {
   try {
@@ -45,42 +37,54 @@ export async function POST(req: Request) {
 
     const payload = { ...data, submittedAt: new Date().toISOString(), source: "rankrisetech.in" };
     const webhook = process.env.FORM_WEBHOOK_URL;
+    const smtpReady = isSmtpConfigured() && Boolean(resolveLeadRecipient(data.region));
+
+    if (!smtpReady && !webhook) {
+      return NextResponse.json(
+        { error: "Email delivery is not configured. Please call or WhatsApp us directly." },
+        { status: 503 }
+      );
+    }
+
     if (webhook) {
-      await fetch(webhook, {
+      const webhookRes = await fetch(webhook, {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify(payload),
       });
+      if (!webhookRes.ok) {
+        console.error(`FORM_WEBHOOK_URL returned ${webhookRes.status}`);
+        if (!smtpReady) {
+          return NextResponse.json(
+            { error: "Unable to deliver inquiry right now. Please call or WhatsApp us." },
+            { status: 502 }
+          );
+        }
+      }
     }
 
-    const key = process.env.RESEND_API_KEY;
-    const to =
-      data.region === "Global"
-        ? process.env.GLOBAL_LEADS_TO_EMAIL || process.env.LEADS_TO_EMAIL
-        : process.env.LEADS_TO_EMAIL;
-    if (key && to) {
-      const attachments = [] as Array<{ filename: string; content: string }>;
+    let messageId: string | undefined;
+    let previewUrl: string | undefined;
+
+    if (smtpReady) {
+      let attachment: LeadAttachment | undefined;
       if (file instanceof File && file.size) {
-        attachments.push({
+        attachment = {
           filename: file.name,
-          content: Buffer.from(await file.arrayBuffer()).toString("base64"),
-        });
+          content: Buffer.from(await file.arrayBuffer()),
+          contentType: file.type || undefined,
+        };
       }
-      await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: process.env.RESEND_FROM_EMAIL || "website@rankrisetech.in",
-          to: [to],
-          subject: `RankRise website: ${data.formType || "enquiry"} — ${data.name}`,
-          html: `<h2>New RankRise website submission</h2><pre style="white-space:pre-wrap;font-family:Arial">${escapeHtml(
-            JSON.stringify(payload, null, 2)
-          )}</pre>`,
-          attachments,
-        }),
-      });
+      const result = await sendLeadEmail(payload, attachment);
+      messageId = result.messageId;
+      previewUrl = result.previewUrl;
     }
-    return NextResponse.json({ ok: true });
+
+    return NextResponse.json({
+      ok: true,
+      ...(messageId ? { messageId } : {}),
+      ...(process.env.NODE_ENV !== "production" && previewUrl ? { previewUrl } : {}),
+    });
   } catch (e) {
     console.error(e);
     return NextResponse.json({ error: "Unable to process the form right now." }, { status: 500 });
