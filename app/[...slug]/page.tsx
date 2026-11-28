@@ -1,34 +1,87 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { UnderConstruction } from "@/components/under-construction";
-import { CATCH_ALL_CONSTRUCTION_ROUTES, getSiteRouteBySlug, routeSegments } from "@/lib/routes";
-import { CONSTRUCTION_COPY, SITE_IDENTITY } from "@/lib/site-content";
+import { InnerPage } from "@/components/inner-page";
+import { CATCH_ALL_ROUTES, formatSegment, getSiteRouteBySlug, routeSegments } from "@/lib/routes";
+import { getSitePageBySlug } from "@/lib/site-content";
+import { constructMetadata } from "@/lib/seo/metadata";
+import {
+  ArticleSchema,
+  BreadcrumbListSchema,
+  ServiceSchema,
+  SoftwareApplicationSchema,
+} from "@/lib/seo/structured-data";
 
-type ConstructionPageProps = { params: Promise<{ slug: string[] }> };
+type PageProps = {
+  params: Promise<{ slug: string[] }>;
+};
 
 export const dynamicParams = false;
 
 export function generateStaticParams() {
-  return CATCH_ALL_CONSTRUCTION_ROUTES.map((route) => ({ slug: routeSegments(route.path) }));
+  return CATCH_ALL_ROUTES.map((route) => ({
+    slug: routeSegments(route.path),
+  }));
 }
 
-async function constructionRoute(params: ConstructionPageProps["params"]) {
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
+  const page = getSitePageBySlug(slug);
   const route = getSiteRouteBySlug(slug);
-  if (!route || route.status !== "under-construction" || route.contentReady) notFound();
-  return route;
+
+  if (!page || !route) {
+    return {};
+  }
+
+  return constructMetadata({
+    title: page.title,
+    description: page.description,
+    canonical: `/${page.slug}`,
+    noIndex: page.noindex ?? route.noindex ?? false,
+  });
 }
 
-export async function generateMetadata({ params }: ConstructionPageProps): Promise<Metadata> {
-  const route = await constructionRoute(params);
-  return {
-    title: `${route.label} | ${SITE_IDENTITY.name}`,
-    description: `${route.label}. ${CONSTRUCTION_COPY.description} Local preview only.`,
-    robots: { index: false, follow: false },
-  };
-}
+export default async function CatchAllPage({ params }: PageProps) {
+  const { slug } = await params;
+  const page = getSitePageBySlug(slug);
+  const route = getSiteRouteBySlug(slug);
 
-export default async function Page({ params }: ConstructionPageProps) {
-  const route = await constructionRoute(params);
-  return <UnderConstruction route={route} />;
+  if (!page || !route) {
+    notFound();
+  }
+
+  const breadcrumbs = [
+    { name: "Home", url: "/" },
+    ...slug.map((segment, index) => ({
+      name: formatSegment(segment),
+      url: `/${slug.slice(0, index + 1).join("/")}`,
+    })),
+  ];
+
+  return (
+    <>
+      <BreadcrumbListSchema items={breadcrumbs} />
+      {page.schemaType === "Service" && (
+        <ServiceSchema
+          name={page.h1}
+          description={page.description}
+          url={`/${page.slug}`}
+        />
+      )}
+      {page.schemaType === "Article" && (
+        <ArticleSchema
+          headline={page.h1}
+          description={page.description}
+          url={`/${page.slug}`}
+        />
+      )}
+      {page.schemaType === "SoftwareApplication" && (
+        <SoftwareApplicationSchema
+          name={page.h1}
+          description={page.description}
+          url={`/${page.slug}`}
+        />
+      )}
+      <InnerPage page={page} />
+    </>
+  );
 }

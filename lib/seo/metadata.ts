@@ -20,10 +20,12 @@ export function constructMetadata({
   canonical,
   noIndex = false,
   type = "website",
-  image,
+  image = "/og-image.svg",
 }: MetadataOptions = {}): Metadata {
   const fullTitle = title
-    ? `${title} | ${siteConfig.name}`
+    ? title.includes(siteConfig.name)
+      ? title
+      : `${title} | ${siteConfig.name}`
     : siteConfig.defaultTitle;
 
   const canonicalUrl = canonical
@@ -31,16 +33,28 @@ export function constructMetadata({
     : undefined;
 
   const ogImages = image
-    ? [{ url: image.startsWith("http") ? image : `${siteConfig.url}${image}` }]
+    ? [
+        {
+          url: image.startsWith("http")
+            ? image
+            : `${siteConfig.url}${image.startsWith("/") ? image : `/${image}`}`,
+        },
+      ]
     : undefined;
 
   return {
-    title: fullTitle,
+    metadataBase: new URL(siteConfig.url),
+    title: title ? { absolute: fullTitle } : fullTitle,
     description,
     alternates: canonicalUrl ? { canonical: canonicalUrl } : undefined,
     robots: noIndex
       ? { index: false, follow: false }
       : { index: true, follow: true },
+    icons: {
+      icon: "/favicon.svg",
+      shortcut: "/favicon.svg",
+      apple: "/favicon.svg",
+    },
     openGraph: {
       title: fullTitle,
       description,

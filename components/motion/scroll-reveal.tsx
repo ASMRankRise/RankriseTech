@@ -20,10 +20,10 @@ export function ScrollReveal({
   children,
   variant = "fade-up",
   delay = 0,
-  duration = 600,
+  duration = 320,
   className = "",
   style = {},
-  threshold = 0.12,
+  threshold = 0.01,
   once = true,
   as: Component = "div",
 }: ScrollRevealProps) {
@@ -52,10 +52,18 @@ export function ScrollReveal({
     const element = ref.current;
     if (!element) return;
 
+    if (element.getBoundingClientRect().top <= window.innerHeight + 300) {
+      setIsVisible(true);
+      if (once) return;
+    }
+
     const observer = new IntersectionObserver(
       (entries) => {
         for (const entry of entries) {
-          if (entry.isIntersecting) {
+          if (
+            entry.isIntersecting ||
+            entry.boundingClientRect.top <= window.innerHeight + 300
+          ) {
             setIsVisible(true);
             if (once) {
               observer.unobserve(entry.target);
@@ -67,7 +75,7 @@ export function ScrollReveal({
       },
       {
         threshold,
-        rootMargin: "0px 0px -40px 0px",
+        rootMargin: "300px 0px 300px 0px",
       }
     );
 

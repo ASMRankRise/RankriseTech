@@ -1,0 +1,17 @@
+<svg preserveAspectRatio="none" overflow="visible" style="display: block;" width="386.4" height="386.4" viewBox="0 0 386.4 386.4" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="Globe Mesh (Center 512, 534 - Diam 336)">
+<circle id="Atmosphere Glow" cx="193.2" cy="193.2" r="193.2" fill="url(#paint0_radial_0_4)"/>
+<circle id="Sphere Rim" cx="193.2" cy="193.2" r="167.5" stroke="#D9F0FF" stroke-opacity="0.45"/>
+<mask id="stroke0_0_4" fill="white">
+<path d="M361.2 194.04C361.2 224.195 285.984 248.64 193.2 248.64C100.416 248.64 25.2 224.195 25.2 194.04C25.2 163.885 100.416 139.44 193.2 139.44C285.984 139.44 361.2 163.885 361.2 194.04Z"/>
+</mask>
+<ellipse id="Equator Ring" cx="193.2" cy="194.04" rx="168" ry="54.6" stroke-width="2" stroke="#BFE6FF" stroke-opacity="0.35" mask="url(#stroke0_0_4)"/>
+</g>
+<defs>
+<radialGradient id="paint0_radial_0_4" cx="0" cy="0" r="1" gradientUnits="userSpaceOnUse" gradientTransform="translate(193.2 193.2) scale(386.4)">
+<stop stop-color="#A6D9FF" stop-opacity="0.35"/>
+<stop offset="0.5" stop-color="#5999D9" stop-opacity="0.12"/>
+<stop offset="1" stop-color="#0A1F2E" stop-opacity="0"/>
+</radialGradient>
+</defs>
+</svg>

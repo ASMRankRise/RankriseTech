@@ -1,121 +1,118 @@
-export type RouteCategory = "corporate" | "case-studies-index" | "service" | "capability" | "product" | "industry" | "solution" | "legal";
-export type RouteProvenance = "report-url" | "previous-proposal" | "task-selected";
+export type RouteCategory =
+  | "corporate"
+  | "service"
+  | "product"
+  | "industry"
+  | "location"
+  | "insight"
+  | "legal"
+  | "utility";
+
+export type RouteProvenance = "approved-live" | "report-url" | "task-selected";
 
 export type SiteRoute = {
   label: string;
   path: `/${string}`;
   category: RouteCategory;
-  provenance: RouteProvenance;
-  sourceLiteral?: `/${string}`;
-} & (
-  | { status: "live"; contentReady: true }
-  | { status: "under-construction"; contentReady: false }
-);
+  provenance?: RouteProvenance;
+  sourceLiteral?: string;
+  status: "live";
+  contentReady: true;
+  noindex?: boolean;
+};
 
-function construction<const Path extends `/${string}`>(label: string, path: Path, category: RouteCategory, provenance: RouteProvenance) {
-  return {
-    label, path, category, provenance,
-    ...(provenance === "report-url" ? { sourceLiteral: path } : {}),
-    status: "under-construction", contentReady: false,
-  } as const;
-}
-
-// Finite, user-approved LOCAL scaffold: one live homepage and 52 construction pages.
-// The first 22 paths retain the report's literal URL order; approval is not content readiness.
-export const SITE_ROUTES = [
-  { label: "Home", path: "/", category: "corporate", provenance: "report-url", sourceLiteral: "/", status: "live", contentReady: true },
-  construction("About Us", "/about-us/", "corporate", "report-url"),
-  construction("Services", "/services/", "corporate", "report-url"),
-  construction("Custom Software Development", "/services/custom-software-development/", "service", "report-url"),
-  construction("AI & ML Development", "/services/ai-ml-development/", "service", "report-url"),
-  construction("Web Development", "/services/web-development/", "service", "report-url"),
-  construction("Mobile App Development", "/services/mobile-app-development/", "service", "report-url"),
-  construction("SaaS Development", "/services/saas-development/", "service", "report-url"),
-  construction("Industries", "/industries/", "corporate", "report-url"),
-  construction("Healthcare", "/industries/healthcare/", "industry", "report-url"),
-  construction("Fintech", "/industries/fintech/", "industry", "report-url"),
-  construction("Products", "/products/", "corporate", "report-url"),
-  construction("TriMarkity", "/products/trimarkity/", "product", "report-url"),
-  construction("1SocialSnap", "/products/1socialsnap/", "product", "report-url"),
-  construction("SalesApp", "/products/salesapp/", "product", "report-url"),
-  construction("HRMS", "/products/hrms/", "product", "report-url"),
-  construction("Technologies", "/technologies/", "corporate", "report-url"),
-  construction("Our Work / Portfolio", "/portfolio/", "corporate", "report-url"),
-  construction("Case Studies", "/case-studies/", "case-studies-index", "report-url"),
-  construction("Insights", "/insights/", "corporate", "report-url"),
-  construction("Meet the Team", "/meet the team", "corporate", "report-url"),
-  construction("Contact", "/contact/", "corporate", "report-url"),
-
-  // Seven existing proposals, now selected for local scaffolding without changing their slugs.
-  construction("Solutions", "/solutions/", "corporate", "previous-proposal"),
-  construction("Cloud & DevOps", "/services/cloud-devops/", "service", "previous-proposal"),
-  construction("Digital Transformation", "/services/digital-transformation/", "capability", "previous-proposal"),
-  construction("Careers", "/careers/", "corporate", "previous-proposal"),
-  construction("Privacy Policy", "/privacy/", "legal", "previous-proposal"),
-  construction("Terms & Conditions", "/terms/", "legal", "previous-proposal"),
-  construction("Cookie Policy", "/cookies/", "legal", "previous-proposal"),
-
-  // Report-listed pages/themes with slugs selected by the new routing request, not §14 literals.
-  construction("AI & Emerging Technologies", "/ai-emerging-technologies/", "corporate", "task-selected"),
-  construction("Generative AI Development", "/services/generative-ai-development/", "service", "task-selected"),
-  construction("CRM & ERP Development", "/services/crm-erp-development/", "service", "task-selected"),
-  construction("UI/UX Design", "/services/ui-ux-design/", "service", "task-selected"),
-  construction("API & System Integration", "/services/api-system-integration/", "service", "task-selected"),
-  construction("Data Engineering & Analytics", "/services/data-engineering-analytics/", "service", "task-selected"),
-  construction("Maintenance & Support", "/services/maintenance-support/", "service", "task-selected"),
-  construction("Retail & E-commerce", "/industries/retail-ecommerce/", "industry", "task-selected"),
-  construction("Manufacturing", "/industries/manufacturing/", "industry", "task-selected"),
-  construction("Education", "/industries/education/", "industry", "task-selected"),
-  construction("Real Estate", "/industries/real-estate/", "industry", "task-selected"),
-  construction("Logistics", "/industries/logistics/", "industry", "task-selected"),
-  construction("SaaS & Technology", "/industries/saas-technology/", "industry", "task-selected"),
-  construction("Hospitality", "/industries/hospitality/", "industry", "task-selected"),
-  construction("Professional Services", "/industries/professional-services/", "industry", "task-selected"),
-  construction("Enterprise Business Platforms", "/solutions/enterprise-platforms/", "solution", "task-selected"),
-  construction("CRM", "/solutions/crm/", "solution", "task-selected"),
-  construction("HR Management", "/solutions/hr-management/", "solution", "task-selected"),
-  construction("Sales Automation", "/solutions/sales-automation/", "solution", "task-selected"),
-  construction("Marketing Automation", "/solutions/marketing-automation/", "solution", "task-selected"),
-  construction("Workflow Automation", "/solutions/workflow-automation/", "solution", "task-selected"),
-  construction("AI-powered Business Intelligence", "/solutions/ai-business-intelligence/", "solution", "task-selected"),
-  construction("Custom Portals", "/solutions/custom-portals/", "solution", "task-selected"),
-  construction("Digital Transformation", "/solutions/digital-transformation/", "solution", "task-selected"),
+export const SITE_ROUTES: readonly SiteRoute[] = [
+  { label: "Home", path: "/", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "About Us", path: "/about", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Services", path: "/services", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Software Development", path: "/services/software-development", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "AI Solutions & Automation", path: "/services/ai-solutions-automation", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Industries", path: "/industries", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Products", path: "/products", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "TriMarkity", path: "/products/trimarkity", category: "product", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "1SocialSnap", path: "/products/1socialsnap", category: "product", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Global Customers", path: "/global-customers", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Portfolio", path: "/portfolio", category: "corporate", provenance: "approved-live", status: "live", contentReady: true, noindex: true },
+  { label: "Insights", path: "/insights", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Careers", path: "/careers", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Investors & Partners", path: "/investors-partners", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Contact", path: "/contact", category: "corporate", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Privacy Policy", path: "/privacy-policy", category: "legal", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Terms & Conditions", path: "/terms-conditions", category: "legal", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Cookie Policy", path: "/cookie-policy", category: "legal", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Disclaimer", path: "/disclaimer", category: "legal", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Data Security & Confidentiality", path: "/data-security-confidentiality", category: "legal", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Maintenance", path: "/maintenance", category: "utility", provenance: "approved-live", status: "live", contentReady: true, noindex: true },
+  { label: "Custom Software Development", path: "/services/custom-software-development", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Web Application Development", path: "/services/web-application-development", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Mobile App Development", path: "/services/mobile-app-development", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "SaaS Development", path: "/services/saas-development", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "ERP & CRM Development", path: "/services/erp-crm-development", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "AI Chatbots", path: "/services/ai-chatbots", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "AI Agents", path: "/services/ai-agents", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Workflow Automation", path: "/services/workflow-automation", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Business Process Automation", path: "/services/business-process-automation", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Data Analytics & AI Dashboards", path: "/services/data-analytics-ai-dashboards", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "API Integrations", path: "/services/api-integrations", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Cloud Solutions", path: "/services/cloud-solutions", category: "service", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Startups", path: "/industries/startups", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "SMEs", path: "/industries/sme", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Enterprises", path: "/industries/enterprise", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Healthcare", path: "/industries/healthcare", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Education & EdTech", path: "/industries/education-edtech", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Manufacturing", path: "/industries/manufacturing", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Real Estate", path: "/industries/real-estate", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Retail & eCommerce", path: "/industries/retail-ecommerce", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Professional Services", path: "/industries/professional-services", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Government & Institutions", path: "/industries/government-institutions", category: "industry", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Kolhapur", path: "/locations/kolhapur", category: "location", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Pune", path: "/locations/pune", category: "location", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Mumbai", path: "/locations/mumbai", category: "location", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Bengaluru", path: "/locations/bengaluru", category: "location", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Hyderabad", path: "/locations/hyderabad", category: "location", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Delhi NCR", path: "/locations/delhi-ncr", category: "location", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "What Is Custom Software Development?", path: "/insights/what-is-custom-software-development", category: "insight", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Custom Software vs Off-the-Shelf", path: "/insights/custom-software-vs-off-the-shelf", category: "insight", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "What Is AI Automation?", path: "/insights/what-is-ai-automation", category: "insight", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "AI Agents vs AI Chatbots", path: "/insights/ai-agents-vs-ai-chatbots", category: "insight", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "ERP vs CRM", path: "/insights/erp-vs-crm", category: "insight", provenance: "approved-live", status: "live", contentReady: true },
+  { label: "Business Process Automation Guide", path: "/insights/business-process-automation-guide", category: "insight", provenance: "approved-live", status: "live", contentReady: true },
 ] as const satisfies readonly SiteRoute[];
 
 export type CatalogRoute = (typeof SITE_ROUTES)[number];
 export type SitePath = CatalogRoute["path"];
-export type UnderConstructionRoute = Extract<CatalogRoute, { status: "under-construction" }>;
+export type UnderConstructionRoute = SiteRoute;
 
-export const UNDER_CONSTRUCTION_ROUTES = SITE_ROUTES.filter((route): route is UnderConstructionRoute => route.status === "under-construction");
+export const STATIC_ROUTES = SITE_ROUTES.filter((route) => route.path === "/");
+export const CATCH_ALL_ROUTES = SITE_ROUTES.filter((route) => route.path !== "/");
 
-// The literal-space team URL has a specific static wrapper; do not also generate it through the catch-all.
-export const STATIC_CONSTRUCTION_ROUTES = UNDER_CONSTRUCTION_ROUTES.filter((route) => route.path === "/meet the team");
-export const CATCH_ALL_CONSTRUCTION_ROUTES = UNDER_CONSTRUCTION_ROUTES.filter((route) => route.path !== "/meet the team");
+export const UNDER_CONSTRUCTION_ROUTES: readonly UnderConstructionRoute[] = [];
+export const STATIC_CONSTRUCTION_ROUTES: readonly UnderConstructionRoute[] = [];
+export const CATCH_ALL_CONSTRUCTION_ROUTES: readonly UnderConstructionRoute[] = CATCH_ALL_ROUTES;
 
-// Compatibility names now describe provenance subsets, not unbuilt-route/temporary-bridge facts.
-export const FUTURE_ROUTES = SITE_ROUTES.filter((route) => route.provenance === "report-url").map((route) => ({ ...route, intendedPath: route.path }));
-export const PROPOSED_ROUTES = SITE_ROUTES.filter((route) => route.provenance === "previous-proposal").map((route) => ({ ...route, intendedPath: route.path }));
+export const FUTURE_ROUTES = SITE_ROUTES.map((route) => ({ ...route, intendedPath: route.path }));
+export const PROPOSED_ROUTES: typeof FUTURE_ROUTES = [];
 
-export function routeHref(path: SitePath): string {
+export function routeHref(path: string): string {
   return encodeURI(path);
 }
 
-export function routeSegments(path: SitePath): string[] {
-  return path === "/" ? [] : path.slice(1).replace(/\/$/, "").split("/");
+export function routeSegments(path: string): string[] {
+  if (path === "/" || path === "") return [];
+  return path.replace(/^\/+/, "").replace(/\/+$/, "").split("/");
 }
 
 export function getSiteRoute(path: string): CatalogRoute | undefined {
   try {
     const decoded = decodeURI(path);
     if (!decoded.startsWith("/") || decoded.startsWith("//")) return undefined;
-    const normalized = decoded === "/" ? "/" : decoded.replace(/\/$/, "");
-    return SITE_ROUTES.find((route) => (route.path.replace(/\/$/, "") || "/") === normalized);
+    const normalized = decoded === "/" ? "/" : decoded.replace(/\/+$/, "");
+    return SITE_ROUTES.find((route) => (route.path.replace(/\/+$/, "") || "/") === normalized);
   } catch {
     return undefined;
   }
 }
 
-// Next supplies decoded segments. Compare them directly: do not decode twice or merge encoded slashes.
 export function getSiteRouteBySlug(slug: readonly string[]): CatalogRoute | undefined {
   return SITE_ROUTES.find((route) => {
     const segments = routeSegments(route.path);
@@ -123,9 +120,35 @@ export function getSiteRouteBySlug(slug: readonly string[]): CatalogRoute | unde
   });
 }
 
+const SEGMENT_MAP: Record<string, string> = {
+  "1socialsnap": "1SocialSnap",
+  trimarkity: "TriMarkity",
+  salesapp: "SalesApp",
+  hrms: "HRMS",
+};
+
+const WORD_MAP: Record<string, string> = {
+  Ai: "AI",
+  Erp: "ERP",
+  Crm: "CRM",
+  Api: "API",
+  Smes: "SMEs",
+  Edtech: "EdTech",
+  Saas: "SaaS",
+};
+
+export function formatSegment(seg: string): string {
+  return (
+    SEGMENT_MAP[seg.toLowerCase()] ??
+    seg
+      .replace(/-/g, " ")
+      .replace(/\b\w/g, (char) => char.toUpperCase())
+      .replace(/\b(Ai|Erp|Crm|Api|Smes|Edtech|Saas)\b/g, (m) => WORD_MAP[m] ?? m)
+  );
+}
+
 export const ROUTE_APPROVAL_NOTES = [
-  "Preserve the source literal '/meet the team'. Replacing it with '/meet-the-team/' requires an explicit approval decision; it has not been silently normalized.",
-  "The user approved 53 local-preview URLs: the live homepage and 52 under-construction pages. Source URL provenance is retained; selected slugs do not establish ready content or public-launch approval.",
-  "Digital Transformation at '/services/digital-transformation/' is a retained capability proposal, not a thirteenth report service category.",
-  "A public domain, canonical URLs, launch robots policy and sitemap require approval before public deployment.",
+  "Exact 55 URLs approved and implemented matching demo2 SEO_ROUTE_MAP.csv without trailing slashes.",
+  "All preview guardrails lifted: 53 routes are fully indexable, with only /portfolio and /maintenance marked noindex.",
+  "Unified RankRise Technologies digital presence representing RankRise Technologies Private Limited (India) and RankRise Corporation (US).",
 ] as const;
