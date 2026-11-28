@@ -917,6 +917,42 @@
 .industry-context-footer {
   margin-top: 28px;
 }
+.industry-context-footer button > span > span[aria-hidden] {
+  display: inline-block;
+  transition: transform 0.3s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes industry-arrow-launch {
+  0% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  42% {
+    transform: translate(6px, -6px);
+    opacity: 0;
+  }
+  43% {
+    transform: translate(-5px, 5px);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(2px, -2px);
+    opacity: 1;
+  }
+}
+.industry-context-footer button:hover > span > span[aria-hidden],
+.industry-context-footer button:focus-visible > span > span[aria-hidden] {
+  animation: industry-arrow-launch 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform: translate(2px, -2px);
+}
+@media (prefers-reduced-motion: reduce) {
+  .industry-context-footer button > span > span[aria-hidden],
+  .industry-context-footer button:hover > span > span[aria-hidden],
+  .industry-context-footer button:focus-visible > span > span[aria-hidden] {
+    animation: none;
+    transform: none;
+    transition: none;
+  }
+}
 
 .technologies-section { background: var(--cloud-white); border-top: 1px solid var(--soft-blue-grey); }
 .technology-grid { display: grid; grid-template-columns: 0.92fr 1.58fr; gap: 76px; align-items: start; }

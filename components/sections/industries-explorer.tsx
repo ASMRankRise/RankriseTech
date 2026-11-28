@@ -1,17 +1,20 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { INDUSTRIES } from "@/lib/data/industries";
 import { HOMEPAGE_SECTIONS_COPY } from "@/lib/data/homepage";
 import { Icon } from "@/components/ui/icon";
 import { ScrollReveal } from "@/components/motion/scroll-reveal";
+import RadialRevealButton from "@/components/originkit/ui/radial-reveal-button";
 
 export function IndustriesExplorer({
   onOpenInquiry,
 }: {
   onOpenInquiry?: (context?: string) => void;
 }) {
+  const router = useRouter();
   const [activeIndustryIndex, setActiveIndustryIndex] = useState(0);
   const activeIndustry = INDUSTRIES[activeIndustryIndex] ?? INDUSTRIES[0];
 
@@ -58,23 +61,47 @@ export function IndustriesExplorer({
           </ul>
         </div>
         <div className="industry-context-footer">
-          {onOpenInquiry ? (
-            <button
-              type="button"
-              className="button button-primary"
-              aria-haspopup="dialog"
-              aria-controls="preview-dialog"
-              onClick={() => onOpenInquiry(`${activeIndustry.name} software solution`)}
-            >
-              Discuss {activeIndustry.name}
-              <Icon name="arrow-up-right" width="16" height="16" />
-            </button>
-          ) : (
-            <Link href="/contact" className="button button-primary">
-              Discuss {activeIndustry.name}
-              <Icon name="arrow-up-right" width="16" height="16" />
-            </Link>
-          )}
+          <div
+            style={{ display: "inline-block" }}
+            onClick={() => {
+              if (onOpenInquiry) {
+                onOpenInquiry(`${activeIndustry.name} software solution`);
+              } else {
+                router.push("/contact");
+              }
+            }}
+          >
+            <RadialRevealButton
+              label={`Discuss ${activeIndustry.name}`}
+              padding="12px 22px"
+              gap={8}
+              rounded={100}
+              addIcon={true}
+              icon={{
+                type: "symbol",
+                symbol: "↗",
+                side: "right",
+                size: 16,
+                color: "#FFFFFF",
+                hoverColor: "#FFFFFF",
+              }}
+              font={{
+                fontSize: "0.95rem",
+                fontWeight: 600,
+                letterSpacing: "-0.01em",
+                lineHeight: "1.4",
+              }}
+              colors={{
+                fill: "var(--rankrise-blue)",
+                textColor: "#FFFFFF",
+                hoverFill: "#FF4F1F",
+                hoverTextColor: "#FFFFFF",
+              }}
+              border={{
+                borderWidth: 0,
+              }}
+            />
+          </div>
         </div>
       </aside>
     </div>
